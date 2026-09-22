@@ -16,7 +16,7 @@
             </div>
 
             {% if membership %}
-                {% if membership.payment_status %}
+                {% if not membership.awaiting_first_payment %}
                     {% with plan=membership.membership_yearly|default:membership.membership_monthly %}
                     <div class="cluster" style="justify-content:center; margin-bottom:var(--sp-5);">
                         <span class="badge badge--success">Active</span>
@@ -49,6 +49,77 @@
                         <a href="{% url 'my_profile' %}" class="btn btn--ghost">My Profile</a>
                     </div>
                     {% endwith %}
+
+                    {% if membership.has_pending_upgrade %}
+                        <div class="upgrade-block">
+                            <h2 class="panel__title">Upgrade in progress</h2>
+                            <p class="muted">
+                                You chose <strong>{{ membership.pending_plan.name }}</strong>.
+                                It takes effect once the difference is paid. Until then you stay
+                                on {{ membership.plan.name }} and nothing has been charged.
+                            </p>
+                            <div class="plan-summary">
+                                <div class="plan-summary__row">
+                                    <span>{{ membership.pending_plan.name }}</span>
+                                    <span>&#8377;{{ membership.pending_plan.price|floatformat:0 }}</span>
+                                </div>
+                                <div class="plan-summary__row">
+                                    <span>Unused credit on {{ membership.plan.name }}</span>
+                                    <span>&minus;&#8377;{{ credit|floatformat:0 }}</span>
+                                </div>
+                                <div class="plan-summary__row plan-summary__row--total">
+                                    <span>Due before tax</span>
+                                    <span>&#8377;{{ membership.pending_amount|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                            <div class="cluster" style="justify-content:center; margin-top:var(--sp-4);">
+                                {% if membership.pending_cycle == "annual" %}
+                                    <a href="{% url 'membership_processedtocheckout' membership.pending_yearly.id %}" class="btn">Complete Upgrade</a>
+                                {% else %}
+                                    <a href="{% url 'membership_processedtocheckout_monthly' membership.pending_monthly.id %}" class="btn">Complete Upgrade</a>
+                                {% endif %}
+                                <a href="{% url 'cancel_membership_upgrade' %}" class="btn btn--ghost"
+                                   data-confirm="Your upgrade to {{ membership.pending_plan.name }} will be dropped. You keep {{ membership.plan.name }} and are not charged."
+                                   data-confirm-title="Cancel this upgrade?"
+                                   data-confirm-ok="Cancel upgrade"
+                                   data-confirm-cancel="Keep it">Cancel Upgrade</a>
+                            </div>
+                        </div>
+
+                    {% elif upgrades %}
+                        <div class="upgrade-block">
+                            <h2 class="panel__title">Move up a tier</h2>
+                            <p class="muted">
+                                Your {{ membership.days_remaining }} remaining day{{ membership.days_remaining|pluralize }}
+                                are worth <strong>&#8377;{{ credit|floatformat:0 }}</strong>, credited against
+                                whichever tier you move to. Your expiry date does not change.
+                            </p>
+
+                            <div class="upgrade-list">
+                                {% for offer in upgrades %}
+                                <div class="upgrade-row">
+                                    <div class="upgrade-row__plan">
+                                        <strong>{{ offer.plan.name }}</strong>
+                                        <span class="muted">&#8377;{{ offer.plan.price|floatformat:0 }} {% if membership.cycle == "annual" %}per year{% else %}per month{% endif %}</span>
+                                    </div>
+                                    <div class="upgrade-row__price">
+                                        <span class="muted">You pay</span>
+                                        <strong>&#8377;{{ offer.amount|floatformat:0 }}</strong>
+                                    </div>
+                                    {% if membership.cycle == "annual" %}
+                                        <a href="{% url 'membership_list' offer.plan.id %}" class="btn btn--sm">Upgrade</a>
+                                    {% else %}
+                                        <a href="{% url 'membership_lists' offer.plan.id %}" class="btn btn--sm">Upgrade</a>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <p class="muted" style="font-size:var(--fs-xs); text-align:center; margin-top:var(--sp-3);">
+                                Prices exclude 18% GST, added at checkout.
+                            </p>
+                        </div>
+                    {% endif %}
                 {% else %}
                     <div class="alert alert--warning">
                         <span>Payment pending. Complete your payment to activate this membership.</span>
@@ -79,7 +150,19 @@
                                 Complete Payment
                             </a>
                         {% endif %}
+
+                        <a href="{% url 'cancel_membership_purchase' %}" class="btn btn--ghost btn--lg"
+                           data-confirm="{{ membership.plan.name }} will be removed from your account. You have not been charged, and you can pick any plan again afterwards."
+                           data-confirm-title="Cancel this membership?"
+                           data-confirm-ok="Cancel membership"
+                           data-confirm-cancel="Keep it">
+                            Cancel
+                        </a>
                     </div>
+
+                    <p class="muted" style="text-align:center; font-size:var(--fs-xs); margin-top:var(--sp-3);">
+                        Nothing has been charged yet. Cancelling frees you to choose a different plan.
+                    </p>
                 {% endif %}
             {% else %}
                 <div class="empty-state">

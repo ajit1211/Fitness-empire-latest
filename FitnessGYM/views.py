@@ -248,6 +248,128 @@ def cart_badge(user):
 
 
 # ---------------------------------------------------------------------------
+# Membership tiers
+#
+# Plans form a ladder (Core, Premier, Executive) in each billing cycle. What a
+# member may do with a given plan depends only on what they already hold, so
+# that decision lives in `plan_offer()` and every membership view asks it
+# rather than re-deriving the rules.
+# ---------------------------------------------------------------------------
+def member_record(user):
+    """The membership row for a user, with both plans and both pendings joined."""
+    if not user.is_authenticated:
+        return None
+    return (
+        membershipprocessedtocheck.objects.filter(user=user)
+        .select_related(
+            "membership_yearly",
+            "membership_monthly",
+            "pending_yearly",
+            "pending_monthly",
+        )
+        .first()
+    )
+
+
+def plan_offer(record, plan, cycle):
+    """What this member can do with `plan`, and what it would cost.
+
+    Returns a dict the plan templates render directly:
+        state    one of buy / current / upgrade / lower / finish / locked
+        cta      button wording, or None when there is nothing to click
+        amount   price before tax, for buy and upgrade
+        credit   unused value rolled into an upgrade
+        note     why the plan is unavailable, when it is
+        allowed  True when the member may start this purchase
+    """
+    def offer(state, cta=None, amount=None, credit=None, note="", allowed=False):
+        return {
+            "plan": plan,
+            "cycle": cycle,
+            "state": state,
+            "cta": cta,
+            "amount": amount,
+            "credit": credit,
+            "note": note,
+            "allowed": allowed,
+        }
+
+    # Nobody signed in, or nothing on the account yet, or the last plan lapsed:
+    # every plan is simply for sale.
+    if record is None or not (record.is_active or record.awaiting_first_payment):
+        return offer("buy", "Buy Now", amount=plan.price, allowed=True)
+
+    # A first purchase was started but never paid for. Only that plan is live.
+    if record.awaiting_first_payment:
+        if record.cycle == cycle and record.plan.id == plan.id:
+            return offer(
+                "finish",
+                "Complete Payment",
+                amount=plan.price,
+                note="You started this plan. Finish paying to activate it.",
+                allowed=True,
+            )
+        return offer(
+            "locked",
+            note=f"Finish paying for {record.plan.name} before choosing another plan.",
+        )
+
+    # An upgrade is parked and waiting for payment.
+    if record.has_pending_upgrade:
+        if record.pending_cycle == cycle and record.pending_plan.id == plan.id:
+            return offer(
+                "finish",
+                "Complete Upgrade",
+                amount=record.pending_amount,
+                credit=record.unused_credit(),
+                note="Your upgrade is waiting for payment.",
+                allowed=True,
+            )
+        if record.cycle == cycle and record.plan.id == plan.id:
+            return offer("current", note="Your current plan.")
+        return offer(
+            "locked",
+            note=f"You have an upgrade to {record.pending_plan.name} awaiting payment.",
+        )
+
+    # An active plan on the other billing cycle. Switching cycle mid-term is not
+    # a tier change and is not priced here, so it stays closed.
+    if record.cycle != cycle:
+        other = "monthly" if cycle == "annual" else "annual"
+        return offer(
+            "locked",
+            note=f"You are on the {other} plan {record.plan.name}. Upgrade within {other} billing.",
+        )
+
+    current = record.plan
+    if plan.id == current.id:
+        return offer("current", note="Your current plan.")
+
+    if plan.tier > current.tier:
+        return offer(
+            "upgrade",
+            f"Upgrade from {current.name}",
+            amount=record.upgrade_cost(plan),
+            credit=record.unused_credit(),
+            allowed=True,
+        )
+
+    return offer("lower", note=f"{current.name} already covers everything here.")
+
+
+def plan_offers(user, plans, cycle):
+    """`plan_offer` across a whole tier ladder, for the plan listing pages."""
+    record = member_record(user)
+    offers = [plan_offer(record, plan, cycle) for plan in plans]
+
+    # The middle tier carries the "Most popular" flag. Decided here because a
+    # template cannot compare a loop counter inside an include.
+    for position, offer in enumerate(offers):
+        offer["featured"] = position == 1
+    return offers
+
+
+# ---------------------------------------------------------------------------
 # Public pages
 # ---------------------------------------------------------------------------
 def home(request):
@@ -338,101 +460,131 @@ def fitness_classes(request, category_name=None):
 # Memberships
 # ---------------------------------------------------------------------------
 def memberships(request):
+    plans = list(Membership.objects.all())
     return render(
         request,
         "membershipannual.html",
-        {"memberships": Membership.objects.all()},
+        {
+            "memberships": plans,
+            "offers": plan_offers(request.user, plans, "annual"),
+            "record": member_record(request.user),
+        },
     )
 
 
 def membershipmonthly(request):
+    plans = list(Membershipmonth.objects.all())
     return render(
         request,
         "membershipmonthly.html",
-        {"Membershipmonth": Membershipmonth.objects.all()},
+        {
+            "Membershipmonth": plans,
+            "offers": plan_offers(request.user, plans, "monthly"),
+            "record": member_record(request.user),
+        },
+    )
+
+
+def _choose_plan(request, plan, cycle, template, checkout_url_name):
+    """Shared body of the yearly and monthly plan forms.
+
+    Handles three cases behind one screen: a first purchase, an upgrade to a
+    higher tier on the same billing cycle, and resuming a payment that was
+    already started. Anything else is refused by `plan_offer`.
+    """
+    record = member_record(request.user)
+    offer = plan_offer(record, plan, cycle)
+
+    if not offer["allowed"]:
+        messages.warning(
+            request, offer["note"] or "That plan is not available on your account."
+        )
+        return redirect("profile")
+
+    # Already chosen and waiting on payment: skip the form, go pay.
+    if offer["state"] == "finish":
+        return redirect(checkout_url_name, id=plan.id)
+
+    is_upgrade = offer["state"] == "upgrade"
+    amount = offer["amount"]
+    total_price = amount + (amount * GST_RATE)
+
+    if request.method == "POST":
+        # Bind to the row already on the account when there is one. A member
+        # whose plan lapsed still has a record, and the model is OneToOne with
+        # the user, so inserting a second row would fail the unique constraint.
+        form = membershipprocessedtocheckform(request.POST, instance=record)
+        if form.is_valid():
+            saved = form.save(commit=False)
+            saved.user = request.user
+
+            if is_upgrade:
+                # The live plan and its expiry stay exactly as they are until
+                # the upgrade is paid for.
+                saved.save()
+                saved.start_upgrade(plan, cycle, amount)
+                messages.success(
+                    request, f"Pay the difference to move up to {plan.name}."
+                )
+            else:
+                if cycle == "annual":
+                    saved.membership_yearly = plan
+                    saved.membership_monthly = None
+                else:
+                    saved.membership_monthly = plan
+                    saved.membership_yearly = None
+                # A lapsed membership being renewed needs a fresh term, and
+                # save() only fills the expiry when it is empty.
+                saved.plan_expiry = None
+                saved.payment_status = False
+                saved.save()
+                messages.success(
+                    request, "Proceed to payment to complete your membership."
+                )
+            return redirect(checkout_url_name, id=plan.id)
+        messages.error(request, "Please correct the highlighted fields.")
+    else:
+        form = membershipprocessedtocheckform(
+            instance=record,
+            initial=None if record else _member_initial(request.user),
+        )
+
+    return render(
+        request,
+        template,
+        {
+            "form": form,
+            "membership": plan,
+            "total_price": total_price,
+            "amount": amount,
+            "is_upgrade": is_upgrade,
+            "credit": offer["credit"],
+            "current_plan": record.plan if is_upgrade else None,
+        },
     )
 
 
 @login_required(login_url="login")
 def membership_processed_view(request, id):
     """Collect member details for a yearly plan."""
-    membership = get_object_or_404(Membership, id=id)
-    total_price = membership.price + (membership.price * GST_RATE)
-
-    existing = membershipprocessedtocheck.objects.filter(user=request.user).first()
-    if existing:
-        if existing.membership_monthly:
-            messages.warning(
-                request,
-                "You already have a monthly membership and cannot buy a yearly one.",
-            )
-            return redirect("profile")
-        if existing.membership_yearly:
-            messages.warning(
-                request, "You already have a yearly membership and cannot buy another one."
-            )
-            return redirect("profile")
-
-    if request.method == "POST":
-        form = membershipprocessedtocheckform(request.POST)
-        if form.is_valid():
-            record = form.save(commit=False)
-            record.user = request.user
-            record.membership_yearly = membership
-            record.membership_monthly = None
-            record.save()
-            messages.success(request, "Proceed to payment to complete your membership.")
-            return redirect("membershipprocessedtocheckouts", id=id)
-        messages.error(request, "Please correct the highlighted fields.")
-    else:
-        form = membershipprocessedtocheckform(initial=_member_initial(request.user))
-
-    return render(
+    return _choose_plan(
         request,
+        get_object_or_404(Membership, id=id),
+        "annual",
         "membership_form.html",
-        {"form": form, "membership": membership, "total_price": total_price},
+        "membershipprocessedtocheckouts",
     )
 
 
 @login_required(login_url="login")
 def membership_processed_view_month(request, id):
     """Collect member details for a monthly plan."""
-    membership = get_object_or_404(Membershipmonth, id=id)
-    total_price = membership.price + (membership.price * GST_RATE)
-
-    existing = membershipprocessedtocheck.objects.filter(user=request.user).first()
-    if existing:
-        if existing.membership_yearly:
-            messages.warning(
-                request,
-                "You already have a yearly membership and cannot buy a monthly one.",
-            )
-            return redirect("profile")
-        if existing.membership_monthly:
-            messages.warning(
-                request,
-                "You already have a monthly membership and cannot buy another one.",
-            )
-            return redirect("profile")
-
-    if request.method == "POST":
-        form = membershipprocessedtocheckform(request.POST)
-        if form.is_valid():
-            record = form.save(commit=False)
-            record.user = request.user
-            record.membership_monthly = membership
-            record.membership_yearly = None
-            record.save()
-            messages.success(request, "Proceed to payment to complete your membership.")
-            return redirect("membershipprocessedtocheckout", id=id)
-        messages.error(request, "Please correct the highlighted fields.")
-    else:
-        form = membershipprocessedtocheckform(initial=_member_initial(request.user))
-
-    return render(
+    return _choose_plan(
         request,
+        get_object_or_404(Membershipmonth, id=id),
+        "monthly",
         "membership_form_month.html",
-        {"form": form, "membership": membership, "total_price": total_price},
+        "membershipprocessedtocheckout",
     )
 
 
@@ -446,101 +598,165 @@ def _member_initial(user):
     }
 
 
-@login_required(login_url="login")
-def membership_processedtocheckout(request, id):
-    """Payment screen for a yearly plan."""
-    membership = get_object_or_404(Membership, id=id)
-    record = membershipprocessedtocheck.objects.filter(
-        user=request.user, membership_yearly=membership
-    ).first()
+def _membership_payment(request, plan, cycle, template):
+    """Payment screen for a plan, whether it is a first purchase or an upgrade.
 
-    if not record:
+    An upgrade bills the quoted difference rather than the sticker price, so
+    the amount comes off the record instead of the plan.
+    """
+    record = member_record(request.user)
+    if record is None:
         messages.warning(request, "No pending payment found.")
         return redirect("profile")
 
-    total_price = membership.price + (membership.price * GST_RATE)
+    is_upgrade = record.has_pending_upgrade and record.pending_plan.id == plan.id
+    starting = record.awaiting_first_payment and record.plan_id_matches(plan, cycle)
+
+    if not (is_upgrade or starting):
+        messages.warning(request, "No pending payment found.")
+        return redirect("profile")
+
+    amount = record.pending_amount if is_upgrade else plan.price
+    gst = amount * GST_RATE
+    total_price = amount + gst
 
     return render(
         request,
-        "membershipprocessedtocheckout.html",
+        template,
         {
-            "membership": membership,
+            "membership": plan,
             "record": record,
-            "gst": membership.price * GST_RATE,
+            "amount": amount,
+            "gst": gst,
             "total_price": total_price,
+            "is_upgrade": is_upgrade,
+            "credit": record.unused_credit() if is_upgrade else None,
+            "current_plan": record.plan if is_upgrade else None,
             "paypalpayment": paypal_form(
                 request,
+                # Previously this charged the pre-GST price while the page
+                # displayed the GST-inclusive total.
                 amount=total_price,
-                item_name=membership.name,
+                item_name=(
+                    f"Upgrade to {plan.name}" if is_upgrade else plan.name
+                ),
                 return_url_name="paymentmembership",
             ),
         },
+    )
+
+
+@login_required(login_url="login")
+def membership_processedtocheckout(request, id):
+    """Payment screen for a yearly plan."""
+    return _membership_payment(
+        request,
+        get_object_or_404(Membership, id=id),
+        "annual",
+        "membershipprocessedtocheckout.html",
     )
 
 
 @login_required(login_url="login")
 def membership_processedtocheckout_monthly(request, id):
     """Payment screen for a monthly plan."""
-    membership = get_object_or_404(Membershipmonth, id=id)
-    record = membershipprocessedtocheck.objects.filter(
-        user=request.user, membership_monthly=membership
-    ).first()
+    return _membership_payment(
+        request,
+        get_object_or_404(Membershipmonth, id=id),
+        "monthly",
+        "membershipprocessedtocheckoutmonthly.html",
+    )
 
-    if not record:
-        messages.warning(request, "No pending payment found.")
+
+@login_required(login_url="login")
+def cancel_membership_purchase(request):
+    """Drop a membership that was chosen but never paid for.
+
+    Only ever touches an unpaid selection. An active plan cannot be cancelled
+    here, so a mistaken click can never delete a membership somebody is
+    currently paying for.
+    """
+    record = member_record(request.user)
+
+    if record is None or not record.awaiting_first_payment:
+        messages.info(request, "There is no unpaid membership to cancel.")
         return redirect("profile")
 
-    total_price = membership.price + (membership.price * GST_RATE)
-
-    return render(
-        request,
-        "membershipprocessedtocheckoutmonthly.html",
-        {
-            "membership": membership,
-            "record": record,
-            "gst": membership.price * GST_RATE,
-            "total_price": total_price,
-            "paypalpayment": paypal_form(
-                request,
-                # Previously this charged the pre-GST price while the page
-                # displayed the GST-inclusive total.
-                amount=total_price,
-                item_name=membership.name,
-                return_url_name="paymentmembership",
-            ),
-        },
+    name = record.plan.name
+    record.delete()
+    messages.info(
+        request, f"{name} cancelled. You have not been charged for it."
     )
+    return redirect("profile")
+
+
+@login_required(login_url="login")
+def cancel_membership_upgrade(request):
+    """Drop a parked upgrade and keep the plan already in force."""
+    record = member_record(request.user)
+    if record and record.has_pending_upgrade:
+        name = record.pending_plan.name
+        record.clear_pending_upgrade()
+        messages.info(request, f"Upgrade to {name} cancelled. Your plan is unchanged.")
+    return redirect("profile")
 
 
 @login_required(login_url="login")
 def paymentmembership(request):
-    record = membershipprocessedtocheck.objects.filter(
-        user=request.user, payment_status=False
-    ).first()
+    record = member_record(request.user)
+    upgraded_from = None
 
-    if record:
+    if record and record.has_pending_upgrade:
+        # An upgrade: swap the parked tier in, keeping the term already running.
+        upgraded_from = record.plan
+        new_plan = record.pending_plan
+        record.apply_pending_upgrade()
+        messages.success(
+            request,
+            f"Payment successful! You are now on {new_plan.name}.",
+        )
+    elif record and not record.payment_status:
         record.payment_status = True
-        record.save()
+        record.save(update_fields=["payment_status"])
         messages.success(request, "Payment successful! Your membership is now active.")
     else:
         messages.warning(request, "No pending membership found.")
 
-    return render(request, "finalthankyou.html", {"membership": record})
+    return render(
+        request,
+        "finalthankyou.html",
+        {"membership": record, "upgraded_from": upgraded_from},
+    )
 
 
 @login_required(login_url="login")
 def profile_view(request):
-    membership = (
-        membershipprocessedtocheck.objects.filter(user=request.user)
-        .select_related("membership_yearly", "membership_monthly")
-        .first()
-    )
-    pending_payment = bool(membership and not membership.payment_status)
+    membership = member_record(request.user)
+    pending_payment = bool(membership and membership.awaiting_first_payment)
+
+    # The tiers above the one in force, so the member can move up without
+    # hunting through the plan pages for which ones are even open to them.
+    upgrades = []
+    if membership and membership.is_active and not membership.has_pending_upgrade:
+        cycle = membership.cycle
+        ladder = (
+            Membership.objects.filter(tier__gt=membership.plan.tier)
+            if cycle == "annual"
+            else Membershipmonth.objects.filter(tier__gt=membership.plan.tier)
+        )
+        upgrades = [
+            plan_offer(membership, plan, cycle) for plan in ladder
+        ]
 
     return render(
         request,
         "profile.html",
-        {"membership": membership, "pending_payment": pending_payment},
+        {
+            "membership": membership,
+            "pending_payment": pending_payment,
+            "upgrades": upgrades,
+            "credit": membership.unused_credit() if membership else None,
+        },
     )
 
 

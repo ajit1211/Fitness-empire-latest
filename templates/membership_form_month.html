@@ -7,11 +7,19 @@
 {% block 'main' %}
 <section class="section">
     <div class="container">
-        <h1>Join {{ membership.name }}</h1>
+        <h1>{% if is_upgrade %}Upgrade to {{ membership.name }}{% else %}Join {{ membership.name }}{% endif %}</h1>
         <ol class="steps">
             <li class="is-active">Member details</li>
             <li>Confirm &amp; pay</li>
         </ol>
+
+        {% if is_upgrade %}
+        <p class="notice notice--direct">
+            <strong>Moving up from {{ current_plan.name }}.</strong>
+            You keep your current expiry date and pay only the difference, with the
+            unused value of {{ current_plan.name }} credited against it.
+        </p>
+        {% endif %}
 
         <div class="checkout-layout">
 

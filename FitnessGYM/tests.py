@@ -322,6 +322,17 @@ class TemplateRenderTests(ShopTestCase):
         self.assertContains(res, "Order Summary")
         self.assertContains(res, "data-wishlist-count")
 
+    def test_the_cart_remove_link_carries_the_dialog_copy(self):
+        cart.objects.create(userid=self.user, productid=self.product, quantity=1)
+        res = self.client.get(reverse("viewcart"))
+
+        # The styled dialog reads these attributes; without them it would fall
+        # back to a bare "Are you sure?" with a generic Confirm button.
+        self.assertContains(res, 'data-confirm-title="Remove this item?"')
+        self.assertContains(res, 'data-confirm-ok="Remove"')
+        self.assertContains(res, 'data-confirm-cancel="Keep it"')
+        self.assertContains(res, "Omega 3 will be taken out of your cart")
+
     def test_the_empty_wishlist_page_renders(self):
         res = self.client.get(reverse("wishlist"))
         self.assertContains(res, "Nothing saved yet")
@@ -366,3 +377,64 @@ class PaypalRoutingTests(ShopTestCase):
 
         res = self.client.get(reverse("makepayment"))
         self.assertContains(res, 'value="http://testserver/paypal/"')
+
+
+class CartRemoveTests(ShopTestCase):
+    def test_the_cart_and_order_remove_routes_no_longer_overlap(self):
+        # They used to be "remove/<id>" and "remove/<id>/", one APPEND_SLASH
+        # redirect apart from deleting the wrong record.
+        cart_url = reverse("remove", args=[5])
+        order_url = reverse("remove_order", args=[5])
+        self.assertNotEqual(cart_url, order_url)
+        self.assertNotEqual(cart_url.rstrip("/"), order_url.rstrip("/"))
+
+    def test_posting_the_cross_empties_that_cart_line(self):
+        row = cart.objects.create(
+            userid=self.user, productid=self.product, quantity=2
+        )
+        res = self.client.post(reverse("remove", args=[row.id]))
+        self.assertRedirects(res, reverse("viewcart"))
+        self.assertFalse(cart.objects.filter(id=row.id).exists())
+
+    def test_one_shopper_cannot_empty_another_shoppers_line(self):
+        other = User.objects.create_user("rival", "rival@gmail.com", "pw12345!")
+        row = cart.objects.create(userid=other, productid=self.product, quantity=1)
+
+        self.client.post(reverse("remove", args=[row.id]))
+        self.assertTrue(cart.objects.filter(id=row.id).exists())
+
+    def test_the_cart_renders_the_cross_rather_than_a_text_link(self):
+        cart.objects.create(userid=self.user, productid=self.product, quantity=1)
+        res = self.client.get(reverse("viewcart"))
+        self.assertContains(res, "cart-line__remove")
+        self.assertContains(res, "icon-btn--danger")
+        self.assertContains(res, "Remove Omega 3 from your cart")
+        self.assertNotContains(res, "link-danger")
+
+
+class AccountMenuTests(ShopTestCase):
+    def test_the_menu_groups_the_shopper_links(self):
+        res = self.client.get(reverse("home"))
+        self.assertContains(res, "account__group")
+        self.assertContains(res, "account__avatar")
+        self.assertContains(res, "My wishlist")
+
+    def test_staff_tools_are_hidden_from_an_ordinary_shopper(self):
+        res = self.client.get(reverse("home"))
+        self.assertNotContains(res, "Staff tools")
+        self.assertNotContains(res, "Django admin")
+
+    def test_staff_tools_appear_for_a_superuser(self):
+        self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_superuser", "is_staff"])
+
+        res = self.client.get(reverse("home"))
+        self.assertContains(res, "Staff tools")
+        self.assertContains(res, "Django admin")
+
+    def test_a_signed_out_visitor_gets_the_sign_in_call_to_action(self):
+        self.client.logout()
+        res = self.client.get(reverse("home"))
+        self.assertContains(res, "account__cta")
+        self.assertNotContains(res, "Signed in as")

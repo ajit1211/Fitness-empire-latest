@@ -1,0 +1,75 @@
+{% comment %}
+Status strip above the tier ladder, so a member sees what they already hold
+before they look at the prices.
+
+  record  the membershipprocessedtocheck row, or None
+  cycle   "annual" or "monthly", the page being viewed
+{% endcomment %}
+{% if record %}
+    {% if record.has_pending_upgrade %}
+        <div class="plan-status plan-status--pending">
+            <div>
+                <strong>Upgrade to {{ record.pending_plan.name }} is waiting for payment.</strong>
+                <span>You stay on {{ record.plan.name }} until it is paid, so nothing is lost if you change your mind.</span>
+            </div>
+            <div class="plan-status__actions">
+                {% if record.pending_cycle == "annual" %}
+                    <a href="{% url 'membership_processedtocheckout' record.pending_yearly.id %}" class="btn btn--sm">Complete Upgrade</a>
+                {% else %}
+                    <a href="{% url 'membership_processedtocheckout_monthly' record.pending_monthly.id %}" class="btn btn--sm">Complete Upgrade</a>
+                {% endif %}
+                <a href="{% url 'cancel_membership_upgrade' %}" class="btn btn--ghost btn--sm"
+                   data-confirm="Your upgrade to {{ record.pending_plan.name }} will be dropped. You keep {{ record.plan.name }} and are not charged."
+                   data-confirm-title="Cancel this upgrade?"
+                   data-confirm-ok="Cancel upgrade"
+                   data-confirm-cancel="Keep it">Cancel</a>
+            </div>
+        </div>
+
+    {% elif record.awaiting_first_payment %}
+        <div class="plan-status plan-status--pending">
+            <div>
+                <strong>{{ record.plan.name }} is waiting for payment.</strong>
+                <span>Finish paying to activate it, or cancel if you have changed your mind.</span>
+            </div>
+            <div class="plan-status__actions">
+                {% if record.membership_yearly %}
+                    <a href="{% url 'membership_processedtocheckout' record.membership_yearly.id %}" class="btn btn--sm">Complete Payment</a>
+                {% else %}
+                    <a href="{% url 'membership_processedtocheckout_monthly' record.membership_monthly.id %}" class="btn btn--sm">Complete Payment</a>
+                {% endif %}
+                <a href="{% url 'cancel_membership_purchase' %}" class="btn btn--ghost btn--sm"
+                   data-confirm="{{ record.plan.name }} will be removed from your account. You have not been charged, and you can pick any plan again afterwards."
+                   data-confirm-title="Cancel this membership?"
+                   data-confirm-ok="Cancel membership"
+                   data-confirm-cancel="Keep it">Cancel</a>
+            </div>
+        </div>
+
+    {% elif record.is_active %}
+        <div class="plan-status">
+            <div>
+                <strong>You are on {{ record.plan.name }}, billed {{ record.cycle }}.</strong>
+                <span>
+                    {{ record.days_remaining }} day{{ record.days_remaining|pluralize }} left.
+                    {% if record.cycle == cycle %}
+                        Move up a tier and you pay only the difference, with your unused time credited.
+                    {% else %}
+                        Tier changes happen within your own billing cycle.
+                    {% endif %}
+                </span>
+            </div>
+            <div class="plan-status__actions">
+                <a href="{% url 'profile' %}" class="btn btn--ghost btn--sm">My membership</a>
+            </div>
+        </div>
+
+    {% elif record.is_expired %}
+        <div class="plan-status plan-status--pending">
+            <div>
+                <strong>Your {{ record.plan.name }} plan has expired.</strong>
+                <span>Pick any plan below to start a new term.</span>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

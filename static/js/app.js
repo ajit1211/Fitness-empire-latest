@@ -306,12 +306,128 @@
     update();
   }
 
-  /* ---- Confirm destructive links ---- */
+  /* ---- Confirm destructive actions in an in-page dialog ----
+     Replaces window.confirm, which the browser renders in its own chrome and
+     cannot be styled, labelled or themed. Built on <dialog> so focus trapping,
+     Escape and the backdrop come from the platform rather than hand-rolled.
+
+     Any element carrying data-confirm is intercepted. Optional attributes:
+       data-confirm-title   heading            (default: "Are you sure?")
+       data-confirm-ok      confirm label      (default: "Confirm")
+       data-confirm-cancel  dismiss label      (default: "Cancel")
+       data-confirm-tone    "danger" | "brand" (default: "danger") */
   function initConfirms() {
+    var dialog = null;
+    var titleEl, bodyEl, okBtn, cancelBtn;
+    var pending = null;
+
+    var supported =
+      typeof window.HTMLDialogElement === "function" &&
+      typeof document.createElement("dialog").showModal === "function";
+
+    function build() {
+      dialog = document.createElement("dialog");
+      dialog.className = "modal";
+      dialog.setAttribute("aria-labelledby", "confirm-modal-title");
+      dialog.setAttribute("aria-describedby", "confirm-modal-body");
+      dialog.innerHTML =
+        '<div class="modal__icon" aria-hidden="true">' +
+        '<svg viewBox="0 0 16 16" focusable="false">' +
+        '<path d="M7.938 2.016a.13.13 0 0 1 .125 0l6.857 11.856c.05.087-.1.128-.11.128H1.19c-.1 0-.16-.04-.11-.128zm1.044-.598a1.13 1.13 0 0 0-1.96 0L.165 13.271C-.296 14.07.24 15 1.19 15h13.62c.95 0 1.485-.93 1.025-1.729z"/>' +
+        '<path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>' +
+        "</svg></div>" +
+        '<h2 class="modal__title" id="confirm-modal-title"></h2>' +
+        '<p class="modal__body" id="confirm-modal-body"></p>' +
+        '<div class="modal__actions">' +
+        '<button type="button" class="btn btn--ghost" data-modal-cancel></button>' +
+        '<button type="button" class="btn btn--danger" data-modal-ok></button>' +
+        "</div>";
+
+      document.body.appendChild(dialog);
+
+      titleEl = dialog.querySelector(".modal__title");
+      bodyEl = dialog.querySelector(".modal__body");
+      okBtn = dialog.querySelector("[data-modal-ok]");
+      cancelBtn = dialog.querySelector("[data-modal-cancel]");
+
+      okBtn.addEventListener("click", function () {
+        dismiss(true);
+      });
+      cancelBtn.addEventListener("click", function () {
+        dismiss(false);
+      });
+
+      // Clicking the backdrop lands on the dialog element itself, never on the
+      // panel's children, so this closes on an outside click only.
+      dialog.addEventListener("click", function (e) {
+        if (e.target === dialog) dismiss(false);
+      });
+
+      // Escape fires the native cancel event; route it through the same path so
+      // the closing animation and the pending action are cleared once.
+      dialog.addEventListener("cancel", function (e) {
+        e.preventDefault();
+        dismiss(false);
+      });
+    }
+
+    function dismiss(confirmed) {
+      var target = pending;
+      pending = null;
+
+      function finish() {
+        dialog.classList.remove("is-closing");
+        if (dialog.open) dialog.close();
+        if (confirmed && target) proceed(target);
+      }
+
+      if (reduceMotion) {
+        finish();
+        return;
+      }
+      dialog.classList.add("is-closing");
+      window.setTimeout(finish, 150);
+    }
+
+    /* Re-issue the original click, flagged so this handler lets it through.
+       Going back through .click() means anchors, submit buttons and anything
+       else with its own listener all behave exactly as they would unguarded. */
+    function proceed(el) {
+      el.setAttribute("data-confirm-go", "");
+      el.click();
+      window.setTimeout(function () {
+        el.removeAttribute("data-confirm-go");
+      }, 0);
+    }
+
     document.addEventListener("click", function (e) {
       var el = e.target.closest("[data-confirm]");
-      if (!el) return;
-      if (!window.confirm(el.getAttribute("data-confirm"))) e.preventDefault();
+      if (!el || el.hasAttribute("data-confirm-go")) return;
+
+      var message = el.getAttribute("data-confirm");
+      if (!message) return;
+
+      if (!supported) {
+        if (!window.confirm(message)) e.preventDefault();
+        return;
+      }
+
+      e.preventDefault();
+      if (!dialog) build();
+
+      titleEl.textContent = el.getAttribute("data-confirm-title") || "Are you sure?";
+      bodyEl.textContent = message;
+      okBtn.textContent = el.getAttribute("data-confirm-ok") || "Confirm";
+      cancelBtn.textContent = el.getAttribute("data-confirm-cancel") || "Cancel";
+
+      var tone = el.getAttribute("data-confirm-tone") === "brand" ? "brand" : "danger";
+      dialog.classList.toggle("modal--brand", tone === "brand");
+      okBtn.classList.toggle("btn--danger", tone === "danger");
+
+      pending = el;
+      dialog.showModal();
+      // Destructive by default, so the dismissing button takes focus.
+      cancelBtn.focus();
     });
   }
 

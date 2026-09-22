@@ -15,6 +15,14 @@
         </ol>
 
         <div class="panel">
+            {% if is_upgrade %}
+            <p class="notice notice--direct">
+                <strong>Upgrade from {{ current_plan.name }} to {{ membership.name }}.</strong>
+                Your plan changes the moment this payment clears. The expiry date stays
+                as it is, because you are paying only the difference.
+            </p>
+            {% endif %}
+
             <h2 class="panel__title">{{ membership.name }} &mdash; Annual</h2>
 
             {% if record %}
@@ -36,6 +44,15 @@
                 <div class="plan-summary__row">
                     <span>Plan price</span><span>&#8377;{{ membership.price|floatformat:0 }}</span>
                 </div>
+                {% if is_upgrade %}
+                <div class="plan-summary__row">
+                    <span>Unused credit on {{ current_plan.name }}</span>
+                    <span>&minus;&#8377;{{ credit|floatformat:0 }}</span>
+                </div>
+                <div class="plan-summary__row">
+                    <span>Upgrade difference</span><span>&#8377;{{ amount|floatformat:0 }}</span>
+                </div>
+                {% endif %}
                 <div class="plan-summary__row">
                     <span>GST (18%)</span><span>&#8377;{{ gst|floatformat:0 }}</span>
                 </div>

@@ -55,7 +55,9 @@
                                 <a href="/edit/{{ product.id }}/" class="btn btn--ghost btn--sm">Edit</a>
                                 <a href="/delete/{{ product.id }}/" class="btn btn--sm"
                                    style="--btn-bg: var(--danger);"
-                                   data-confirm="Delete {{ product.productName }}? This cannot be undone.">Delete</a>
+                                   data-confirm="{{ product.productName }} will be deleted from the catalogue. This cannot be undone."
+                                   data-confirm-title="Delete this product?"
+                                   data-confirm-ok="Delete">Delete</a>
                             </div>
                         </td>
                     </tr>

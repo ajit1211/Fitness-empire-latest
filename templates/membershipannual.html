@@ -28,16 +28,11 @@
 
 <section class="section section--muted">
     <div class="container">
-        {% if memberships %}
+        {% if offers %}
+        {% include "_plan_banner.html" with record=record cycle="annual" %}
         <div class="plans">
-            {% for i in memberships %}
-            <div class="plan {% if forloop.counter == 2 %}plan--featured{% endif %}">
-                {% if forloop.counter == 2 %}<span class="badge badge--brand plan__flag">Most Popular</span>{% endif %}
-                <h2 class="plan__name">{{ i.name }}</h2>
-                <div class="plan__price">&#8377;{{ i.price|floatformat:0 }}<small>per year + tax</small></div>
-                <p class="plan__desc">{{ i.description }}</p>
-                <a href="{% url 'membership_list' i.id %}" class="btn btn--block">Buy Now</a>
-            </div>
+            {% for offer in offers %}
+                {% include "_plan_card.html" with offer=offer unit="per year + tax" form_url="membership_list" %}
             {% endfor %}
         </div>
         {% else %}

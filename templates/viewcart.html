@@ -25,7 +25,7 @@
 
                 <div class="card">
                     {% for i in products %}
-                    <div class="cart-line">
+                    <div class="cart-line cart-line--removable">
                         {% if i.productid.supplementImage %}
                             <img src="{{ i.productid.supplementImage.url }}" alt="{{ i.productid.supplementName }}"
                                  class="cart-line__img" loading="lazy" width="88" height="88">
@@ -50,9 +50,28 @@
                                 <span class="qty__value">{{ i.quantity }}</span>
                                 <a href="/updateqty/1/{{ i.id }}/" aria-label="Increase quantity">&plus;</a>
                             </div>
-                            <a href="{% url 'remove' i.id %}" class="link-danger"
-                               data-confirm="Remove {{ i.productid.supplementName }} from your cart?">Remove</a>
                         </div>
+
+                        {% comment %}
+                        Removing empties a cart row, so it posts rather than
+                        sitting behind a link a prefetch could follow. Placed
+                        last in the DOM (it is pinned to the corner visually)
+                        so it is not the first thing keyboard focus lands on.
+                        {% endcomment %}
+                        <form method="post" action="{% url 'remove' i.id %}" class="cart-line__remove">
+                            {% csrf_token %}
+                            <button type="submit" class="icon-btn icon-btn--danger"
+                                    aria-label="Remove {{ i.productid.supplementName }} from your cart"
+                                    title="Remove from cart"
+                                    data-confirm="{{ i.productid.supplementName }} will be taken out of your cart. You can add it back at any time."
+                                    data-confirm-title="Remove this item?"
+                                    data-confirm-ok="Remove"
+                                    data-confirm-cancel="Keep it">
+                                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                    <path d="M1.293 1.293a1 1 0 0 1 1.414 0L8 6.586l5.293-5.293a1 1 0 1 1 1.414 1.414L9.414 8l5.293 5.293a1 1 0 0 1-1.414 1.414L8 9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L6.586 8 1.293 2.707a1 1 0 0 1 0-1.414"/>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                     {% endfor %}
                 </div>

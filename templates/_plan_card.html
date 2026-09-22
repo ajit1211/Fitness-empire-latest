@@ -1,0 +1,67 @@
+{% comment %}
+One plan on the tier ladder.
+
+  offer     a dict from views.plan_offer: plan, state, cta, amount, credit, note
+  unit      "per year + tax" or "per month + tax"
+  form_url  the named URL that starts a purchase of this plan
+
+`state` decides everything below the price:
+  buy      nothing on the account yet
+  current  the plan in force
+  upgrade  a higher tier, priced at the difference
+  lower    a tier already covered by the current plan
+  finish   chosen but not yet paid for
+  locked   unavailable, with `note` saying why
+{% endcomment %}
+<div class="plan
+            {% if offer.featured and offer.state == 'buy' %}plan--featured{% endif %}
+            {% if offer.state == 'current' %}plan--current{% endif %}
+            {% if offer.state == 'upgrade' %}plan--upgrade{% endif %}
+            {% if offer.state == 'lower' or offer.state == 'locked' %}plan--muted{% endif %}">
+
+    {% if offer.state == 'current' %}
+        <span class="badge badge--success plan__flag">Your plan</span>
+    {% elif offer.state == 'finish' %}
+        <span class="badge badge--warning plan__flag">Payment due</span>
+    {% elif offer.state == 'upgrade' %}
+        <span class="badge badge--brand plan__flag">Upgrade</span>
+    {% elif offer.featured %}
+        <span class="badge badge--brand plan__flag">Most Popular</span>
+    {% endif %}
+
+    <h2 class="plan__name">{{ offer.plan.name }}</h2>
+
+    <div class="plan__price">&#8377;{{ offer.plan.price|floatformat:0 }}<small>{{ unit }}</small></div>
+
+    <p class="plan__desc">{{ offer.plan.description }}</p>
+
+    {% if offer.credit %}
+        <div class="plan__upgrade">
+            <div class="plan__upgrade-row">
+                <span>{{ offer.plan.name }}</span>
+                <span>&#8377;{{ offer.plan.price|floatformat:0 }}</span>
+            </div>
+            <div class="plan__upgrade-row plan__upgrade-row--credit">
+                <span>Unused credit</span>
+                <span>&minus;&#8377;{{ offer.credit|floatformat:0 }}</span>
+            </div>
+            <div class="plan__upgrade-row plan__upgrade-row--due">
+                <span>You pay</span>
+                <span>&#8377;{{ offer.amount|floatformat:0 }}</span>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if offer.allowed %}
+        <a href="{% url form_url offer.plan.id %}"
+           class="btn btn--block {% if offer.state == 'upgrade' %}btn--dark{% endif %}">{{ offer.cta }}</a>
+    {% else %}
+        <span class="btn btn--block btn--disabled">
+            {% if offer.state == 'current' %}Current Plan{% else %}Unavailable{% endif %}
+        </span>
+    {% endif %}
+
+    {% if offer.note %}
+        <p class="plan__note">{{ offer.note }}</p>
+    {% endif %}
+</div>

@@ -28,7 +28,10 @@ urlpatterns = [
     path('viewcart/', views.viewcart, name='viewcart'),
     path('updateqty/<qv>/<id>/',views.updateqty),
     path('searchdata', views.searchdata, name='searchdata'),  # Search page
-    path('remove/<int:id>',views.remove,name='remove'),
+    # 'remove/<id>' (cart) and 'remove/<id>/' (order) differed only by the
+    # trailing slash, so one stray APPEND_SLASH redirect would have deleted an
+    # order instead of a cart line. Distinct prefixes now, names unchanged.
+    path('cart/remove/<int:id>/',views.remove,name='remove'),
     path('checkout/',views.Processedtocheck,name='checkout'),
     path('membershipmonthly',views.membershipmonthly,name='membershipmonthly'),
     path('makepayment/', views.makepayment, name='makepayment'),
@@ -44,8 +47,10 @@ urlpatterns = [
     path('orders/',views.orders,name='orders'),
     path('myorders/',views.myorders,name='myorders'),
     path('orders/cancel/<int:order_id>/', views.cancel_order, name='cancel_order'),
-    path('remove/<int:order_id>/', views.remove_order, name='remove_order'),
+    path('orders/remove/<int:order_id>/', views.remove_order, name='remove_order'),
     path('paymentmembership/',views.paymentmembership,name='paymentmembership'),
+    path('membership/cancel-upgrade/', views.cancel_membership_upgrade, name='cancel_membership_upgrade'),
+    path('membership/cancel/', views.cancel_membership_purchase, name='cancel_membership_purchase'),
     path('my_profile/', views.my_profile, name='my_profile'),
     path('edit-profile/<int:user_id>/', views.edit_profile, name='edit_profile'),
     path('my-addresses/', views.my_addresses, name='my_addresses'),
