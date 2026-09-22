@@ -952,6 +952,9 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
 /* ---------- 11. Hero (video) ---------- */
 .hero-video {
   position: relative;
+  width: 100%;                 /* definite width: without it, max-height below
+                                  would shrink the box sideways to keep the
+                                  aspect ratio and leave a gap on the right */
   aspect-ratio: 16 / 9;        /* match the clip, so 'cover' barely crops */
   min-height: clamp(460px, 62vh, 620px);   /* floor so the copy always fits */
   max-height: 88vh;
@@ -1059,7 +1062,7 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
 .hero-video__sound svg { width: 19px; height: 19px; fill: currentColor; }
 
 @media (max-width: 700px) {
-  .hero-video { aspect-ratio: 4 / 5; min-height: 520px; max-height: 82vh; }
+  .hero-video { width: 100%; aspect-ratio: 4 / 5; min-height: 520px; max-height: 82vh; }
   .hero-video__poster, .hero-video__media { object-position: center 35%; }
   .hero-video__sound { right: var(--sp-4); bottom: var(--sp-4); }
   .hero-video__scroll { display: none; }
