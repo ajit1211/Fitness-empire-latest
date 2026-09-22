@@ -11,10 +11,10 @@
         <div>
             <span class="eyebrow">Nutrition</span>
             <h1>Eat for the goal you actually have</h1>
-            <p>Three plans built by our dietitians. Pick the one that matches what you are training for.</p>
+            <p>Four plans built by our dietitians. Pick the one that matches what you are training for.</p>
         </div>
         <div class="page-header__media">
-            <img src="{% static 'img/dietplan.webp' %}" alt="Healthy prepared meals"
+            <img src="{% static 'img/nutrition-bowl.webp' %}" alt="A fresh salad bowl"
                  width="520" height="358" fetchpriority="high">
         </div>
     </div>
@@ -27,7 +27,7 @@
             <h2>Which one is for you?</h2>
         </div>
 
-        <div class="grid grid--3">
+        <div class="tile-grid">
             <a href="{% url 'weightlossplan' %}" class="media-card">
                 <img src="{% static 'img/weight_loss_plan.webp' %}" alt="Weight loss meal plan"
                      loading="lazy" width="400" height="300">
@@ -42,6 +42,11 @@
                 <img src="{% static 'img/diet-plan-768x492.webp' %}" alt="Healthy maintenance plan"
                      loading="lazy" width="400" height="300">
                 <span class="media-card__label">Healthy Living</span>
+            </a>
+            <a href="{% url 'plantbasedplan' %}" class="media-card">
+                <img src="{% static 'img/vegan.webp' %}" alt="Plant-based diet plan"
+                     loading="lazy" width="400" height="300">
+                <span class="media-card__label">Plant-Based</span>
             </a>
         </div>
     </div>
@@ -65,7 +70,7 @@
                 </ul>
             </div>
             <div class="split__media">
-                <img src="{% static 'img/diet.webp' %}" alt="Dietitian consultation"
+                <img src="{% static 'img/nutrition-expert-testing-food-products-lab-nutrition-expert-testing-food-products-lab-195648945.webp' %}" alt="A nutritionist assessing fresh produce"
                      loading="lazy" width="380" height="380">
             </div>
         </div>

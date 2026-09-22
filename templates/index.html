@@ -118,7 +118,7 @@
             <h2>Find your starting point</h2>
         </div>
 
-        <div class="grid grid--3" data-stagger="120">
+        <div class="tile-grid" data-stagger="120">
             <a href="{% url 'membershipannual' %}" class="media-card" data-reveal>
                 <img src="{% static 'img/membership.webp' %}" alt="Gym memberships" loading="lazy" width="400" height="300">
                 <span class="media-card__label">Memberships</span>
@@ -130,6 +130,10 @@
             <a href="{% url 'training' %}" class="media-card" data-reveal>
                 <img src="{% static 'img/trainer.webp' %}" alt="Personal training" loading="lazy" width="400" height="300">
                 <span class="media-card__label">Training</span>
+            </a>
+            <a href="{% url 'dietplan' %}" class="media-card" data-reveal>
+                <img src="{% static 'img/nutrition-bowl.webp' %}" alt="Diet and nutrition plans" loading="lazy" width="400" height="300">
+                <span class="media-card__label">Nutrition</span>
             </a>
         </div>
     </div>
@@ -206,23 +210,23 @@
 
         <div class="grid grid--4" data-stagger="80">
             <div class="feature" data-reveal>
-                <img src="{% static 'img/price_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
+                <img src="{% static 'img/price_icon-dark.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>From &#8377;2,400 Monthly</p>
             </div>
             <div class="feature" data-reveal>
-                <img src="{% static 'img/contracts_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
+                <img src="{% static 'img/contracts_icon-dark.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Flexible Payment</p>
             </div>
             <div class="feature" data-reveal>
-                <img src="{% static 'img/womens_only_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
+                <img src="{% static 'img/womens_only_icon-dark.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Unisex Gyms</p>
             </div>
             <div class="feature" data-reveal>
-                <img src="{% static 'img/community_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
+                <img src="{% static 'img/community_icon-dark.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Awesome Community</p>
             </div>
             <div class="feature" data-reveal>
-                <img src="{% static 'img/co-ed_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
+                <img src="{% static 'img/co-ed_icon-dark.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Co-Ed Gyms</p>
             </div>
         </div>

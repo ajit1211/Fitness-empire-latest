@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Plant-Based Diet Plan - Fitness Empire{% endblock %}
+{% block page_id %}diet{% endblock %}
+{% block meta_description %}A vegetarian and vegan meal plan built for lifters, with complete protein from dal, paneer, tofu and soya.{% endblock %}
+
+{% block 'main' %}
+
+<header class="page-header page-header--split">
+    <div class="page-header__inner">
+        <div>
+            <span class="eyebrow">Diet Plan</span>
+            <h1>Plant-Based</h1>
+            <p>Vegetarian and vegan eating that still hits your protein target, built around food you already cook.</p>
+        </div>
+        <div class="page-header__media">
+            <img src="{% static 'img/asulotion.webp' %}" alt="An athlete training"
+                 width="520" height="520" fetchpriority="high">
+        </div>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+        <div class="stat-row">
+            <div>
+                <div class="stat__value">2,100</div>
+                <div class="stat__label">Calories Per Day</div>
+            </div>
+            <div>
+                <div class="stat__value">120g</div>
+                <div class="stat__label">Protein</div>
+            </div>
+            <div>
+                <div class="stat__value">250g</div>
+                <div class="stat__label">Carbohydrates</div>
+            </div>
+            <div>
+                <div class="stat__value">65g</div>
+                <div class="stat__label">Fat</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section--muted">
+    <div class="container container--narrow">
+        <h2>A day on this plan</h2>
+        <div class="table-wrap" style="margin-top:var(--sp-4);">
+            <table class="table meal-table">
+                <thead>
+                    <tr><th>Meal</th><th>What to eat</th><th class="num">kcal</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Breakfast</td><td>Besan chilla with paneer or tofu filling, plus a glass of soya milk</td><td class="num">430</td></tr>
+                    <tr><td>Mid-morning</td><td>Sprouted moong salad with lemon and a handful of peanuts</td><td class="num">250</td></tr>
+                    <tr><td>Lunch</td><td>2 roti, rajma or chana masala, brown rice, curd or soya yoghurt</td><td class="num">620</td></tr>
+                    <tr><td>Pre-workout</td><td>Banana with a spoon of peanut butter</td><td class="num">210</td></tr>
+                    <tr><td>Post-workout</td><td>1 scoop plant protein blended with water</td><td class="num">140</td></tr>
+                    <tr><td>Dinner</td><td>Tofu or soya chunk curry with millet khichdi and sauteed greens</td><td class="num">450</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 style="margin-top:var(--sp-7);">Getting protein right without meat</h2>
+        <p class="muted">
+            The only real challenge in plant-based eating is protein quality. These four habits solve it.
+        </p>
+
+        <div class="grid grid--2" style="margin-top:var(--sp-4);">
+            <div class="info-card">
+                <div class="info-card__icon">1</div>
+                <h3>Combine your proteins</h3>
+                <p>Pulses with grains, like dal with rice or rajma with roti, give you a complete amino acid profile.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">2</div>
+                <h3>Lean on soya and paneer</h3>
+                <p>Soya chunks, tofu and paneer are the densest vegetarian protein sources available cheaply in India.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">3</div>
+                <h3>Supplement B12 and D3</h3>
+                <p>Neither is reliably available from plants. A daily multivitamin covers both without fuss.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">4</div>
+                <h3>Aim slightly higher on protein</h3>
+                <p>Plant protein digests a little less efficiently, so target the top of your range rather than the middle.</p>
+            </div>
+        </div>
+
+        <h2 style="margin-top:var(--sp-7);">How to run it</h2>
+        <ul class="prose">
+            <li>Hit 1.6 to 2.0g of protein per kilogram of bodyweight, spread across four or five meals.</li>
+            <li>Soak and pressure-cook a large batch of pulses once a week so protein is never the hard part.</li>
+            <li>Keep iron absorption up by pairing dal and greens with something citrus.</li>
+            <li>Swap dairy for fortified soya milk if you are eating fully vegan.</li>
+            <li>Review your weight and lifts every four weeks and adjust portions, not the food list.</li>
+        </ul>
+
+        <div class="cluster" style="margin-top:var(--sp-6);">
+            <a href="{% url 'protien' %}" class="btn">Shop Plant Protein</a>
+            <a href="{% url 'dietplan' %}" class="btn btn--ghost">All Diet Plans</a>
+        </div>
+    </div>
+</section>
+
+{% endblock 'main' %}

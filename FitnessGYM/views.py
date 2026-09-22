@@ -125,7 +125,7 @@ def paypal_form(request, *, amount, item_name, return_url_name):
 def home(request):
     context = {
         "memberships": Membership.objects.all()[:3],
-        "classes": FitnessClass.objects.select_related("category")[:8],
+        "classes": FitnessClass.objects.select_related("category")[:10],
         "featured": Supplement.objects.filter(is_deleted=False).select_related(
             "supplementCategory"
         )[:4],
@@ -175,6 +175,10 @@ def muselloss(request):
 
 def healthlyplan(request):
     return render(request, "healthlyplan.html")
+
+
+def plantbasedplan(request):
+    return render(request, "plantbasedplan.html")
 
 
 def fitness_classes(request, category_name=None):

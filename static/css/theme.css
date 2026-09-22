@@ -441,6 +441,19 @@ hr { border: 0; border-top: 1px solid var(--line); margin: var(--sp-6) 0; }
 }
 .media-card:hover .media-card__label::after { opacity: 1; transform: none; }
 
+/* Tile grid: 4 across on desktop, 2 on tablet, 1 on phone.
+   Fixed counts rather than auto-fill, so four cards never wrap to 3 + 1. */
+.tile-grid {
+  display: grid;
+  gap: clamp(1rem, 0.6rem + 1.2vw, var(--sp-5));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 1000px) { .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 560px)  { .tile-grid { grid-template-columns: 1fr; } }
+
+/* Labels shrink a touch in the narrower 4-up tiles */
+.tile-grid .media-card__label { font-size: var(--fs-lg); padding: var(--sp-6) var(--sp-4) var(--sp-4); }
+
 /* Feature tile */
 .feature {
   text-align: center;
@@ -1496,7 +1509,16 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
 }
 
 /* ---------- 18. Classes ---------- */
-.class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: clamp(1rem, 0.6rem + 1.4vw, var(--sp-5)); }
+/* Fixed column counts rather than auto-fill: the 3-column step left a single
+   tile stranded on its own row at tablet widths. */
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 0.6rem + 1.4vw, var(--sp-5));
+}
+@media (min-width: 900px)  { .class-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .class-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (max-width: 559px)  { .class-grid { grid-template-columns: 1fr; } }
 .class-tile { text-align: center; display: block; }
 .class-tile img {
   width: 100%; max-width: 230px; aspect-ratio: 1;

@@ -55,6 +55,7 @@ urlpatterns = [
     path('weightlossplan/',views.weightlossplan,name='weightlossplan'),
     path('muselloss/',views.muselloss,name='muselloss'),
     path('healthlyplan/',views.healthlyplan,name='healthlyplan'),
+    path('plantbasedplan/',views.plantbasedplan,name='plantbasedplan'),
 
 ]
 
