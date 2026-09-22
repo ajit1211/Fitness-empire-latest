@@ -20,7 +20,7 @@
 </head>
 <body class="page-{% block page_id %}default{% endblock %}">
 
-    {% if demo_mode %}
+    {% comment %} {% if demo_mode %}
     <aside class="demo-bar" role="status">
         <div class="demo-bar__inner">
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -35,7 +35,7 @@
             </div>
         </div>
     </aside>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     {% include "navbar.html" %}
 
