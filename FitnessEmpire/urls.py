@@ -21,7 +21,11 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('FitnessGYM.urls')),
-    path('',include('paypal.standard.ipn.urls')), 
+    # django-paypal maps its IPN view to r'^$'. Mounted at the project root it
+    # collided with the homepage, which FitnessGYM.urls already claims, so every
+    # server-to-server notification from PayPal landed on the home view and was
+    # silently dropped. It needs a prefix of its own.
+    path('paypal/',include('paypal.standard.ipn.urls')),
     path('',include('rest_framework.urls')),
     
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

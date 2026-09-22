@@ -7,14 +7,25 @@ to define that name and was blank everywhere else.
 
 from django.db.models import Sum
 
-from .models import cart
+from .models import Wishlist, cart
 
 
 def cart_summary(request):
-    """Expose `cart_count` (total item quantity) to every template."""
+    """Expose the navbar counters and the set of saved product ids.
+
+    `wishlist_ids` lets any product card render its heart in the right state
+    without a per-card query.
+    """
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
-        return {"cart_count": 0}
+        return {"cart_count": 0, "wishlist_count": 0, "wishlist_ids": set()}
 
     total = cart.objects.filter(userid=user).aggregate(n=Sum("quantity"))["n"]
-    return {"cart_count": total or 0}
+    saved = set(
+        Wishlist.objects.filter(user=user).values_list("product_id", flat=True)
+    )
+    return {
+        "cart_count": total or 0,
+        "wishlist_count": len(saved),
+        "wishlist_ids": saved,
+    }

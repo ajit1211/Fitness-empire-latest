@@ -46,11 +46,9 @@
 
             <p class="muted" style="font-size:var(--fs-sm);">{{ membership.description }}</p>
 
-            <div class="paypal-slot">
-                {{ paypalpayment.render }}
-            </div>
+            {% include "_paypal_button.html" with amount_inr=total_price %}
 
-            <p class="summary__note">Payments are processed by PayPal in the sandbox environment.</p>
+            <p class="summary__note">Processed by PayPal in the sandbox environment. No real money moves.</p>
         </div>
 
         <p class="text-center" style="margin-top:var(--sp-5);">

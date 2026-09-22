@@ -13,6 +13,14 @@
             <li>Confirm &amp; pay</li>
         </ol>
 
+        {% if is_direct %}
+        <p class="notice notice--direct">
+            <strong>Express purchase.</strong>
+            You are buying this item on its own. Anything already in your cart stays there.
+            <a href="{% url 'viewcart' %}" class="link-quiet">Check out my cart instead</a>
+        </p>
+        {% endif %}
+
         <div class="checkout-layout">
 
             <div class="panel">
@@ -66,6 +74,17 @@
             <aside class="panel summary">
                 <h2 class="panel__title">Order Summary</h2>
 
+                {% if products %}
+                <ul class="summary__items">
+                    {% for line in products %}
+                    <li>
+                        <span>{{ line.productid.supplementName }} &times; {{ line.quantity }}</span>
+                        <span>&#8377;{{ line.productid.supplementPrice|floatformat:0 }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
                 <div class="summary__row">
                     <span>Subtotal ({{ totalCount }} item{{ totalCount|pluralize }})</span>
                     <span>&#8377;{{ total|floatformat:0 }}</span>
@@ -81,7 +100,7 @@
                 </div>
 
                 <a href="{% url 'viewcart' %}" class="btn btn--ghost btn--block" style="margin-top:var(--sp-4);">
-                    Back to Cart
+                    {% if is_direct %}Go to My Cart{% else %}Back to Cart{% endif %}
                 </a>
                 <p class="summary__note">Your details are only used to ship this order.</p>
             </aside>

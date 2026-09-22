@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}My Wishlist - Fitness Empire{% endblock %}
+{% block page_id %}wishlist{% endblock %}
+
+{% block 'main' %}
+<section class="section">
+    <div class="container">
+
+        {% if not saved %}
+            <div class="empty-state">
+                <svg class="empty-state__glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M8 14.25 6.84 13.2C2.72 9.47.5 7.46.5 5A3.5 3.5 0 0 1 4 1.5c1.36 0 2.66.63 3.5 1.64A4.66 4.66 0 0 1 11 1.5 3.5 3.5 0 0 1 14.5 5c0 2.46-2.22 4.47-6.34 8.2z"/>
+                </svg>
+                <h3>Nothing saved yet</h3>
+                <p>Tap the heart on any product and it will wait for you here, even after you check out.</p>
+                <a href="{% url 'protien' %}" class="btn">Browse the store</a>
+            </div>
+        {% else %}
+            <h1>My Wishlist</h1>
+            <p class="muted" style="margin-bottom:var(--sp-5);">
+                {{ saved|length }} product{{ saved|length|pluralize }} saved for later
+            </p>
+
+            <div class="prod-grid">
+                {% for row in saved %}
+                <article class="prod">
+                    <div class="prod__media-wrap">
+                        <a href="{% url 'cards' row.product.id %}" class="prod__media">
+                            {% if row.product.supplementImage %}
+                                <img src="{{ row.product.supplementImage.url }}" alt="{{ row.product.supplementName }}"
+                                     loading="lazy" width="300" height="300">
+                            {% else %}
+                                <img src="{% static 'images/default-product.png' %}" alt="No image available"
+                                     loading="lazy" width="300" height="300">
+                            {% endif %}
+                            <span class="rating prod__rating">{{ row.product.supplementRating|default:"4.5" }} <span class="star">&#9733;</span></span>
+                        </a>
+                        {% include "_wishlist_button.html" with item=row.product variant="float" %}
+                    </div>
+
+                    <div class="prod__body">
+                        <span class="prod__cat">{{ row.product.supplementCategory.categoryName }}</span>
+                        <h2 class="prod__title">
+                            <a href="{% url 'cards' row.product.id %}">{{ row.product.supplementName }}</a>
+                        </h2>
+                        <p class="prod__desc">{{ row.product.supplementDescription }}</p>
+
+                        {% if row.product.stock == 0 %}
+                            <span class="badge badge--danger">Out of stock</span>
+                        {% elif row.product.low_stock %}
+                            <span class="badge badge--warning">Only {{ row.product.stock }} left</span>
+                        {% endif %}
+
+                        <div class="prod__foot">
+                            <span class="price">&#8377;{{ row.product.supplementPrice|floatformat:0 }}</span>
+                        </div>
+
+                        <div class="wish-actions">
+                            {% if row.product.stock > 0 %}
+                                <form method="post" action="{% url 'wishlist_move_to_cart' row.product.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn--sm btn--block">Move to Cart</button>
+                                </form>
+                                <form method="post" action="{% url 'buynow' row.product.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn--sm btn--block btn--buy">Buy Now</button>
+                                </form>
+                            {% else %}
+                                <span class="btn btn--sm btn--block btn--disabled">Out of Stock</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="wish-added muted">Saved {{ row.added_at|timesince }} ago</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock 'main' %}

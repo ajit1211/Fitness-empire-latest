@@ -95,6 +95,29 @@ class cart(models.Model):
     productid=models.ForeignKey(Supplement,on_delete=models.CASCADE,db_column='productid')
     quantity=models.IntegerField(default=1)
 
+class Wishlist(models.Model):
+    """A product a signed-in shopper saved for later.
+
+    Kept separate from `cart` so saving something never changes the order
+    total, and so the list survives checkout.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="wishlist_items"
+    )
+    product = models.ForeignKey(
+        Supplement, on_delete=models.CASCADE, related_name="wishlisted_by"
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "product")
+        ordering = ["-added_at"]
+
+    def __str__(self):
+        return f"{self.user} -> {self.product}"
+
+
 #for classes
 
 class Category(models.Model):

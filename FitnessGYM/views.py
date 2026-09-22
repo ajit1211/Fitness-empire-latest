@@ -23,10 +23,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from paypal.standard.forms import PayPalPaymentsForm
 from rest_framework import status
 from rest_framework.decorators import APIView
@@ -53,6 +55,7 @@ from .models import (
     SupplementCategory,
     Trainer,
     UserProfile,
+    Wishlist,
     aboutus,
     cart,
     membershipprocessedtocheck,
@@ -61,6 +64,14 @@ from .models import (
 from .serializers import customerSerializer
 
 GST_RATE = Decimal("0.18")
+
+# A shopper may not stack more than this many units of one product in a single
+# order. Enforced in the cart, in "Buy now" and on the quantity stepper.
+MAX_QTY_PER_ITEM = 5
+
+# Session key holding a pending "Buy now" purchase, so a direct buy can reach
+# checkout without being mixed into (or wiping) whatever is in the cart.
+BUY_NOW_KEY = "buy_now"
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +112,20 @@ def cart_totals(items):
     }
 
 
+def to_usd(amount_inr):
+    """Convert a rupee amount to the USD figure PayPal is actually charged.
+
+    The button has always been submitted with ``currency_code="USD"`` while the
+    rupee total was passed straight through, so a 6,450 rupee basket asked
+    PayPal for 6,450 US dollars. Converting here keeps the sandbox amount
+    plausible; set ``INR_TO_USD_RATE`` to whatever rate you want to quote.
+    """
+    rate = Decimal(str(getattr(settings, "INR_TO_USD_RATE", "0.012")))
+    usd = (Decimal(amount_inr or 0) * rate).quantize(Decimal("0.01"))
+    # PayPal rejects a zero-value order, so never fall below one cent.
+    return max(usd, Decimal("0.01"))
+
+
 def paypal_form(request, *, amount, item_name, return_url_name):
     """Build the PayPal button form used by the checkout screens."""
     host = request.get_host()
@@ -108,7 +133,7 @@ def paypal_form(request, *, amount, item_name, return_url_name):
     return PayPalPaymentsForm(
         initial={
             "business": settings.PAYPAL_RECEIVER_EMAIL,
-            "amount": amount,
+            "amount": to_usd(amount),
             "item_name": item_name,
             "invoice": uuid.uuid4(),
             "currency_code": "USD",
@@ -117,6 +142,109 @@ def paypal_form(request, *, amount, item_name, return_url_name):
             "cancel_url": f"{scheme}://{host}{reverse('paymentfailed')}",
         }
     )
+
+
+# ---------------------------------------------------------------------------
+# "Buy now" - a single product taken to checkout without touching the cart
+# ---------------------------------------------------------------------------
+class DirectLine:
+    """One product being bought directly.
+
+    It exposes the same attribute names as a ``cart`` row (``productid``,
+    ``quantity``) so every checkout template and total helper works on a direct
+    purchase without a single template branch.
+    """
+
+    def __init__(self, product, quantity, user=None):
+        self.id = None
+        self.productid = product
+        self.productid_id = product.id
+        self.quantity = quantity
+        self.userid = user
+
+    def delete(self):
+        """No-op: a direct line lives in the session, not the cart table."""
+
+
+def clear_buy_now(request):
+    """Drop any pending direct purchase."""
+    if request.session.pop(BUY_NOW_KEY, None) is not None:
+        request.session.modified = True
+
+
+def set_buy_now(request, product, quantity):
+    request.session[BUY_NOW_KEY] = {"product": product.id, "quantity": quantity}
+    request.session.modified = True
+
+
+def buy_now_line(request):
+    """The pending direct purchase, or ``None``.
+
+    Re-reads the product every time so a price change, a stock drop or a
+    soft-delete between clicking "Buy now" and paying is picked up.
+    """
+    data = request.session.get(BUY_NOW_KEY)
+    if not isinstance(data, dict):
+        return None
+
+    product = Supplement.objects.filter(
+        id=data.get("product"), is_deleted=False
+    ).select_related("supplementCategory").first()
+
+    if product is None or product.stock <= 0:
+        clear_buy_now(request)
+        return None
+
+    try:
+        quantity = int(data.get("quantity", 1))
+    except (TypeError, ValueError):
+        quantity = 1
+
+    quantity = max(1, min(quantity, MAX_QTY_PER_ITEM, product.stock))
+    return DirectLine(product, quantity, getattr(request, "user", None))
+
+
+def checkout_lines(request):
+    """What the shopper is about to pay for.
+
+    Returns ``(lines, is_direct)``. A pending "Buy now" wins over the cart, so
+    a direct purchase cannot accidentally bill the whole basket.
+    """
+    line = buy_now_line(request)
+    if line is not None:
+        return [line], True
+    return list(cart_for(request.user)), False
+
+
+def safe_redirect_target(request, fallback="wishlist"):
+    """A caller-supplied return URL, but only if it stays on this site.
+
+    `next` arrives in a form field and the referer in a header, so neither can
+    be trusted to point at us; handing either straight to `redirect` would turn
+    the view into an open redirect.
+    """
+    for candidate in (request.POST.get("next"), request.META.get("HTTP_REFERER")):
+        if candidate and url_has_allowed_host_and_scheme(
+            candidate,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return candidate
+    return fallback
+
+
+def wants_json(request):
+    """True when the caller is our own fetch() rather than a form post."""
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+def cart_badge(user):
+    """Cart and wishlist counters, for the navbar badges in a JSON reply."""
+    return {
+        "cart_count": cart.objects.filter(userid=user).aggregate(n=Sum("quantity"))["n"]
+        or 0,
+        "wishlist_count": Wishlist.objects.filter(user=user).count(),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -458,7 +586,24 @@ def cards(request, id):
         .exclude(id=product.id)
         .select_related("supplementCategory")[:4]
     )
-    return render(request, "cards.html", {"product": product, "related": related})
+
+    # The primary action flips to "View cart" once this product is already in
+    # the basket, so the page has to know the current line quantity.
+    in_cart_qty = 0
+    if request.user.is_authenticated:
+        row = cart.objects.filter(userid=request.user, productid=product).first()
+        in_cart_qty = row.quantity if row else 0
+
+    return render(
+        request,
+        "cards.html",
+        {
+            "product": product,
+            "related": related,
+            "in_cart_qty": in_cart_qty,
+            "max_qty": min(MAX_QTY_PER_ITEM, product.stock) or 1,
+        },
+    )
 
 
 def searchdata(request):
@@ -510,34 +655,95 @@ def searchdata(request):
 # ---------------------------------------------------------------------------
 # Cart
 # ---------------------------------------------------------------------------
+def requested_qty(request, product):
+    """The quantity asked for, clamped to the stock and the per-item cap."""
+    raw = request.POST.get("quantity") or request.GET.get("quantity") or 1
+    try:
+        qty = int(raw)
+    except (TypeError, ValueError):
+        qty = 1
+    return max(1, min(qty, MAX_QTY_PER_ITEM, product.stock))
+
+
 @login_required(login_url="login")
 def addtocart(request, id):
+    """Add a product to the cart.
+
+    Answers JSON when called from the product page's fetch(), so the button can
+    flip to "View cart" without a reload, and falls back to a redirect plus a
+    flash message when JavaScript is unavailable.
+    """
+    product = get_object_or_404(Supplement, id=id, is_deleted=False)
+    ajax = wants_json(request)
+
+    def reply(ok, message, level="success", **extra):
+        if ajax:
+            payload = {"ok": ok, "message": message, "level": level}
+            payload.update(cart_badge(request.user))
+            payload.update(extra)
+            return JsonResponse(payload)
+        getattr(messages, "success" if ok else "warning")(request, message)
+        return redirect("cards", id=product.id)
+
+    if product.stock <= 0:
+        return reply(False, f"{product.supplementName} is out of stock.", "warning",
+                     in_cart=0)
+
+    wanted = requested_qty(request, product)
+    row, created = cart.objects.get_or_create(
+        productid=product, userid=request.user, defaults={"quantity": wanted}
+    )
+
+    if created:
+        return reply(
+            True,
+            f"{product.supplementName} added to your cart.",
+            in_cart=row.quantity,
+        )
+
+    ceiling = min(MAX_QTY_PER_ITEM, product.stock)
+    if row.quantity >= ceiling:
+        reason = (
+            f"You cannot add more than {MAX_QTY_PER_ITEM} units of one product."
+            if row.quantity >= MAX_QTY_PER_ITEM
+            else "No more units of this product are in stock."
+        )
+        return reply(False, reason, "warning", in_cart=row.quantity)
+
+    # Recompute against the row that actually exists, so two quick clicks can
+    # never push the line past the ceiling.
+    row.quantity = min(row.quantity + wanted, ceiling)
+    row.save(update_fields=["quantity"])
+    return reply(
+        True,
+        f"Updated {product.supplementName} to {row.quantity} in your cart.",
+        in_cart=row.quantity,
+    )
+
+
+@login_required(login_url="login")
+def buynow(request, id):
+    """Skip the cart and take one product straight to checkout."""
     product = get_object_or_404(Supplement, id=id, is_deleted=False)
 
     if product.stock <= 0:
         messages.warning(request, f"{product.supplementName} is out of stock.")
         return redirect("cards", id=product.id)
 
-    row, created = cart.objects.get_or_create(
-        productid=product, userid=request.user, defaults={"quantity": 1}
-    )
+    set_buy_now(request, product, requested_qty(request, product))
 
-    if created:
-        messages.success(request, f"{product.supplementName} added to your cart.")
-    elif row.quantity >= 5:
-        messages.warning(request, "You cannot add more than 5 units of one product.")
-    elif row.quantity >= product.stock:
-        messages.warning(request, "No more units of this product are in stock.")
-    else:
-        row.quantity = F("quantity") + 1
-        row.save(update_fields=["quantity"])
-        messages.success(request, f"Added another {product.supplementName} to your cart.")
-
-    return redirect("cards", id=product.id)
+    # An address already on file means there is nothing to fill in: go straight
+    # to the pay screen, exactly like the cart flow does.
+    if processedtocheck.objects.filter(user=request.user).exists():
+        return redirect("makepayment")
+    return redirect("checkout")
 
 
 @login_required(login_url="login")
 def viewcart(request):
+    # Opening the cart is an explicit choice to buy the basket, so any pending
+    # direct purchase is abandoned here rather than hijacking the next checkout.
+    clear_buy_now(request)
     items = list(cart_for(request.user))
     context = {"products": items}
     context.update(cart_totals(items))
@@ -551,8 +757,11 @@ def updateqty(request, qv, id):
     )
 
     if str(qv) == "1":
-        if row.quantity >= 5:
-            messages.warning(request, "You cannot add more than 5 units of one product.")
+        if row.quantity >= MAX_QTY_PER_ITEM:
+            messages.warning(
+                request,
+                f"You cannot add more than {MAX_QTY_PER_ITEM} units of one product.",
+            )
         elif row.quantity >= row.productid.stock:
             messages.warning(request, "No more units of this product are in stock.")
         else:
@@ -578,11 +787,75 @@ def remove(request, id):
 
 
 # ---------------------------------------------------------------------------
+# Wishlist
+# ---------------------------------------------------------------------------
+@login_required(login_url="login")
+def wishlist(request):
+    saved = (
+        Wishlist.objects.filter(user=request.user)
+        .select_related("product", "product__supplementCategory")
+        .filter(product__is_deleted=False)
+    )
+    return render(request, "wishlist.html", {"saved": saved})
+
+
+@login_required(login_url="login")
+def wishlist_toggle(request, id):
+    """Save or unsave a product.
+
+    A POST toggles. A GET only ever *adds*, because the one way a GET reaches
+    this view is the redirect that `login_required` performs after an anonymous
+    visitor signs in - and an idempotent add is also safe for link prefetching.
+    """
+    product = get_object_or_404(Supplement, id=id, is_deleted=False)
+
+    row = Wishlist.objects.filter(user=request.user, product=product).first()
+    if row and request.method == "POST":
+        row.delete()
+        saved, message = False, f"{product.supplementName} removed from your wishlist."
+    elif row:
+        saved, message = True, f"{product.supplementName} is already in your wishlist."
+    else:
+        Wishlist.objects.create(user=request.user, product=product)
+        saved, message = True, f"{product.supplementName} saved to your wishlist."
+
+    if wants_json(request):
+        payload = {"ok": True, "saved": saved, "message": message, "level": "success"}
+        payload.update(cart_badge(request.user))
+        return JsonResponse(payload)
+
+    messages.success(request, message)
+    return redirect(safe_redirect_target(request))
+
+
+@login_required(login_url="login")
+def wishlist_move_to_cart(request, id):
+    """Move a saved product into the cart in one click."""
+    product = get_object_or_404(Supplement, id=id, is_deleted=False)
+
+    if product.stock <= 0:
+        messages.warning(request, f"{product.supplementName} is out of stock.")
+        return redirect("wishlist")
+
+    row, created = cart.objects.get_or_create(
+        productid=product, userid=request.user, defaults={"quantity": 1}
+    )
+    ceiling = min(MAX_QTY_PER_ITEM, product.stock)
+    if not created and row.quantity < ceiling:
+        row.quantity += 1
+        row.save(update_fields=["quantity"])
+
+    Wishlist.objects.filter(user=request.user, product=product).delete()
+    messages.success(request, f"{product.supplementName} moved to your cart.")
+    return redirect("wishlist")
+
+
+# ---------------------------------------------------------------------------
 # Checkout + orders
 # ---------------------------------------------------------------------------
 @login_required(login_url="login")
 def Processedtocheck(request):
-    items = list(cart_for(request.user))
+    items, is_direct = checkout_lines(request)
     if not items:
         messages.info(request, "Your cart is empty.")
         return redirect("viewcart")
@@ -613,7 +886,12 @@ def Processedtocheck(request):
             }
         )
 
-    context = {"form": form, "form_filled": False}
+    context = {
+        "form": form,
+        "form_filled": False,
+        "is_direct": is_direct,
+        "products": items,
+    }
     context.update(totals)
     return render(request, "checkout.html", context)
 
@@ -636,7 +914,7 @@ def edit_address(request, id):
 
 @login_required(login_url="login")
 def makepayment(request):
-    items = list(cart_for(request.user))
+    items, is_direct = checkout_lines(request)
     if not items:
         messages.info(request, "Your cart is empty.")
         return redirect("viewcart")
@@ -646,14 +924,22 @@ def makepayment(request):
     if not address:
         return redirect("checkout")
 
+    item_name = (
+        f"{items[0].productid.supplementName} x{items[0].quantity}"
+        if is_direct
+        else "Fitness Empire order"
+    )
+
     context = {
         "products": items,
         "custformdetail": [address],
         "address": address,
+        "is_direct": is_direct,
+        "amount_usd": to_usd(totals["grand_total"]),
         "paypalpayment": paypal_form(
             request,
             amount=totals["grand_total"],
-            item_name="Fitness Empire order",
+            item_name=item_name,
             return_url_name="paymentsuccess",
         ),
     }
@@ -663,7 +949,7 @@ def makepayment(request):
 
 @login_required(login_url="login")
 def paymentsuccess(request):
-    items = list(cart_for(request.user))
+    items, is_direct = checkout_lines(request)
 
     order_list = []
     grand_total = Decimal("0")
@@ -677,7 +963,7 @@ def paymentsuccess(request):
             grand_total += line_total
 
             order = Orders.objects.create(
-                customer=row.userid,
+                customer=row.userid or request.user,
                 supplement=row.productid,
                 quantity=row.quantity,
                 total_price=line_total,
@@ -688,6 +974,10 @@ def paymentsuccess(request):
                 stock=F("stock") - row.quantity
             )
             row.delete()
+
+    # A direct purchase never entered the cart, so clearing the session is what
+    # "emptying the basket" means for it.
+    clear_buy_now(request)
 
     if order_list:
         messages.success(request, "Payment received. Your order is confirmed.")
@@ -700,6 +990,10 @@ def paymentsuccess(request):
 
 
 def paymentfailed(request):
+    # Cancelling at PayPal ends the direct purchase; without this the pending
+    # item would still be in the session and would replace the cart next time
+    # the shopper reached checkout.
+    clear_buy_now(request)
     return render(request, "paymentfailed.html")
 
 

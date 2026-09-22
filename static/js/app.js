@@ -341,6 +341,246 @@
       });
   }
 
+  /* ---- Toasts ----
+     Used for anything answered over fetch(), where a Django flash message
+     would only appear on the next full page load. */
+  var toastStack = null;
+
+  function toast(message, level) {
+    if (!message) return;
+    if (!toastStack) {
+      toastStack = document.createElement("div");
+      toastStack.className = "toast-stack";
+      toastStack.setAttribute("role", "status");
+      toastStack.setAttribute("aria-live", "polite");
+      document.body.appendChild(toastStack);
+    }
+
+    var box = document.createElement("div");
+    box.className = "toast toast--" + (level || "success");
+
+    var text = document.createElement("span");
+    text.textContent = message;
+    box.appendChild(text);
+
+    var close = document.createElement("button");
+    close.type = "button";
+    close.className = "toast__close";
+    close.setAttribute("aria-label", "Dismiss");
+    close.innerHTML = "&times;";
+    box.appendChild(close);
+
+    toastStack.appendChild(box);
+    window.requestAnimationFrame(function () {
+      box.classList.add("is-in");
+    });
+
+    var timer = window.setTimeout(dismiss, 4200);
+    close.addEventListener("click", function () {
+      window.clearTimeout(timer);
+      dismiss();
+    });
+
+    function dismiss() {
+      box.classList.remove("is-in");
+      window.setTimeout(function () {
+        if (box.parentNode) box.parentNode.removeChild(box);
+      }, 300);
+    }
+  }
+
+  /* ---- Navbar counters ---- */
+  function setBadge(selector, value) {
+    if (typeof value !== "number") return;
+    document.querySelectorAll(selector).forEach(function (el) {
+      el.textContent = value;
+      el.classList.toggle("is-empty", value <= 0);
+    });
+  }
+
+  function applyCounts(data) {
+    setBadge("[data-cart-count]", data.cart_count);
+    setBadge("[data-wishlist-count]", data.wishlist_count);
+  }
+
+  /* ---- Submit a form over fetch, keeping the plain POST as the fallback ---- */
+  function postForm(form) {
+    var body = new FormData(form);
+    var token = body.get("csrfmiddlewaretoken");
+
+    return fetch(form.action, {
+      method: "POST",
+      body: body,
+      credentials: "same-origin",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": token || ""
+      }
+    }).then(function (res) {
+      // A redirect to the sign-in page, or any non-JSON answer, means we
+      // cannot handle this in place: let the browser do a real submit.
+      var type = res.headers.get("Content-Type") || "";
+      if (!res.ok || type.indexOf("application/json") === -1) {
+        throw new Error("non-json");
+      }
+      return res.json();
+    });
+  }
+
+  /* ---- Quantity stepper on the product page ---- */
+  function initQtyStepper() {
+    document.querySelectorAll("[data-buybox]").forEach(function (box) {
+      var input = box.querySelector("[data-qty-input]");
+      if (!input) return;
+
+      var mirrors = box.querySelectorAll("[data-qty-mirror]");
+      var steppers = box.querySelectorAll("[data-qty-step]");
+      var min = parseInt(input.getAttribute("min"), 10) || 1;
+      var max = parseInt(input.getAttribute("max"), 10) || 1;
+
+      function sync() {
+        var value = parseInt(input.value, 10);
+        if (isNaN(value)) value = min;
+        value = Math.max(min, Math.min(value, max));
+        input.value = value;
+
+        mirrors.forEach(function (field) {
+          field.value = value;
+        });
+        steppers.forEach(function (btn) {
+          var step = parseInt(btn.getAttribute("data-qty-step"), 10);
+          btn.disabled = step < 0 ? value <= min : value >= max;
+        });
+      }
+
+      steppers.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var step = parseInt(btn.getAttribute("data-qty-step"), 10) || 0;
+          input.value = (parseInt(input.value, 10) || min) + step;
+          sync();
+        });
+      });
+
+      input.addEventListener("change", sync);
+      input.addEventListener("blur", sync);
+      sync();
+    });
+  }
+
+  /* ---- Add to cart without a reload ----
+     On the product page the primary slot swaps to "View cart", which is the
+     whole point of the two-slot layout: slot one tracks whether the product is
+     already in the basket, slot two always offers the direct purchase. */
+  function initAddToCart() {
+    document.querySelectorAll("[data-add-form]").forEach(function (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var button = form.querySelector("[data-add-btn]");
+        var original = button ? button.innerHTML : "";
+        if (button) {
+          button.disabled = true;
+          button.textContent = "Adding...";
+        }
+
+        postForm(form)
+          .then(function (data) {
+            applyCounts(data);
+            toast(data.message, data.level);
+
+            var box = form.closest("[data-buybox]");
+            var viewCart = box && box.querySelector("[data-view-cart]");
+
+            if (data.ok && viewCart) {
+              var count = viewCart.querySelector("[data-cart-qty]");
+              if (count && typeof data.in_cart === "number") {
+                count.textContent = data.in_cart;
+              }
+              form.hidden = true;
+              viewCart.hidden = false;
+              return;
+            }
+
+            // A card in the grid has no second slot to swap in, so the button
+            // confirms in place and returns to normal.
+            if (button) {
+              button.disabled = false;
+              button.innerHTML = original;
+              if (data.ok) {
+                button.textContent = "Added ✓";
+                window.setTimeout(function () {
+                  button.innerHTML = original;
+                }, 2200);
+              }
+            }
+          })
+          .catch(function () {
+            // Fetch failed, or we were bounced to the sign-in page. Fall back
+            // to a normal submit so the shopper still gets somewhere useful.
+            form.submit();
+          });
+      });
+    });
+  }
+
+  /* ---- Wishlist toggle without a reload ---- */
+  function initWishlist() {
+    document.querySelectorAll("[data-wish-form]").forEach(function (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var button = form.querySelector("[data-wish-btn]");
+        if (button) button.disabled = true;
+
+        postForm(form)
+          .then(function (data) {
+            applyCounts(data);
+            toast(data.message, data.level);
+
+            // The product page shows the same product twice (the heart over
+            // the image and the labelled button), so every control pointing at
+            // this URL is updated, not just the one that was clicked.
+            document
+              .querySelectorAll('[data-wish-form][action="' + form.getAttribute("action") + '"]')
+              .forEach(function (twin) {
+                var btn = twin.querySelector("[data-wish-btn]");
+                if (!btn) return;
+                btn.disabled = false;
+                btn.classList.toggle("is-saved", data.saved);
+                btn.setAttribute("aria-pressed", data.saved ? "true" : "false");
+                btn.title = data.saved ? "Remove from wishlist" : "Save to wishlist";
+
+                var label = btn.querySelector("[data-wish-text]");
+                if (label) label.textContent = data.saved ? "Saved" : "Save for later";
+
+                if (data.saved && !reduceMotion) {
+                  btn.classList.add("is-pulsing");
+                  window.setTimeout(function () {
+                    btn.classList.remove("is-pulsing");
+                  }, 460);
+                }
+              });
+          })
+          .catch(function () {
+            form.submit();
+          });
+      });
+    });
+  }
+
+  /* ---- Keep the PayPal button from being double-submitted ---- */
+  function initPaypal() {
+    document.querySelectorAll(".paypal-form").forEach(function (form) {
+      form.addEventListener("submit", function () {
+        var btn = form.querySelector("[data-paypal-btn]");
+        if (!btn) return;
+        btn.classList.add("is-busy");
+        var label = btn.querySelector(".paypal-btn__label");
+        if (label) label.textContent = "Redirecting...";
+      });
+    });
+  }
+
   function ready(fn) {
     if (document.readyState !== "loading") fn();
     else document.addEventListener("DOMContentLoaded", fn);
@@ -362,5 +602,9 @@
     initConfirms();
     initMessages();
     initForms();
+    initQtyStepper();
+    initAddToCart();
+    initWishlist();
+    initPaypal();
   });
 })();

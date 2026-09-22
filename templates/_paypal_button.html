@@ -1,0 +1,56 @@
+{% comment %}
+PayPal checkout button.
+
+django-paypal's own `form.render` emits a bitmap `<input type="image">` that
+renders soft on retina screens and cannot be sized, aligned or focused like a
+real control. This partial keeps the exact same hidden fields and endpoint but
+submits them from a proper <button>, styled to PayPal's brand guidance.
+
+Context it expects:
+  paypalpayment  PayPalPaymentsForm instance  (required)
+  amount_inr     rupee total, for the button label   (optional)
+  amount_usd     the USD figure actually charged     (optional)
+{% endcomment %}
+
+<div class="paypal-slot">
+    <form action="{{ paypalpayment.get_login_url }}" method="post" class="paypal-form">
+        {{ paypalpayment.as_p }}
+        <button type="submit" class="paypal-btn" data-paypal-btn>
+            <span class="paypal-btn__logo" aria-hidden="true">
+                <span class="paypal-btn__mark">
+                    <svg viewBox="0 0 24 28" focusable="false" aria-hidden="true">
+                        <path class="pp-mark-back" d="M5.2 0h8.4c4.3 0 7.1 2.2 6.5 6.5-.6 4.6-3.8 6.9-8.2 6.9H8.5L7.2 21H2.1z"/>
+                        <path class="pp-mark-front" d="M8.6 7h8.4c4.3 0 7.1 2.2 6.5 6.5-.6 4.6-3.8 6.9-8.2 6.9h-3.4L10.6 28H5.5z"/>
+                    </svg>
+                </span>
+                <span class="paypal-btn__wordmark">
+                    <span class="pp-pay">Pay</span><span class="pp-pal">Pal</span>
+                </span>
+            </span>
+            <span class="paypal-btn__label">
+                {% if amount_inr %}Pay &#8377;{{ amount_inr|floatformat:0 }}{% else %}Checkout{% endif %}
+            </span>
+        </button>
+    </form>
+
+    <p class="pay-secure">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1m2 5H6V4.5a2 2 0 1 1 4 0z"/>
+        </svg>
+        <span>Secure checkout{% if amount_usd %} &middot; billed as ${{ amount_usd }} USD{% endif %}</span>
+    </p>
+
+    <ul class="pay-marks" aria-label="Accepted payment methods">
+        <li class="pay-mark pay-mark--visa"><span>VISA</span></li>
+        <li class="pay-mark pay-mark--mc">
+            <svg viewBox="0 0 34 22" role="img" aria-label="Mastercard" focusable="false">
+                <circle cx="13.5" cy="11" r="7.2" fill="#eb001b"/>
+                <circle cx="20.5" cy="11" r="7.2" fill="#f79e1b"/>
+                <path d="M17 5.4a7.18 7.18 0 0 0 0 11.2 7.18 7.18 0 0 0 0-11.2" fill="#ff5f00"/>
+            </svg>
+        </li>
+        <li class="pay-mark pay-mark--amex"><span>AMEX</span></li>
+        <li class="pay-mark pay-mark--rupay"><span><b>Ru</b>Pay</span></li>
+        <li class="pay-mark pay-mark--upi"><span>UPI</span></li>
+    </ul>
+</div>

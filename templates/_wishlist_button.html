@@ -1,0 +1,46 @@
+{% comment %}
+Wishlist toggle.
+
+  item     a Supplement                                   (required)
+  variant  "float" for the heart pinned over a product
+           image, "inline" for the labelled button in the
+           buy box                                        (default: float)
+
+Anonymous visitors get a link to sign in that returns them to the toggle, so
+the product they clicked is saved the moment they are authenticated. Signed-in
+visitors get a real POST form; the JS upgrades it to a fetch() so the heart
+fills without a page reload.
+{% endcomment %}
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'wishlist_toggle' item.id %}"
+          class="wish wish--{{ variant|default:'float' }}" data-wish-form>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit"
+                class="wish__btn{% if item.id in wishlist_ids %} is-saved{% endif %}"
+                data-wish-btn
+                aria-pressed="{% if item.id in wishlist_ids %}true{% else %}false{% endif %}"
+                title="{% if item.id in wishlist_ids %}Remove from wishlist{% else %}Save to wishlist{% endif %}">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M8 14.25 6.84 13.2C2.72 9.47.5 7.46.5 5A3.5 3.5 0 0 1 4 1.5c1.36 0 2.66.63 3.5 1.64A4.66 4.66 0 0 1 11 1.5 3.5 3.5 0 0 1 14.5 5c0 2.46-2.22 4.47-6.34 8.2z"/>
+            </svg>
+            <span class="wish__text" data-wish-text>
+                {% if item.id in wishlist_ids %}Saved{% else %}Save for later{% endif %}
+            </span>
+            <span class="visually-hidden" data-wish-sr>
+                {% if item.id in wishlist_ids %}Remove {{ item.supplementName }} from wishlist{% else %}Save {{ item.supplementName }} to wishlist{% endif %}
+            </span>
+        </button>
+    </form>
+{% else %}
+    <div class="wish wish--{{ variant|default:'float' }}">
+        <a href="{% url 'login' %}?next={% url 'wishlist_toggle' item.id %}"
+           class="wish__btn" title="Sign in to save this product">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M8 14.25 6.84 13.2C2.72 9.47.5 7.46.5 5A3.5 3.5 0 0 1 4 1.5c1.36 0 2.66.63 3.5 1.64A4.66 4.66 0 0 1 11 1.5 3.5 3.5 0 0 1 14.5 5c0 2.46-2.22 4.47-6.34 8.2z"/>
+            </svg>
+            <span class="wish__text">Save for later</span>
+            <span class="visually-hidden">Sign in to save {{ item.supplementName }} to your wishlist</span>
+        </a>
+    </div>
+{% endif %}

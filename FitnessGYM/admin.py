@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GymMembership, FitnessProgram, Trainer, Equipment, Supplement, SupplementCategory,cart,Category, FitnessClass,processedtocheck, Membership,Membershipmonth,membershipprocessedtocheck,Orders,aboutus,UserProfile,Customer
+from .models import GymMembership, FitnessProgram, Trainer, Equipment, Supplement, SupplementCategory,cart,Category, FitnessClass,processedtocheck, Membership,Membershipmonth,membershipprocessedtocheck,Orders,aboutus,UserProfile,Customer,Wishlist
 
 
 
@@ -89,3 +89,9 @@ admin.site.register(UserProfile,UserProfileAdmin)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('customerId','customerName','customerEmail','customerPhone','membership')
 admin.site.register(Customer,CustomerAdmin)
+
+@admin.register(Wishlist)
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'product', 'added_at')
+    list_filter = ('added_at',)
+    search_fields = ('user__username', 'product__supplementName')

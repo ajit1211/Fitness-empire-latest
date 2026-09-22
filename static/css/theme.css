@@ -237,8 +237,16 @@ hr { border: 0; border-top: 1px solid var(--line); margin: var(--sp-6) 0; }
 
 .grid { display: grid; gap: clamp(1rem, 0.6rem + 1.2vw, var(--sp-5)); }
 .grid--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); }
-.grid--3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
-.grid--4 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+/* Fluid row: as many as fit, empty tracks collapse so the cards always span the full width */
+.grid--auto { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
+/* Exactly-3 / exactly-4 grids use fixed counts. auto-fill left an empty fifth
+   track next to four cards (and split six cards 4 + 2), so the row never
+   filled the container. */
+.grid--3,
+.grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px)  { .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 560px)  { .grid--3, .grid--4 { grid-template-columns: 1fr; } }
 
 .cluster { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
 .cluster--center { justify-content: center; }
@@ -1255,6 +1263,7 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
   transition: transform 0.32s var(--ease-out), box-shadow 0.32s var(--ease-out), border-color 0.32s var(--ease);
 }
 .prod:hover { transform: translateY(-7px); box-shadow: var(--shadow-lg); border-color: transparent; }
+.prod__media-wrap { position: relative; }
 .prod__media { position: relative; display: block; background: var(--surface-2); overflow: hidden; }
 .prod__media img { width: 100%; aspect-ratio: 1; object-fit: cover; transition: transform 0.65s var(--ease-out); }
 .prod:hover .prod__media img { transform: scale(1.09); }
@@ -1271,6 +1280,7 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
 .prod__foot { margin-top: auto; padding-top: var(--sp-3); display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
 
 .product-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: clamp(1.75rem, 1rem + 3.5vw, var(--sp-7)); align-items: start; }
+.product-detail__media { position: relative; }
 .product-detail__media img {
   width: 100%; aspect-ratio: 1; object-fit: cover;
   border-radius: var(--r-xl); box-shadow: var(--shadow-lg); background: var(--surface-2);
@@ -1638,8 +1648,307 @@ input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; acc
 
 /* ---------- 22. Print ---------- */
 @media print {
-  .nav, .footer, .btn, .paypal-slot, .to-top, .ticker, .hero-video { display: none !important; }
+  .nav, .footer, .btn, .paypal-slot, .to-top, .ticker, .hero-video,
+  .buybox, .wish, .toast-stack { display: none !important; }
   body { background: #fff; }
   .panel, .card { box-shadow: none; border-color: #ccc; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
+
+/* ==========================================================================
+   23. Buy box, wishlist, PayPal and toasts
+   ========================================================================== */
+
+/* The `hidden` attribute is set by the UA stylesheet, which loses to any author
+   rule that sets `display`. `.btn` sets `display: inline-flex`, so without this
+   the "View cart" slot stayed visible even while marked hidden. */
+[hidden] { display: none !important; }
+
+/* ---------- 23.1 Buy box ---------- */
+.buybox {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.buybox__qty {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3);
+}
+.buybox__qty-label {
+  font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.buybox__cap { font-size: var(--fs-xs); }
+
+/* Stepper shares the cart qty shell but holds a real number input. */
+.qty--stepper { background: var(--surface); }
+.qty--stepper button {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 0; background: transparent; color: var(--text);
+  font-size: var(--fs-lg); font-weight: 600; line-height: 1; cursor: pointer;
+  transition: background-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.qty--stepper button:hover:not(:disabled) { background: var(--grad); color: #fff; }
+.qty--stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+.qty__input {
+  width: 58px; height: 44px; padding: 0;
+  border: 0; border-inline: 1.5px solid var(--line);
+  background: transparent; color: var(--text);
+  text-align: center; font-weight: 700; font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.qty__input::-webkit-outer-spin-button,
+.qty__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty__input:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+
+/* Two equal action slots: add-to-cart or view-cart, then buy-now. */
+.product-detail__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  align-items: stretch;
+}
+.buybox__form { display: contents; }
+.product-detail__actions .btn { width: 100%; }
+.btn__icon { width: 17px; height: 17px; fill: currentColor; flex: none; }
+
+.btn--buy { --btn-bg: var(--ink); --btn-fg: #fff; }
+.btn--buy:hover { --btn-bg: var(--ink-3); box-shadow: var(--shadow-lg); }
+
+/* Slot 1 keeps the primary (crimson) treatment whether it reads "Add to cart"
+   or "View cart", so the two action slots never look interchangeable. */
+.buybox__count {
+  min-width: 22px; padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, 0.22);
+  font-size: var(--fs-xs); line-height: 20px;
+}
+
+.trust-row {
+  list-style: none; margin: var(--sp-5) 0 0; padding: var(--sp-4) 0 0;
+  border-top: 1px dashed var(--line);
+  display: grid; gap: var(--sp-2);
+  font-size: var(--fs-sm); color: var(--text-2);
+}
+.trust-row li { display: flex; align-items: center; gap: var(--sp-2); }
+.trust-row svg { width: 16px; height: 16px; fill: var(--success); flex: none; }
+
+/* Actions under a grid card. */
+.prod__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-2); }
+.prod__actions form { display: contents; }
+
+/* ---------- 23.2 Wishlist ---------- */
+.wish--float {
+  position: absolute; top: var(--sp-3); right: var(--sp-3); z-index: 2;
+}
+.wish--float .wish__btn {
+  width: 42px; height: 42px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease),
+    border-color 0.22s var(--ease), background-color 0.22s var(--ease);
+}
+.wish--float .wish__text { display: none; }
+.wish--float .wish__btn:hover { transform: scale(1.1); border-color: var(--brand); box-shadow: var(--shadow); }
+
+.wish--inline { margin-top: var(--sp-4); }
+.wish--inline .wish__btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 0.6rem 1.2rem;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm); font-weight: 600;
+  cursor: pointer;
+  transition: color 0.22s var(--ease), border-color 0.22s var(--ease),
+    background-color 0.22s var(--ease);
+}
+.wish--inline .wish__btn:hover { color: var(--brand-600); border-color: var(--brand); background: var(--brand-soft); }
+
+.wish__btn svg {
+  width: 19px; height: 19px;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  transition: fill 0.22s var(--ease), stroke 0.22s var(--ease), transform 0.22s var(--ease-out);
+}
+.wish--float .wish__btn svg { color: var(--text-2); }
+.wish__btn.is-saved svg { fill: var(--brand); stroke: var(--brand); }
+.wish__btn.is-saved { color: var(--brand-600); border-color: var(--brand); }
+.wish__btn.is-pulsing svg { animation: wish-pop 0.42s var(--ease-out); }
+
+@keyframes wish-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.wish-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-3); }
+.wish-actions form { display: contents; }
+.wish-added { margin: var(--sp-2) 0 0; font-size: var(--fs-xs); }
+
+.empty-state__glyph {
+  width: 96px; height: 96px; margin: 0 auto var(--sp-5);
+  fill: none; stroke: var(--brand); stroke-width: 1.1; opacity: 0.8;
+}
+
+/* Hide a zero badge without removing the element the JS updates. */
+.nav__cart-count.is-empty { display: none; }
+.nav__wish svg { stroke: currentColor; }
+
+/* ---------- 23.3 PayPal ---------- */
+.paypal-slot { margin-top: var(--sp-4); display: grid; gap: var(--sp-3); justify-items: stretch; }
+.paypal-form { margin: 0; }
+
+.paypal-btn {
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--sp-3);
+  padding: 0.75rem 1.5rem;
+  border: 0; border-radius: var(--r-pill);
+  background: #ffc439;
+  color: #003087;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base); font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 48, 135, 0.18);
+  transition: background-color 0.2s var(--ease), box-shadow 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+.paypal-btn:hover { background: #f2ba36; box-shadow: 0 8px 22px rgba(0, 48, 135, 0.26); transform: translateY(-2px); }
+.paypal-btn:active { transform: translateY(0); }
+.paypal-btn:focus-visible { outline: 3px solid #003087; outline-offset: 2px; }
+.paypal-btn.is-busy { opacity: 0.75; pointer-events: none; }
+
+.paypal-btn__logo { display: inline-flex; align-items: center; gap: 6px; }
+.paypal-btn__mark svg { width: 19px; height: 22px; display: block; }
+.pp-mark-back { fill: #002f86; }
+.pp-mark-front { fill: #009cde; }
+
+.paypal-btn__wordmark {
+  font-size: 1.12rem; font-weight: 800; font-style: italic;
+  letter-spacing: -0.015em; line-height: 1;
+}
+.pp-pay { color: #003087; }
+.pp-pal { color: #009cde; }
+
+.paypal-btn__label {
+  padding-left: var(--sp-3);
+  border-left: 1px solid rgba(0, 48, 135, 0.28);
+  color: #003087;
+  font-size: var(--fs-sm); font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pay-secure {
+  display: flex; align-items: flex-start; justify-content: center; gap: 6px;
+  margin: 0;
+  font-size: var(--fs-xs); line-height: 1.5; color: var(--text-muted);
+  text-align: center;
+}
+/* The note wraps to two lines in a narrow summary column, so the padlock is
+   pinned to the first line instead of floating to the vertical centre. */
+.pay-secure svg { width: 13px; height: 13px; margin-top: 3px; fill: var(--success); flex: none; }
+
+.pay-marks {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 6px;
+}
+.pay-mark {
+  width: 42px; height: 27px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+  overflow: hidden;
+}
+.pay-mark svg { width: 30px; height: 20px; }
+.pay-mark span {
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.02em; line-height: 1;
+  font-style: italic;
+}
+.pay-mark--visa span { color: #1434cb; font-size: 11px; letter-spacing: 0.06em; }
+.pay-mark--amex { background: #2e77bc; border-color: #2e77bc; }
+.pay-mark--amex span { color: #fff; font-style: normal; letter-spacing: 0.04em; }
+.pay-mark--rupay span { color: #0e7c3a; font-style: normal; }
+.pay-mark--rupay b { color: #e8452c; }
+.pay-mark--upi span { color: #0f6e3f; font-style: normal; letter-spacing: 0.06em; font-size: 10px; }
+
+/* ---------- 23.4 Inline notice ---------- */
+.notice {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2);
+  margin: 0 0 var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--r);
+  background: var(--brand-soft);
+  font-size: var(--fs-sm); color: var(--text-2);
+}
+.notice strong { color: var(--text); }
+.notice a { font-weight: 600; text-decoration: underline; }
+
+.summary__items {
+  list-style: none; margin: 0 0 var(--sp-3); padding: 0 0 var(--sp-3);
+  border-bottom: 1px dashed var(--line);
+  display: grid; gap: var(--sp-2);
+  font-size: var(--fs-sm); color: var(--text-2);
+}
+.summary__items li { display: flex; justify-content: space-between; gap: var(--sp-3); }
+.summary__items span:last-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+/* ---------- 23.5 Toasts ---------- */
+.toast-stack {
+  position: fixed; z-index: 1200;
+  right: var(--sp-4); bottom: var(--sp-4);
+  display: grid; gap: var(--sp-2);
+  width: min(360px, calc(100vw - 2 * var(--sp-4)));
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: flex-start; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--success);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--fs-sm); color: var(--text);
+  pointer-events: auto;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.28s var(--ease), transform 0.28s var(--ease-out);
+}
+.toast.is-in { opacity: 1; transform: none; }
+.toast--warning { border-left-color: var(--warning); }
+.toast--error { border-left-color: var(--danger); }
+.toast--info { border-left-color: var(--info); }
+.toast__close {
+  margin-left: auto; padding: 0 0 0 var(--sp-2);
+  border: 0; background: transparent; color: var(--text-muted);
+  font-size: var(--fs-lg); line-height: 1; cursor: pointer;
+}
+.toast__close:hover { color: var(--text); }
+
+@media (max-width: 560px) {
+  .prod__actions, .wish-actions { grid-template-columns: 1fr; }
+  .paypal-btn { flex-wrap: wrap; gap: var(--sp-2); }
+  .paypal-btn__label { padding-left: 0; border-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wish__btn.is-pulsing svg { animation: none; }
+  .toast { transition: none; opacity: 1; transform: none; }
 }

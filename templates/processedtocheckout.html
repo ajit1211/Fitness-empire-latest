@@ -13,6 +13,14 @@
             <li class="is-active">Confirm &amp; pay</li>
         </ol>
 
+        {% if is_direct %}
+        <p class="notice notice--direct">
+            <strong>Express purchase.</strong>
+            You are buying this item on its own. Anything already in your cart stays there.
+            <a href="{% url 'viewcart' %}" class="link-quiet">Check out my cart instead</a>
+        </p>
+        {% endif %}
+
         <div class="checkout-layout">
 
             <div class="card">
@@ -78,11 +86,9 @@
                         <span>&#8377;{{ grand_total|floatformat:0 }}</span>
                     </div>
 
-                    <div class="paypal-slot">
-                        {{ paypalpayment.render }}
-                    </div>
+                    {% include "_paypal_button.html" with amount_inr=grand_total amount_usd=amount_usd %}
 
-                    <p class="summary__note">Payments are processed by PayPal in the sandbox environment.</p>
+                    <p class="summary__note">Processed by PayPal in the sandbox environment. No real money moves.</p>
                 </div>
             </aside>
 

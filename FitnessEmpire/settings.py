@@ -160,6 +160,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 PAYPAL_RECEIVER_EMAIL = 'sb-owhlw37372559@business.example.com'
 PAYPAL_TEST = True
 
+# Prices are quoted in rupees but the PayPal button is submitted in USD (the
+# sandbox business account cannot settle INR). Totals are converted with this
+# rate before the amount is handed to PayPal; previously the rupee figure was
+# sent as if it were dollars.
+INR_TO_USD_RATE = '0.012'
+
 
 
 # ---------------------------------------------------------------------------
