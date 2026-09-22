@@ -118,21 +118,37 @@ SUPPLEMENTS = [
 
 CLASS_CATEGORIES = ["Cardio", "Strength", "Mind & Body", "Cycle"]
 
+# Six classes per category: every category clears the 5-minimum with room to
+# grow towards the 10-maximum, and 24 tiles divide evenly at 4, 3, 2 and 1 wide.
 CLASSES = [
+    # Cardio
     ("HIIT Core Burn", "Cardio", "hiit_core.webp"),
     ("Cardio Circuit", "Cardio", "cardio.webp"),
     ("Cardio HIIT Express", "Cardio", "cardiohiit.webp"),
     ("Step Athletic", "Cardio", "step_icon.webp"),
+    ("Run Club", "Cardio", "become_a.webp"),
+    ("Bootcamp Blast", "Cardio", "asulotion.webp"),
+    # Strength
     ("Strength & Sweat", "Strength", "strength_sweat_icon.webp"),
     ("Strength HIIT", "Strength", "strength_hiit_icon.webp"),
     ("Muscle Pump", "Strength", "muscle_pump_icon.webp"),
     ("Olympic Lift Lab", "Strength", "lift_icon.webp"),
+    ("Barbell Club", "Strength", "muscle3.webp"),
+    ("Dumbbell Power", "Strength", "dumbles.webp"),
+    # Mind & Body
     ("Hatha Yoga", "Mind & Body", "hatha_yoga_icon.webp"),
     ("Barre Sculpt", "Mind & Body", "barre.webp"),
     ("Master Mobility", "Mind & Body", "master_mobility_icon.webp"),
+    ("Mat Pilates", "Mind & Body", "mat.webp"),
+    ("Band Mobility", "Mind & Body", "streatch_band.webp"),
+    ("Restorative Stretch", "Mind & Body", "thank.webp"),
+    # Cycle
     ("Tru-Ride Cycling", "Cycle", "cycling_icon.webp"),
     ("Full Throttle Ride", "Cycle", "full_throttle_icon.webp"),
     ("Rhythm Circuit", "Cycle", "circuit.webp"),
+    ("Sprint Intervals", "Cycle", "healthy2.webp"),
+    ("Endurance Ride", "Cycle", "trsiner.webp"),
+    ("Power Climb", "Cycle", "trainer.webp"),
 ]
 
 ANNUAL_PLANS = [

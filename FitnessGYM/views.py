@@ -181,12 +181,19 @@ def plantbasedplan(request):
     return render(request, "plantbasedplan.html")
 
 
+# A single category tab shows at most this many classes. The "All" tab is
+# never capped, so every class is always reachable from there.
+CLASSES_PER_CATEGORY_MAX = 10
+
+
 def fitness_classes(request, category_name=None):
     categories = Category.objects.all()
     classes = FitnessClass.objects.select_related("category")
 
     if category_name and category_name.lower() != "all":
-        classes = classes.filter(category__name__iexact=category_name)
+        classes = classes.filter(category__name__iexact=category_name)[
+            :CLASSES_PER_CATEGORY_MAX
+        ]
 
     return render(
         request,
