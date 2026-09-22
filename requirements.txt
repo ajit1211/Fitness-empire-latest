@@ -9,7 +9,7 @@ whitenoise==6.8.2
 
 # Reads the managed-Postgres connection string out of DATABASE_URL.
 dj-database-url==2.3.0
-psycopg[binary]==3.2.3
+psycopg[binary]==3.3.6
 
 # Transitive, pinned so a build cannot drift.
 asgiref==3.8.1
