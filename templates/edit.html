@@ -1,124 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+{% extends "base.html" %}
+{% load static %}
 
-        .form-container {
-            background-color: #fff;
-            width: 400px;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
+{% block page_title %}Edit {{ product.productName }} - Fitness Empire{% endblock %}
+{% block page_id %}admin{% endblock %}
 
-        .form-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
+{% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
+        <div class="panel">
+            <h1 class="panel__title">Edit Product</h1>
 
-        input[type="text"],
-        input[type="number"],
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+            <form action="" method="POST" enctype="multipart/form-data" class="form-body" novalidate>
+                {% csrf_token %}
 
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="file"]:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 4px rgba(0, 123, 255, 0.2);
-        }
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="product-id">Product ID</label>
+                        <input type="number" name="product-id" id="product-id"
+                               value="{{ product.productId }}" required>
+                    </div>
+                    <div class="field">
+                        <label for="product-price">Price (&#8377;)</label>
+                        <input type="number" name="product-price" id="product-price"
+                               value="{{ product.productPrice }}" step="0.01" min="0" required>
+                    </div>
+                    <div class="field field--full">
+                        <label for="product-name">Product Name</label>
+                        <input type="text" name="product-name" id="product-name"
+                               value="{{ product.productName }}" maxlength="255" required>
+                    </div>
+                    <div class="field field--full">
+                        <label for="product-description">Description</label>
+                        <textarea name="product-description" id="product-description" required>{{ product.productDescription }}</textarea>
+                    </div>
+                    <div class="field field--full">
+                        <label>Current Image</label>
+                        {% if product.productImage %}
+                            <img src="{{ product.productImage.url }}" alt="{{ product.productName }}"
+                                 style="width:140px; height:140px; object-fit:cover; border-radius:var(--r); margin-bottom:var(--sp-3);">
+                        {% else %}
+                            <p class="muted" style="font-size:var(--fs-sm);">No image uploaded yet.</p>
+                        {% endif %}
+                        <label for="product-image">Replace Image <span class="muted">(optional)</span></label>
+                        <input type="file" name="product-image" id="product-image" accept="image/*">
+                    </div>
+                </div>
 
-        .current-image {
-            display: block;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .current-image img {
-            max-width: 150px;
-            border-radius: 5px;
-            margin-top: 5px;
-        }
-
-        .form-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .form-container button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 480px) {
-            .form-container {
-                width: 90%;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<div class="form-container">
-    <h2>Edit Product</h2>
-    <form action="" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="product-id">Product ID:</label>
-        <input type="number" name="product-id" value="{{ product.id }}" required>
-
-        <label for="product-name">Product Name:</label>
-        <input type="text" name="product-name" value="{{ product.productName }}" required>
-
-        <label for="product-description">Product Description:</label>
-        <input type="text" name="product-description" value="{{ product.productDescription }}" required>
-
-        <label for="product-price">Product Price:</label>
-        <input type="number" name="product-price" value="{{ product.productPrice }}" required>
-
-        <label for="product-image">Product Image:</label>
-        <div class="current-image">
-            <span>Current Image:</span>
-            <img src="{{ product.productImage.url }}" alt="{{ product.productName }}">
+                <div class="cluster" style="margin-top:var(--sp-5);">
+                    <button type="submit" class="btn">Save Changes</button>
+                    <a href="{% url 'showdetails' %}" class="btn btn--ghost">Cancel</a>
+                </div>
+            </form>
         </div>
-        <input type="file" name="product-image">
 
-        <button type="submit">Save Changes</button>
-    </form>
-</div>
-
-</body>
-</html>
+    </div>
+</section>
+{% endblock 'main' %}

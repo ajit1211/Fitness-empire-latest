@@ -1,127 +1,76 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block page_title %}Weight Loss Diet Plan - Fitness Empire{% endblock %}
+{% block page_id %}diet{% endblock %}
+
 {% block 'main' %}
-<style>
-        .weightlossplan-body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            color: #000;
-            line-height: 1.6;
-        }
-        .weightlossplan-header {
-            background-color: #f9f9f9;
-            color: crimson;
-            padding: 40px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        .weightlossplan-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 60px 10%;
-            border-bottom: 2px solid #ddd;
-        }
-        .weightlossplan-section:nth-child(even) {
-            flex-direction: row-reverse;
-        }
-        .weightlossplan-image {
-            width: 45%;
-            border-radius: 12px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        .weightlossplan-content {
-            width: 50%;
-            padding: 20px;
-        }
-        .weightlossplan-heading {
-            color: #000;
-            font-size: 26px;
-        }
-        .weightlossplan-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .weightlossplan-item {
-            padding: 12px;
-            font-size: 18px;
-            border-left: 4px solid #000;
-            padding-left: 10px;
-            margin-bottom: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-    </style>
-<body class="weightlossplan-body">
-    <header class="weightlossplan-header">
-        Weight Loss Plan
-    </header>
-    <section class="weightlossplan-section">
-        <img class="weightlossplan-image" src="{% static 'images/weight1.jpeg' %}" alt="Weight Loss">
-        <div class="weightlossplan-content">
-            <h2 class="weightlossplan-heading">7-Day Weight Loss Plan</h2>
-            <ul class="weightlossplan-list">
-                <li class="weightlossplan-item">Day 1: Eat high-protein breakfast</li>
-                <li class="weightlossplan-item">Day 2: Drink plenty of water</li>
-                <li class="weightlossplan-item">Day 3: Exercise for 30 minutes</li>
-                <li class="weightlossplan-item">Day 4: Avoid sugar & processed food</li>
-                <li class="weightlossplan-item">Day 5: Eat fiber-rich meals</li>
-                <li class="weightlossplan-item">Day 6: Get 8 hours of sleep</li>
-                <li class="weightlossplan-item">Day 7: Practice mindful eating</li>
-            </ul>
+
+<section class="hero-banner">
+    <img src="{% static 'img/weight_loss_plan.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
+    <div class="hero-banner__inner">
+        <span class="eyebrow" style="color:var(--brand);">Diet Plan</span>
+        <h1>Weight Loss</h1>
+        <p>A moderate deficit that keeps your strength while body fat comes down.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="stat-row">
+            <div>
+                <div class="stat__value">1,600</div>
+                <div class="stat__label">Calories Per Day</div>
+            </div>
+            <div>
+                <div class="stat__value">130g</div>
+                <div class="stat__label">Protein</div>
+            </div>
+            <div>
+                <div class="stat__value">150g</div>
+                <div class="stat__label">Carbohydrates</div>
+            </div>
+            <div>
+                <div class="stat__value">50g</div>
+                <div class="stat__label">Fat</div>
+            </div>
         </div>
-    </section>
-    <section class="weightlossplan-section">
-        <img class="weightlossplan-image" src="{% static 'images/weight2.jpeg' %}" alt="Benefits">
-        <div class="weightlossplan-content">
-            <h2 class="weightlossplan-heading">Benefits of Weight Loss</h2>
-            <ul class="weightlossplan-list">
-                <li class="weightlossplan-item">Improves heart health</li>
-                <li class="weightlossplan-item">Boosts energy levels</li>
-                <li class="weightlossplan-item">Reduces risk of chronic diseases</li>
-                <li class="weightlossplan-item">Enhances mental clarity and mood</li>
-            </ul>
+    </div>
+</section>
+
+<section class="section section--surface">
+    <div class="container container--narrow">
+        <h2>A day on this plan</h2>
+        <div class="table-wrap" style="margin-top:var(--sp-4);">
+            <table class="table meal-table">
+                <thead>
+                    <tr><th>Meal</th><th>What to eat</th><th class="num">kcal</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Breakfast</td><td>Vegetable omelette (3 egg whites, 1 whole egg) with 2 multigrain toasts</td><td class="num">320</td></tr>
+                    <tr><td>Mid-morning</td><td>Green apple and 10 almonds</td><td class="num">160</td></tr>
+                    <tr><td>Lunch</td><td>2 phulka, grilled chicken or paneer 150g, mixed salad, curd</td><td class="num">480</td></tr>
+                    <tr><td>Pre-workout</td><td>Black coffee and a banana</td><td class="num">120</td></tr>
+                    <tr><td>Post-workout</td><td>1 scoop whey isolate in water</td><td class="num">130</td></tr>
+                    <tr><td>Dinner</td><td>Grilled fish or tofu 150g with stir-fried vegetables</td><td class="num">390</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
-    <section class="weightlossplan-section">
-        <img class="weightlossplan-image" src="{% static 'images/weight3.jpeg' %}" alt="Tips">
-        <div class="weightlossplan-content">
-            <h2 class="weightlossplan-heading">Weight Loss Tips</h2>
-            <ul class="weightlossplan-list">
-                <li class="weightlossplan-item">Stay consistent with your diet</li>
-                <li class="weightlossplan-item">Avoid late-night snacking</li>
-                <li class="weightlossplan-item">Engage in daily physical activity</li>
-                <li class="weightlossplan-item">Drink green tea for metabolism boost</li>
-            </ul>
+
+        <h2 style="margin-top:var(--sp-7);">How to run it</h2>
+        <ul class="prose">
+            <li>Eat protein at every meal. It is the single biggest factor in keeping muscle during a cut.</li>
+            <li>Weigh yourself once a week, same day, same time, before eating.</li>
+            <li>Expect 0.5 to 0.75kg a week. Faster than that and you are losing muscle too.</li>
+            <li>Keep two meals a week flexible so the plan survives real life.</li>
+            <li>Train with weights three to four times a week. Cardio supports the deficit, it does not replace it.</li>
+        </ul>
+
+        <div class="cluster" style="margin-top:var(--sp-6);">
+            <a href="{% url 'protien' %}" class="btn">Shop Protein</a>
+            <a href="{% url 'dietplan' %}" class="btn btn--ghost">All Diet Plans</a>
         </div>
-    </section>
-    <section class="weightlossplan-section">
-        <img class="weightlossplan-image" src="{% static 'images/weight4.jpeg' %}" alt="Healthy Eating">
-        <div class="weightlossplan-content">
-            <h2 class="weightlossplan-heading">Healthy Eating Habits</h2>
-            <ul class="weightlossplan-list">
-                <li class="weightlossplan-item">Eat more vegetables and fruits</li>
-                <li class="weightlossplan-item">Choose whole grains over refined ones</li>
-                <li class="weightlossplan-item">Limit added sugars and unhealthy fats</li>
-                <li class="weightlossplan-item">Stay hydrated throughout the day</li>
-            </ul>
-        </div>
-    </section>
-    <section class="weightlossplan-section">
-        <img class="weightlossplan-image" src="{% static 'images/weight5.jpeg' %}" alt="Mindful Living">
-        <div class="weightlossplan-content">
-            <h2 class="weightlossplan-heading">Mindful Living for Weight Loss</h2>
-            <ul class="weightlossplan-list">
-                <li class="weightlossplan-item">Practice meditation and stress management</li>
-                <li class="weightlossplan-item">Ensure adequate sleep and rest</li>
-                <li class="weightlossplan-item">Develop a positive relationship with food</li>
-                <li class="weightlossplan-item">Set realistic and achievable goals</li>
-            </ul>
-        </div>
-    </section>
-</body>
+    </div>
+</section>
+
 {% endblock 'main' %}

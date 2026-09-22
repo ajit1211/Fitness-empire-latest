@@ -1,207 +1,80 @@
-<style>
-    /* General Page Styling */
-.page-container {
-    font-family: Arial, sans-serif;
-    background-color: #ffffff;
-    color: #000;
-    margin: 0;
-    padding: 0;
-}
-
-/* Section Styling */
-.section-wrapper {
-    text-align: center;
-    padding: 50px 20px;
-}
-
-.section-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #d32f2f;
-    text-transform: uppercase;
-}
-
-.divider {
-    width: 150px;
-    height: 4px;
-    background: #d32f2f;
-    margin: 10px auto;
-}
-
-/* Navigation Tabs */
-.nav-links {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap; /* Ensures proper layout on smaller screens */
-    list-style: none;
-    padding: 0;
-    margin-bottom: 30px;
-    font-weight: bold;
-    font-size: 20px;
-}
-
-.nav-item {
-    margin: 10px 15px; /* Added spacing for better mobile layout */
-}
-
-.nav-link {
-    text-decoration: none;
-    font-weight: bold;
-    color: black;
-    padding: 8px 16px;
-    transition: 0.3s ease-in-out;
-}
-
-.nav-item.active .nav-link {
-    color: #d32f2f;
-    border-bottom: 2px solid black;
-}
-
-/* Grid Container */
-.grid-container {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    padding: 20px;
-    flex-wrap: wrap;
-}
-
-/* Card Design */
-.card-box {
-    width: 250px;
-    text-align: center;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-/* Circular Images */
-.image-circle {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    object-fit: cover;
-    transition: transform 0.3s ease-in-out;
-}
-
-.image-circle:hover {
-    transform: scale(1.1);
-}
-
-/* Title Styling */
-.text-bold {
-    margin-top: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #000;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) { /* For iPads and Tablets */
-    .grid-container {
-        gap: 20px;
-        padding: 10px;
-    }
-    .card-box {
-        width: 220px;
-        padding: 15px;
-    }
-    .image-circle {
-        width: 220px;
-        height: 220px;
-    }
-}
-
-@media (max-width: 768px) { /* For Smaller Tablets & Large Phones */
-    .nav-links {
-        font-size: 18px;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .nav-item {
-        margin-bottom: 10px;
-    }
-
-    .grid-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card-box {
-        width: 90%; /* Adjusted width for better mobile view */
-        max-width: 350px;
-    }
-
-    .image-circle {
-        width: 100%;
-        height: auto;
-        max-width: 300px;
-    }
-}
-
-@media (max-width: 480px) { /* For iPhones & Small Phones */
-    .section-title {
-        font-size: 20px;
-    }
-
-    .nav-links {
-        font-size: 16px;
-    }
-
-    .grid-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card-box {
-        width: 95%;
-    }
-
-    .image-circle {
-        width: 100%;
-        max-width: 250px;
-    }
-}
-
-</style>
-
 {% extends 'base.html' %}
 {% load static %}
 
+{% block page_title %}Group Fitness Classes - Fitness Empire{% endblock %}
+{% block page_id %}classes{% endblock %}
+
 {% block 'main' %}
-<div class="page-container">
-    <section class="section-wrapper">
-        <div class="section-title">CLASSES</div>
-        <div class="divider"></div>
-        <h1>DYNAMIC FITNESS CLASSES</h1>
-        <p>Get the fix for your fitness mix. Shake your fitness routine up with classes that will get you moving, flexing, and sweating with team spirit.</p>
-    </section>
 
-    <h1 style="font-size: 30px;font-weight: bold;text-align: center;margin-bottom: 20px;border-bottom: 2px solid #000;">CHOOSE YOUR CLASS TYPE</h1>
-
-    <ul class="nav-links">
-        <li class="nav-item {% if selected_category == 'All' %}active{% endif %}">
-            <a href="{% url 'all_classes' %}" class="nav-link">ALL</a>
-        </li>
-        {% for category in categories %}
-            <li class="nav-item {% if selected_category == category.name %}active{% endif %}">
-                <a href="{% url 'category_classes' category.name %}" class="nav-link">{{ category.name|upper }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-
-    <div class="grid-container">
-        {% for class in classes %}
-            <div class="card-box">
-                <img src="{{ class.image.url }}" alt="{{ class.name }}" class="image-circle">
-                <h3 class="text-bold">{{ class.name }}</h3>
-            </div>
-        {% empty %}
-            <p>No classes available for this category.</p>
-        {% endfor %}
+<section class="section section--dark">
+    <div class="container">
+        <div class="section-head" style="margin-bottom:0;">
+            <span class="eyebrow">Classes</span>
+            <h1>Dynamic fitness classes</h1>
+            <p>
+                Get the fix for your fitness mix. Shake up your routine with classes that get you
+                moving, flexing and sweating with team spirit.
+            </p>
+        </div>
     </div>
-</div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2>Choose your class type</h2>
+            <div class="rule"></div>
+        </div>
+
+        <ul class="chip-row">
+            <li>
+                <a href="{% url 'all_classes' %}"
+                   {% if selected_category == 'All' %}aria-current="page"{% endif %}>All</a>
+            </li>
+            {% for category in categories %}
+            <li>
+                <a href="{% url 'category_classes' category.name %}"
+                   {% if selected_category|lower == category.name|lower %}aria-current="page"{% endif %}>{{ category.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        {% if classes %}
+        <div class="class-grid">
+            {% for class in classes %}
+            <div class="class-tile">
+                {% if class.image %}
+                    <img src="{{ class.image.url }}" alt="{{ class.name }}" loading="lazy" width="220" height="220">
+                {% else %}
+                    <img src="{% static 'images/default-product.png' %}" alt="" loading="lazy" width="220" height="220">
+                {% endif %}
+                <h3>{{ class.name }}</h3>
+                <p class="muted" style="font-size:var(--fs-sm);">{{ class.category.name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No classes in this category yet</h3>
+            <p>Try another category, or view the full timetable.</p>
+            <a href="{% url 'all_classes' %}" class="btn">See All Classes</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="section section--muted">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Included</span>
+            <h2>Classes come with every membership</h2>
+            <p>No per-class fees, no booking credits. Turn up and train.</p>
+            <div class="cluster" style="justify-content:center; margin-top:var(--sp-5);">
+                <a href="{% url 'membershipannual' %}" class="btn">See Memberships</a>
+                <a href="{% url 'training' %}" class="btn btn--ghost">Personal Training</a>
+            </div>
+        </div>
+    </div>
+</section>
 
 {% endblock 'main' %}

@@ -1,159 +1,98 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block page_title %}My Membership - Fitness Empire{% endblock %}
+{% block page_id %}account{% endblock %}
+
 {% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-<style>
-    /* General Styling */
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* Profile Wrapper */
-    .profile-box {
-        max-width: 600px;
-        margin: 50px auto;
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    /* Welcome Header */
-    .profile-header {
-        color: #333;
-        text-align: center;
-    }
-
-    /* Membership Section */
-    .membership-section {
-        color: #007bff;
-        margin-bottom: 10px;
-    }
-
-    .membership-info {
-        font-size: 16px;
-        line-height: 1.6;
-        color: #555;
-    }
-
-    /* Highlight Membership Details */
-    .membership-info strong {
-        color: #333;
-    }
-
-    /* Buttons */
-    .btn {
-        display: inline-block;
-        padding: 10px 15px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        margin-top: 15px;
-    }
-
-    .btn-buy {
-        background-color: black;
-        color: white;
-    }
-
-    .btn-buy:hover {
-        background-color: darkred;
-    }
-
-    .btn-green {
-        background-color: green;
-        color: white;
-    }
-
-    .btn-green:hover {
-        background-color: darkgreen;
-    }
-
-    /* Message Styling */
-    .alert {
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .alert-warning {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .alert-error {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-</style>
-
-<div class="profile-box">
-    <h2 class="profile-header">Welcome, {{ request.user.username|upper }}</h2>
-
-    <!-- ✅ Fix: Message Colors -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert 
-                {% if message.tags == 'success' %} alert-success 
-                {% elif message.tags == 'warning' %} alert-warning 
-                {% else %} alert-error {% endif %}">
-                {{ message }}
+        <div class="panel">
+            <div class="text-center" style="margin-bottom:var(--sp-5);">
+                <div class="avatar">{{ user.username|first|upper }}</div>
+                <h1 style="font-size:var(--fs-2xl); margin-bottom:var(--sp-1);">Welcome, {{ user.username|title }}</h1>
+                <p class="muted">Your Fitness Empire membership</p>
             </div>
-        {% endfor %}
-    {% endif %}
 
-    {% if membership %}
-        {% if membership.payment_status %}
-            <!-- ✅ Show membership details if payment is done -->
-            <h3 class="membership-section">Your Membership Details:</h3>
+            {% if membership %}
+                {% if membership.payment_status %}
+                    {% with plan=membership.membership_yearly|default:membership.membership_monthly %}
+                    <div class="cluster" style="justify-content:center; margin-bottom:var(--sp-5);">
+                        <span class="badge badge--success">Active</span>
+                        <span class="badge">{% if membership.membership_yearly %}Annual{% else %}Monthly{% endif %} Plan</span>
+                    </div>
 
-            {% if membership.membership_yearly %}
-                <p class="membership-info"><strong>Membership Type:</strong> Yearly</p>
-                <p class="membership-info"><strong>Membership Name:</strong> {{ membership.membership_yearly.name }}</p>
-                <p class="membership-info"><strong>Price:</strong> ₹{{ membership.membership_yearly.price }}</p>
-                <p class="membership-info"><strong>Description:</strong> {{ membership.membership_yearly.description }}</p>
-            {% elif membership.membership_monthly %}
-                <p class="membership-info"><strong>Membership Type:</strong> Monthly</p>
-                <p class="membership-info"><strong>Membership Name:</strong> {{ membership.membership_monthly.name }}</p>
-                <p class="membership-info"><strong>Price:</strong> ₹{{ membership.membership_monthly.price }}</p>
-                <p class="membership-info"><strong>Description:</strong> {{ membership.membership_monthly.description }}</p>
+                    <div class="detail-grid">
+                        <dl class="detail">
+                            <dt>Plan</dt>
+                            <dd>{{ plan.name }}</dd>
+                        </dl>
+                        <dl class="detail">
+                            <dt>Price</dt>
+                            <dd>&#8377;{{ plan.price|floatformat:0 }}</dd>
+                        </dl>
+                        <dl class="detail">
+                            <dt>Purchased</dt>
+                            <dd style="font-size:var(--fs-base);">{{ membership.purchased_at|date:"j M Y" }}</dd>
+                        </dl>
+                        <dl class="detail">
+                            <dt>Expires</dt>
+                            <dd style="font-size:var(--fs-base);">{{ membership.plan_expiry|date:"j M Y" }}</dd>
+                        </dl>
+                    </div>
+
+                    <p class="muted" style="margin-top:var(--sp-5);">{{ plan.description }}</p>
+
+                    <div class="cluster" style="justify-content:center; margin-top:var(--sp-5);">
+                        <a href="{% url 'all_classes' %}" class="btn">Book a Class</a>
+                        <a href="{% url 'my_profile' %}" class="btn btn--ghost">My Profile</a>
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <div class="alert alert--warning">
+                        <span>Payment pending. Complete your payment to activate this membership.</span>
+                    </div>
+
+                    {% with plan=membership.membership_yearly|default:membership.membership_monthly %}
+                    <div class="plan-summary">
+                        <div class="plan-summary__row">
+                            <span>Plan</span><span><strong>{{ plan.name }}</strong></span>
+                        </div>
+                        <div class="plan-summary__row">
+                            <span>Billing</span>
+                            <span>{% if membership.membership_yearly %}Annual{% else %}Monthly{% endif %}</span>
+                        </div>
+                        <div class="plan-summary__row plan-summary__row--total">
+                            <span>Price</span><span>&#8377;{{ plan.price|floatformat:0 }}</span>
+                        </div>
+                    </div>
+                    {% endwith %}
+
+                    <div class="cluster" style="justify-content:center; margin-top:var(--sp-5);">
+                        {% if membership.membership_yearly %}
+                            <a href="{% url 'membership_processedtocheckout' membership.membership_yearly.id %}" class="btn btn--lg">
+                                Complete Payment
+                            </a>
+                        {% elif membership.membership_monthly %}
+                            <a href="{% url 'membership_processedtocheckout_monthly' membership.membership_monthly.id %}" class="btn btn--lg">
+                                Complete Payment
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>No membership yet</h3>
+                    <p>Join a plan to unlock the gym floor, group classes and coaching.</p>
+                    <div class="cluster" style="justify-content:center;">
+                        <a href="{% url 'membershipannual' %}" class="btn">See Annual Plans</a>
+                        <a href="{% url 'membershipmonthly' %}" class="btn btn--ghost">See Monthly Plans</a>
+                    </div>
+                </div>
             {% endif %}
+        </div>
 
-            <p class="membership-info"><strong>Purchased On:</strong> {{ membership.purchased_at }}</p>
-            <p class="membership-info"><strong>Plan Expiry:</strong> {{ membership.plan_expiry }}</p>
-
-        {% else %}
-            <!-- ❌ Payment Pending: Show only Buy Now button -->
-            <p style="color: red;">⚠️ Payment Pending. Please complete your payment.</p>
-
-            {% if membership.membership_yearly %}
-                <a href="{% url 'membership_processedtocheckout' membership.membership_yearly.id %}" class="btn btn-buy">
-                     Buy Now
-                </a>
-            {% elif membership.membership_monthly %}
-                <a href="{% url 'membership_processedtocheckout_monthly' membership.membership_monthly.id %}" class="btn btn-buy">
-                     Buy Now
-                </a>
-            {% endif %}
-        {% endif %}
-
-    {% else %}
-        <!-- 🛒 If user has no membership, show buy membership button -->
-        <p>You have not purchased any membership yet.</p>
-        <a href="{% url 'membershipannual' %}" class="btn btn-green">
-            🛒 Buy a Membership
-        </a>
-    {% endif %}
-</div>
-
+    </div>
+</section>
 {% endblock 'main' %}

@@ -1,559 +1,127 @@
-<style>
-
-        /* Gym Membership Section Styling */
-    .gym-membership-container {
-        padding: 50px 20px;
-        text-align: center;
-        background-color: #f5f5f5;
-    }
-
-    .gym-membership-heading {
-        font-size: 24px;
-        font-weight: bold;
-        color: #000;
-    }
-
-    .separator-line {
-        width: 100px;
-        height: 4px;
-        background-color: #000;
-        margin: 10px auto;
-    }
-
-    .main-title {
-        font-size: 32px;
-        font-weight: bold;
-        color: black;
-        margin-top: 10px;
-    }
-
-    .membership-description {
-        font-size: 16px;
-        color: #555;
-        max-width: 900px;
-        margin: 10px auto;
-        line-height: 1.6;
-    }
-
-        
-        /* Membership Section Styling */
-    .membership-plans {
-    padding: 50px 20px;
-    background-color: #f5f5f5;
-    text-align: center;
-
-    }
-
-    .membership-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    max-width: 1200px;
-    margin: auto;
-    }
-
-    .membership-card {
-    background-color: #fff;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    width: 300px;
-    transition: all 0.3s ease-in-out;
-    }
-
-    .membership-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .membership-card.highlight {
-    background-color: #000;
-    color: #fff;
-    }
-
-    .membership-card.highlight .buy-now {
-    background-color: #fff;
-    color: #000;
-    }
-
-    .membership-title {
-    font-size: 23px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #000;
-    border-bottom: 2px solid #000; /* Added 'solid' to make the border visible */
-    display: inline-block; /* Ensures border fits text width */
-}
-
-
-    .price {
-    font-size: 28px;
-    font-weight: bold;
-    margin: 10px 0;
-    }
-
-    .price small {
-    display: block;
-    font-size: 14px;
-    color: #666;
-    }
-
-    .buy-now {
-    background-color: #006666;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.3s ease;
-    }
-
-    .buy-now:hover {
-    background-color: crimson;
-    }
-
-    .features {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #666;
-    }
-
-    .features li {
-    list-style-type: none;
-    margin: 5px 0;
-    }
-    .price {
-        font-size: 28px !important;
-        font-weight: bold !important;
-        margin: 10px 0 !important;
-    }
-    .price small {
-        display: block;
-        font-size: 14px;
-        color: #666;
-    }
-    .price {
-        font-size: 28px;
-        font-weight: bold;
-        margin: 10px 0;
-        color: white; /* Ensure it's visible */
-    }
-        .price-price {
-        font-size: 28px;
-        font-weight: bold;
-        margin: 10px 0;
-        color: black; /* Ensure it's visible */
-    }
-
-    /* Club Experience Section Styling */
-    .club-experience {
-    background-color: #fff;
-    padding: 50px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: left;
-    }
-
-    .club-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 30px;
-    }
-
-    .club-text {
-    flex: 1;
-    min-width: 300px;
-    margin-right: 20px;
-    }
-
-    .club-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #000;
-    }
-
-    .club-description {
-    font-size: 16px;
-    line-height: 1.8;
-    margin-bottom: 20px;
-    color: #333;
-    }
-
-    .club-features {
-    list-style-type: none;
-    padding-left: 0;
-    }
-
-    .club-features li {
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: #555;
-    }
-
-    .club-image {
-    flex: 1;
-    min-width: 300px;
-    text-align: center;
-    }
-
-    .club-image img {
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #eee;
-    }
-
-    .kick-starters .container {
-    display: flex;
-    align-items: center;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 100%;
-    margin: 0 auto;
-    }
-
-    .kick-starters .image-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    }
-
-    .kick-starters .image-container img {
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    object-fit: cover;
-    }
-
-    .kick-starters .text-container {
-    flex: 2;
-    padding-left: 20px;
-    margin-left: 300px;
-    }
-
-    .kick-starters .text-container h1 {
-    font-size: 24px;
-    color: #333;
-    margin: 0 0 10px;
-    }
-
-    .kick-starters .text-container p {
-    font-size: 16px;
-    color: #555;
-    margin: 0 0 15px;
-    line-height: 1.6;
-    }
-
-    .kick-starters .text-container ul {
-    list-style: none;
-    padding: 0;
-    }
-
-    .kick-starters .text-container ul li {
-    font-size: 16px;
-    color: #333;
-    margin: 5px 0;
-    }
-
-    .kick-starters .text-container ul li strong {
-    color: #000;
-    }
-    .toggle-section {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        background-color: #f8f8f8;
-    }
-
-    .toggle-buttons {
-        display: flex;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .toggle-buttons a {
-        text-decoration: none;
-        text-align: center;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-        display: inline-block;
-    }
-
-    .toggle-buttons a:first-child {
-        background-color: black;
-        color: white;
-    }
-
-    .toggle-buttons a:last-child {
-        background-color: #f8f8f8;
-        color: #333;
-    }
-
-    .toggle-buttons a:hover {
-        filter: brightness(90%);
-    }
-    
-    .section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 50px;
-    background-color: #f9f9f9;
-    }
-
-    .section .content {
-    max-width: 50%;
-    }
-
-    .section .content h1 {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
-    }
-
-    .section .content p {
-    font-size: 1rem;
-    color: #666;
-    line-height: 1.6;
-    }
-
-    .section .image {
-    max-width: 40%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    }
-
-    .section .image img {
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    object-fit: cover;
-    }
-
-    @media (max-width: 768px) {
-    .section {
-    flex-direction: column;
-    text-align: center;
-    }
-
-    .section .content {
-    max-width: 100%;
-    }
-
-    .section .image {
-    max-width: 100%;
-    margin-top: 20px;
-    }
-    }
-
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-        .section {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .section .content {
-            max-width: 100%;
-        }
-
-        .section .image {
-            max-width: 100%;
-            margin-top: 20px;
-        }
-
-        .membership-container {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .membership-card {
-            width: 80%;
-            margin-bottom: 20px;
-        }
-
-        .club-content {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .club-text {
-            margin-right: 0;
-            text-align: center;
-        }
-
-        .club-image {
-            text-align: center;
-        }
-
-        .toggle-buttons {
-            flex-direction: column;
-        }
-
-        .toggle-buttons a {
-            width: 100%;
-            padding: 15px;
-        }
-
-        .kick-starters .container {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .kick-starters .text-container {
-            margin-left: 0;
-            text-align: center;
-        }
-
-        .kick-starters .image-container {
-            margin-bottom: 20px;
-        }
-    }
-</style>
 {% extends 'base.html' %}
 {% load static %}
 
+{% block page_title %}Annual Memberships - Fitness Empire{% endblock %}
+{% block page_id %}plans{% endblock %}
+
 {% block 'main' %}
-<section class="gym-membership-container">
-    <h2 class="gym-membership-heading">GYM MEMBERSHIPS</h2>
-    <div class="separator-line"></div>
-    <h1 class="main-title">WELCOME TO YOUR NEW PLAYGROUND</h1>
-    <p class="membership-description">
-        Whether you’re new to fitness, intermediate, or have reached pro status, commit to your best 
-        and gain momentum on your fitness goals with memberships that work for you.
-    </p>
+
+<section class="section section--dark">
+    <div class="container">
+        <div class="section-head" style="margin-bottom:0;">
+            <span class="eyebrow">Gym Memberships</span>
+            <h1>Welcome to your new playground</h1>
+            <p>
+                Whether you are new to fitness, intermediate, or already at pro level, commit to your
+                best and build momentum with a membership that works for you.
+            </p>
+        </div>
+    </div>
 </section>
 
-
-<section class="toggle-section">
- <div class="toggle-buttons">
-     <a href="{% url 'membershipannual' %}" class="toggle-button">ANNUAL</a>
-     <a href="{% url 'membershipmonthly' %}" class="toggle-button">MONTHLY</a>
- </div>
+<section class="section section--tight section--muted">
+    <div class="container text-center">
+        <div class="toggle-pills">
+            <a href="{% url 'membershipannual' %}" aria-current="page">Annual</a>
+            <a href="{% url 'membershipmonthly' %}">Monthly</a>
+        </div>
+    </div>
 </section>
 
-
-<section class="membership-plans">
- <div class="membership-container">
-     <!-- Core Membership -->
-    {% for i in memberships %}
-     <div class="membership-card">
-         <h2 class="membership-title">{{ i.name }}</h2>
-         <p class="price-price">RS {{ i.price }} /- <br><small>Amount + Tax*</small></p>
-         <a href="{% url 'membership_list' i.id %}"><button class="buy-now">BUY NOW</button></a>
-         <ul class="features">
-             <li>{{ i.description }}</li>
-         </ul>
-     </div>
-    {% endfor %}
-{% comment %}     
-     <!-- Premier Membership -->
-     <div class="membership-card highlight">
-         <h2 class="membership-title">PREMIER</h2>
-         <p class="price">RS/- 7,700 <small>Amount + Tax*</small></p>
-         <a href="{% url 'checkout' %}"><button class="buy-now">BUY NOW</button></a>
-         <ul class="features">
-             <li>MULTI CLUB ACCESS</li>
-             <li>Group Fitness Classes</li>
-             <li>Tru-Ride Cycling</li>
-             <li>Free Evolt Body Scan / Month</li>
-         </ul>
-     </div>
-
-     <!-- Executive Membership -->
-     <div class="membership-card">
-         <h2 class="membership-title">EXECUTIVE</h2>
-         <p class="price-price">RS/- 9,900 <small> <br>Amount + Tax*</small></p>
-         <a href="{% url 'checkout' %}"><button class="buy-now">BUY NOW</button></a>
-         <ul class="features">
-             <li>CALGARY PLACE + MULTI CLUB ACCESS</li>
-             <li>Group Fitness Classes</li>
-             <li>Tru-Ride Cycling</li>
-             <li>Towel Service</li>
-             <li>Free Evolt Body Scan / Year</li>
-         </ul>
-     </div>{% endcomment %}
- </div> 
+<section class="section">
+    <div class="container">
+        {% if memberships %}
+        <div class="plans">
+            {% for i in memberships %}
+            <div class="plan {% if forloop.counter == 2 %}plan--featured{% endif %}">
+                {% if forloop.counter == 2 %}<span class="badge badge--brand plan__flag">Most Popular</span>{% endif %}
+                <h2 class="plan__name">{{ i.name }}</h2>
+                <div class="plan__price">&#8377;{{ i.price|floatformat:0 }}<small>per year + tax</small></div>
+                <p class="plan__desc">{{ i.description }}</p>
+                <a href="{% url 'membership_list' i.id %}" class="btn btn--block">Buy Now</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No annual plans available</h3>
+            <p>Check back shortly, or take a look at our monthly options.</p>
+            <a href="{% url 'membershipmonthly' %}" class="btn">See Monthly Plans</a>
+        </div>
+        {% endif %}
+    </div>
 </section>
 
-<section class="club-experience">
- <div class="club-content">
-     <div class="club-text">
-         <h2 class="club-title">THE CLUBS: BUILD YOUR OWN EXPERIENCE</h2>
-         <p class="club-description">
-             Hit the club with confidence. Step into a space outfitted with equipment 
-             for every fitness level and take advantage of post-workout amenities so 
-             that you can exercise and recharge all in one place.
-         </p>
-         <ul class="club-features">
-             <li>Top-of-the-line cardio and weight equipment</li>
-             <li>Rogue rigs</li>
-             <li>Turfs for functional training</li>
-             <li>Infrared saunas + steam rooms*</li>
-             <li>Olympic lifting platforms</li>
-             <li>Group Fitness and Cycle studios*</li>
-             <li>Personal training and coaching*</li>
-             <li>Towel service*</li>
-         </ul>
-     </div>
-     <div class="club-image">
-         <img src="{% static 'images/fit.jpg' %}" alt="Fitness Club Experience">
-     </div>
- </div>
+<section class="section section--surface">
+    <div class="container">
+        <div class="split">
+            <div>
+                <h2>The clubs: build your own experience</h2>
+                <p>
+                    Hit the club with confidence. Step into a space outfitted with equipment for every
+                    fitness level, and take advantage of post-workout amenities so you can train and
+                    recharge in one place.
+                </p>
+                <ul>
+                    <li>Top-of-the-line cardio and weight equipment</li>
+                    <li>Rogue rigs and Olympic lifting platforms</li>
+                    <li>Turf areas for functional training</li>
+                    <li>Infrared saunas and steam rooms</li>
+                    <li>Group fitness and cycle studios</li>
+                    <li>Personal training and coaching</li>
+                </ul>
+            </div>
+            <div class="split__media">
+                <img src="{% static 'img/fit.webp' %}" alt="Inside a Fitness Empire club"
+                     loading="lazy" width="380" height="380">
+            </div>
+        </div>
+    </div>
 </section>
 
-<section class="kick-starters">
- <div class="container">
-     <div class="image-container">
-         <img src="{% static 'images/membership.jpg' %}" alt="Fitness Training">
-     </div>
-     <div class="text-container">
-         <h1>KICK STARTERS: 5 FREE SESSIONS</h1>
-         <p>Know your playground. Get setup with 5 complimentary coached sessions</p>
-         <p class="space">to help you learn the ropes and crush your fitness journey.</p>
-         <ul>
-             <li><strong>3</strong> Cardio resistance training sessions to gauge your fitness level</li>
-             <li><strong>2</strong> Personalized fitness consultations to help you set realistic goals</li>
-         </ul>
-     </div>
- </div>
+<section class="section">
+    <div class="container">
+        <div class="split split--reverse">
+            <div>
+                <h2>Kick starters: 5 free sessions</h2>
+                <p>
+                    Know your playground. Every new member gets five complimentary coached sessions to
+                    learn the ropes before training alone.
+                </p>
+                <ul>
+                    <li><strong>3</strong> cardio and resistance sessions to gauge your fitness level</li>
+                    <li><strong>2</strong> personal consultations to set realistic goals</li>
+                </ul>
+            </div>
+            <div class="split__media">
+                <img src="{% static 'img/membership.webp' %}" alt="A coached training session"
+                     loading="lazy" width="380" height="380">
+            </div>
+        </div>
+    </div>
 </section>
 
-<section class="workshops-programs">
- <div class="section">
-     <div class="content">
-         <h1>WORKSHOPS + PROGRAMS: <br>GET IT ALL IN ONE PLACE</h1>
-         <p>
-             Led by our Personal Trainers and designed to enhance your workouts, our workshops and programs are curated experiences to level up your fitness routines.
-         </p>
-         <p>
-             Choose from 6-8 week programs or set aside a few hours in a workshop to learn the basics or advanced workout techniques to maximize your gains.
-         </p>
-     </div>
-     <div class="image">
-         <img src="{% static 'images/PT-Hiring-1.jpg' %}" alt="Workout Program">
-     </div>
- </div>
+<section class="section section--muted">
+    <div class="container">
+        <div class="split">
+            <div>
+                <h2>Workshops and programs, all in one place</h2>
+                <p>
+                    Led by our personal trainers and designed to enhance your workouts, our workshops
+                    and programs are curated experiences that level up your routine.
+                </p>
+                <p>
+                    Choose a six to eight week program, or set aside a few hours in a workshop to learn
+                    the basics or advanced techniques that maximise your gains.
+                </p>
+                <a href="{% url 'training' %}" class="btn btn--ghost">Explore Training</a>
+            </div>
+            <div class="split__media">
+                <img src="{% static 'img/pt-hiring-1.webp' %}" alt="Trainer coaching a workshop"
+                     loading="lazy" width="380" height="380">
+            </div>
+        </div>
+    </div>
 </section>
 
 {% endblock 'main' %}

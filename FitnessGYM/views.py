@@ -1,413 +1,458 @@
-from django.shortcuts import render, HttpResponse
-from django.views import View
-from .models import Customer, FitnessProgram, GymMembership, Trainer,SupplementCategory,Supplement,cart,Category, FitnessClass,Membership,processedtocheck,Membershipmonth,membershipprocessedtocheck,Orders,aboutus,UserProfile
-from .form import RegisterForm,userAuthentication,forms,SupplementForm,processedtocheckform,membershipprocessedtocheckform,aboutusform,UserProfileForm
-from django.contrib import messages
-from decimal import Decimal
-from django.contrib.auth.models import User
-from django.urls import reverse
-from django.contrib.auth import authenticate, login as auth_login,logout
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.utils import timezone
-from django.conf import settings
+"""Views for the Fitness Empire storefront.
+
+Notes on this revision:
+* Duplicate view definitions were removed (``crud``, ``showdetails`` and
+  ``register`` were each declared twice, so the first copy was dead code).
+* Every view that reads ``request.user`` now requires a login; previously an
+  anonymous visitor silently got an empty page instead of the sign-in screen.
+* Cart/order queries use ``select_related`` so a page with N rows issues one
+  query instead of N+1.
+* Order status is stored using the model's own choice values, so the
+  case-sensitive comparisons that never matched are gone.
+"""
+
+import datetime
+import random
 import uuid
-from paypal.standard.forms import PayPalPaymentsForm
+from decimal import Decimal
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.db import transaction
+from django.db.models import F, Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-# from rest_framework.decorators import 
- 
-# Display Fitness Programs and Memberships
-def show(request):
-    memberships = Membership.objects.all()  # Fetch all gym memberships
-    programs = FitnessProgram.objects.all()  # Fetch all fitness programs
-    context = {'memberships': memberships, 'programs': programs}
-    return render(request, 'index.html', context)  # Render to 'index.html' template
+from django.utils import timezone
+from paypal.standard.forms import PayPalPaymentsForm
+from rest_framework import status
+from rest_framework.decorators import APIView
+from rest_framework.response import Response
+
+from .form import (
+    RegisterForm,
+    SupplementForm,
+    UserProfileForm,
+    membershipprocessedtocheckform,
+    processedtocheckform,
+    userAuthentication,
+)
+from .models import (
+    Category,
+    Customer,
+    FitnessClass,
+    FitnessProgram,
+    Membership,
+    Membershipmonth,
+    Orders,
+    Product,
+    Supplement,
+    SupplementCategory,
+    Trainer,
+    UserProfile,
+    aboutus,
+    cart,
+    membershipprocessedtocheck,
+    processedtocheck,
+)
+from .serializers import customerSerializer
+
+GST_RATE = Decimal("0.18")
 
 
-# Customer CRUD Operations
-
-# Display all customers and handle CRUD operations
-def crud(request):
-    if request.method == 'POST':
-        customer_id = request.POST['customer-id']
-        customer_name = request.POST['customer-name']
-        customer_email = request.POST['customer-email']
-        customer_contact = request.POST['customer-contact']
-        
-        # Create a new customer instance
-        customer = Customer.objects.create(
-            customerId=customer_id,
-            customerName=customer_name,
-            customerEmail=customer_email,
-            contactNumber=customer_contact
-        )
-        customer.save()
-        return HttpResponse('Customer created successfully')  # Response after saving customer
-    else:
-        return render(request, 'crud_operation.html')  # Render customer creation form for GET requests
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+def delivery_charge_for(total):
+    """Tiered delivery pricing, in one place instead of copy-pasted per view."""
+    total = Decimal(total or 0)
+    if total <= 0:
+        return Decimal("0")
+    if total <= 2000:
+        return Decimal("120")
+    if total <= 5000:
+        return Decimal("70")
+    return Decimal("0")
 
 
-# Show All Customers
-def showdetails(request):
-    customers = Customer.objects.all()  # Fetch all customers
-    return render(request, 'dashboard.html', {'customers': customers})  # Render customers in the dashboard
+def cart_for(user):
+    """Cart rows for a user, with the product joined in a single query."""
+    return (
+        cart.objects.filter(userid=user)
+        .select_related("productid", "productid__supplementCategory")
+        .order_by("id")
+    )
 
 
-# Delete Customer
-def delete_customer(request, id):
-    customer = Customer.objects.get(id=id)  # Find customer by ID
-    customer.delete()  # Delete the customer
-    return redirect('/showdetails')  # Redirect to show customer details after deletion
+def cart_totals(items):
+    subtotal = sum(
+        (row.productid.supplementPrice * row.quantity for row in items),
+        Decimal("0"),
+    )
+    delivery = delivery_charge_for(subtotal)
+    return {
+        "total": subtotal,
+        "delivery_charge": delivery,
+        "grand_total": subtotal + delivery,
+        "totalCount": sum(row.quantity for row in items),
+    }
 
 
-# Edit Customer Details
-def edit_customer(request, id):
-    if request.method == 'POST':
-        customer_id = request.POST['customer-id']
-        customer_name = request.POST['customer-name']
-        customer_email = request.POST['customer-email']
-        customer_contact = request.POST['customer-contact']
-        
-        # Update the customer details
-        customer = Customer.objects.get(id=id)
-        customer.customerId = customer_id
-        customer.customerName = customer_name
-        customer.customerEmail = customer_email
-        customer.contactNumber = customer_contact
-        customer.save()
-        
-        return redirect('/showdetails')  # Redirect after updating customer details
-    else:
-        customer = Customer.objects.get(id=id)  # Get the customer for editing
-        return render(request, 'edit.html', {'customer': customer})  # Render customer edit form
+def paypal_form(request, *, amount, item_name, return_url_name):
+    """Build the PayPal button form used by the checkout screens."""
+    host = request.get_host()
+    scheme = "https" if request.is_secure() else "http"
+    return PayPalPaymentsForm(
+        initial={
+            "business": settings.PAYPAL_RECEIVER_EMAIL,
+            "amount": amount,
+            "item_name": item_name,
+            "invoice": uuid.uuid4(),
+            "currency_code": "USD",
+            "notify_url": f"{scheme}://{host}{reverse('paypal-ipn')}",
+            "return_url": f"{scheme}://{host}{reverse(return_url_name)}",
+            "cancel_url": f"{scheme}://{host}{reverse('paymentfailed')}",
+        }
+    )
 
 
-# Contact Us Page (Basic page to show info)
-def contactus(request):
-    return HttpResponse("Contact us for gym membership, fitness programs, and more!")  # Static info page
+# ---------------------------------------------------------------------------
+# Public pages
+# ---------------------------------------------------------------------------
+def home(request):
+    context = {
+        "memberships": Membership.objects.all()[:3],
+        "classes": FitnessClass.objects.select_related("category")[:8],
+        "featured": Supplement.objects.filter(is_deleted=False).select_related(
+            "supplementCategory"
+        )[:4],
+        "trainer_count": Trainer.objects.count(),
+        "class_count": FitnessClass.objects.count(),
+        "program_count": FitnessProgram.objects.count(),
+    }
+    return render(request, "index.html", context)
 
 
-# About Us Page (Basic page to show info)
 def about_us(request):
-    success_message = ""  # Initialize success message
-
+    success_message = ""
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        message = request.POST.get("message")
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        message = (request.POST.get("message") or "").strip()
 
-        if name and email and message:  # Basic validation
+        if name and email and message:
             aboutus.objects.create(name=name, email=email, message=message)
             success_message = "Thank you! Your message has been received."
+            messages.success(request, success_message)
+            return redirect("aboutus")
+        messages.error(request, "Please fill in your name, email and message.")
 
-    return render(request, 'aboutus.html', {'success_message': success_message})
-
-
-
-# Simple View for Testing (Class-based View Example)
-class SimpleView(View):
-    def get(self, request):
-        return HttpResponse("Welcome to our Fitness Gym!")  # Handle GET requests for SimpleView
-
-    def post(self, request):
-        return HttpResponse("Processing your request...")  # Handle POST requests for SimpleView
+    return render(request, "aboutus.html", {"success_message": success_message})
 
 
+def careers(request):
+    return render(request, "careers.html")
 
-def home(request):
-    return render(request, 'index.html') 
 
-def register(request):
-    if request.method == "POST":
-        registerForm = RegisterForm(request.POST)
-        if registerForm.is_valid():
-            registerForm.save()
-            return redirect('home')
-    else:
-        registerForm = RegisterForm()
-        return render(request,'register.html',{'registerForm':registerForm})
+def training(request):
+    return render(request, "training.html")
 
-def memberships(request):
-    memberships = Membership.objects.all()  # Fetch all gym memberships
-    return render(request, 'membershipannual.html',{'memberships':memberships})
 
-def membershipmonthly(request):
-    membershipmonthly = Membershipmonth.objects.all()
-    return render(request,'membershipmonthly.html',{'Membershipmonth':membershipmonthly})
-
-# View for Diet Plan
 def diet_plan(request):
-    return render(request, 'dietplan.html')
+    return render(request, "dietplan.html")
 
-# View for Classes
+
+def weightlossplan(request):
+    return render(request, "weightlossplan.html")
+
+
+def muselloss(request):
+    return render(request, "musel.html")
+
+
+def healthlyplan(request):
+    return render(request, "healthlyplan.html")
+
 
 def fitness_classes(request, category_name=None):
     categories = Category.objects.all()
-    
-    if category_name and category_name.lower() != 'all':
-        category = Category.objects.filter(name__iexact=category_name).first()
-        classes = FitnessClass.objects.filter(category=category)
+    classes = FitnessClass.objects.select_related("category")
+
+    if category_name and category_name.lower() != "all":
+        classes = classes.filter(category__name__iexact=category_name)
+
+    return render(
+        request,
+        "fitness_classes.html",
+        {
+            "categories": categories,
+            "selected_category": category_name or "All",
+            "classes": classes,
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Memberships
+# ---------------------------------------------------------------------------
+def memberships(request):
+    return render(
+        request,
+        "membershipannual.html",
+        {"memberships": Membership.objects.all()},
+    )
+
+
+def membershipmonthly(request):
+    return render(
+        request,
+        "membershipmonthly.html",
+        {"Membershipmonth": Membershipmonth.objects.all()},
+    )
+
+
+@login_required(login_url="login")
+def membership_processed_view(request, id):
+    """Collect member details for a yearly plan."""
+    membership = get_object_or_404(Membership, id=id)
+    total_price = membership.price + (membership.price * GST_RATE)
+
+    existing = membershipprocessedtocheck.objects.filter(user=request.user).first()
+    if existing:
+        if existing.membership_monthly:
+            messages.warning(
+                request,
+                "You already have a monthly membership and cannot buy a yearly one.",
+            )
+            return redirect("profile")
+        if existing.membership_yearly:
+            messages.warning(
+                request, "You already have a yearly membership and cannot buy another one."
+            )
+            return redirect("profile")
+
+    if request.method == "POST":
+        form = membershipprocessedtocheckform(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.user = request.user
+            record.membership_yearly = membership
+            record.membership_monthly = None
+            record.save()
+            messages.success(request, "Proceed to payment to complete your membership.")
+            return redirect("membershipprocessedtocheckouts", id=id)
+        messages.error(request, "Please correct the highlighted fields.")
     else:
-        classes = FitnessClass.objects.all()
-    
-    return render(request, 'fitness_classes.html', {
-        'categories': categories,
-        'selected_category': category_name or 'All',
-        'classes': classes
-    })
+        form = membershipprocessedtocheckform(initial=_member_initial(request.user))
 
-# View for Training
-def training(request):
-    return render(request, 'training.html')
+    return render(
+        request,
+        "membership_form.html",
+        {"form": form, "membership": membership, "total_price": total_price},
+    )
 
-# View for Careers
-def careers(request):
-    return render(request, 'careers.html')
 
-# View for Products
+@login_required(login_url="login")
+def membership_processed_view_month(request, id):
+    """Collect member details for a monthly plan."""
+    membership = get_object_or_404(Membershipmonth, id=id)
+    total_price = membership.price + (membership.price * GST_RATE)
+
+    existing = membershipprocessedtocheck.objects.filter(user=request.user).first()
+    if existing:
+        if existing.membership_yearly:
+            messages.warning(
+                request,
+                "You already have a yearly membership and cannot buy a monthly one.",
+            )
+            return redirect("profile")
+        if existing.membership_monthly:
+            messages.warning(
+                request,
+                "You already have a monthly membership and cannot buy another one.",
+            )
+            return redirect("profile")
+
+    if request.method == "POST":
+        form = membershipprocessedtocheckform(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.user = request.user
+            record.membership_monthly = membership
+            record.membership_yearly = None
+            record.save()
+            messages.success(request, "Proceed to payment to complete your membership.")
+            return redirect("membershipprocessedtocheckout", id=id)
+        messages.error(request, "Please correct the highlighted fields.")
+    else:
+        form = membershipprocessedtocheckform(initial=_member_initial(request.user))
+
+    return render(
+        request,
+        "membership_form_month.html",
+        {"form": form, "membership": membership, "total_price": total_price},
+    )
+
+
+def _member_initial(user):
+    """Pre-fill the membership form from the user's profile."""
+    profile = UserProfile.objects.filter(user=user).first()
+    return {
+        "full_name": (profile.full_name if profile else "") or user.get_full_name(),
+        "email": (profile.email if profile else "") or user.email,
+        "phone_number": profile.phone if profile else "",
+    }
+
+
+@login_required(login_url="login")
+def membership_processedtocheckout(request, id):
+    """Payment screen for a yearly plan."""
+    membership = get_object_or_404(Membership, id=id)
+    record = membershipprocessedtocheck.objects.filter(
+        user=request.user, membership_yearly=membership
+    ).first()
+
+    if not record:
+        messages.warning(request, "No pending payment found.")
+        return redirect("profile")
+
+    total_price = membership.price + (membership.price * GST_RATE)
+
+    return render(
+        request,
+        "membershipprocessedtocheckout.html",
+        {
+            "membership": membership,
+            "record": record,
+            "gst": membership.price * GST_RATE,
+            "total_price": total_price,
+            "paypalpayment": paypal_form(
+                request,
+                amount=total_price,
+                item_name=membership.name,
+                return_url_name="paymentmembership",
+            ),
+        },
+    )
+
+
+@login_required(login_url="login")
+def membership_processedtocheckout_monthly(request, id):
+    """Payment screen for a monthly plan."""
+    membership = get_object_or_404(Membershipmonth, id=id)
+    record = membershipprocessedtocheck.objects.filter(
+        user=request.user, membership_monthly=membership
+    ).first()
+
+    if not record:
+        messages.warning(request, "No pending payment found.")
+        return redirect("profile")
+
+    total_price = membership.price + (membership.price * GST_RATE)
+
+    return render(
+        request,
+        "membershipprocessedtocheckoutmonthly.html",
+        {
+            "membership": membership,
+            "record": record,
+            "gst": membership.price * GST_RATE,
+            "total_price": total_price,
+            "paypalpayment": paypal_form(
+                request,
+                # Previously this charged the pre-GST price while the page
+                # displayed the GST-inclusive total.
+                amount=total_price,
+                item_name=membership.name,
+                return_url_name="paymentmembership",
+            ),
+        },
+    )
+
+
+@login_required(login_url="login")
+def paymentmembership(request):
+    record = membershipprocessedtocheck.objects.filter(
+        user=request.user, payment_status=False
+    ).first()
+
+    if record:
+        record.payment_status = True
+        record.save()
+        messages.success(request, "Payment successful! Your membership is now active.")
+    else:
+        messages.warning(request, "No pending membership found.")
+
+    return render(request, "finalthankyou.html", {"membership": record})
+
+
+@login_required(login_url="login")
+def profile_view(request):
+    membership = (
+        membershipprocessedtocheck.objects.filter(user=request.user)
+        .select_related("membership_yearly", "membership_monthly")
+        .first()
+    )
+    pending_payment = bool(membership and not membership.payment_status)
+
+    return render(
+        request,
+        "profile.html",
+        {"membership": membership, "pending_payment": pending_payment},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Shop
+# ---------------------------------------------------------------------------
 def products(request):
-    categories = SupplementCategory.objects.all()
-    products = Supplement.objects.all()
-    context = {'categories': categories,'products': products}
-    return render(request, 'protien.html', context)
+    return render(
+        request,
+        "protien.html",
+        {
+            "categories": SupplementCategory.objects.all(),
+            "products": Supplement.objects.filter(is_deleted=False).select_related(
+                "supplementCategory"
+            ),
+        },
+    )
 
-def login(request):
-    return render(request, 'login.html')
-
-# Views for Login and Register
-def login_view(request):
-    return render(request, 'login.html')
-
-def register_view(request):
-    return render(request, 'register.html')
-
-# User registration
-def register(request):
-    if request.method == "POST":
-        registerForm = RegisterForm(request.POST)
-        if registerForm.is_valid():
-            registerForm.save()
-            messages.success(request, "Successfully registered, now you can log in.")  # ✅ FIXED
-            return redirect('login')
-        else:
-            messages.error(request, "Invalid form submission. Please check the details and try again.")
-            return render(request, 'register.html', {'registerForm': registerForm})  
-
-    else:
-        registerForm = RegisterForm()
-        return render(request, 'register.html', {'registerForm': registerForm})
- 
-def clean_email(self):
-    email = self.cleaned_data.get('email')
-    if User.objects.filter(email=email).exists():
-        raise forms.ValidationError("This email is already registered.")
-    return email
-
-import datetime
-
-def loginuser(request):
-    if request.method == "POST":
-        uname = request.POST['username']
-        upass = request.POST['password']
-        print(uname)
-        print(upass)
-        
-        # Authenticate user
-        user = authenticate(request, username=uname, password=upass)
-        print(user)
-        
-        if user is not None:
-            # Use auth_login (not login) to log the user in
-            auth_login(request, user)
-            response=redirect('home')
-            request.session['username']=uname
-            response.set_cookie('username',uname)
-            response.set_cookie('Time',datetime.datetime.now())
-            return response  # Redirect to home page or wherever you want
-        else:
-            messages.error(request, "Invalid username or password. Please try again.")
-            return redirect("login")
-    else:
-        userform = userAuthentication()
-        return render(request, 'login.html', {'userform': userform})
-      
-def signout(request):
-    logout(request)
-    return redirect('home')
 
 def category(request, id):
-    print(id)
-    categories = SupplementCategory.objects.all()
-    products = Supplement.objects.filter(supplementCategory_id=id)  # Use the correct field name
-    return render(request, 'protien.html', {'categories': categories, 'products': products})
+    selected = get_object_or_404(SupplementCategory, id=id)
+    return render(
+        request,
+        "protien.html",
+        {
+            "categories": SupplementCategory.objects.all(),
+            "products": Supplement.objects.filter(
+                supplementCategory=selected, is_deleted=False
+            ).select_related("supplementCategory"),
+            "selected_category": selected,
+        },
+    )
 
-# Create or Update Product
-def crud(request):
-    if request.method == 'POST':
-        productId = request.POST.get('product-id')
-        productName = request.POST.get('product-name')
-        productPrice = request.POST.get('product-price')
-        productDescription = request.POST.get('product-description')
-        productImage = request.FILES.get('product-image')
-        
-        prod=Product.objects.create(
-            productId=productId, 
-            productName=productName, 
-            productPrice=productPrice, 
-            productDescription=productDescription,
-            productImage=productImage
+
+def cards(request, id):
+    product = get_object_or_404(
+        Supplement.objects.select_related("supplementCategory"), id=id, is_deleted=False
+    )
+    related = (
+        Supplement.objects.filter(
+            supplementCategory=product.supplementCategory, is_deleted=False
         )
-        prod.save()
-        return HttpResponse('Product Data Submitted')
-    else:
-        return render(request, 'crud_operation.html')
+        .exclude(id=product.id)
+        .select_related("supplementCategory")[:4]
+    )
+    return render(request, "cards.html", {"product": product, "related": related})
 
-# Show all product details
-def showdetails(request):
-    products = Product.objects.all()
-    return render(request, 'dashboard.html', {'products': products})
-
-# Delete a product
-def deleteproduct(request, id):
-    product = get_object_or_404(Product, id=id)
-    product.delete()
-    return redirect(reverse('showdetails'))
-
-# Edit product details
-
-def editproduct(request, id):
-    product = get_object_or_404(Product, id=id)
-
-    if request.method == 'POST':
-        product.productId = request.POST.get('product-id') 
-        product.productName = request.POST.get('product-name')
-        product.productDescription = request.POST.get('product-description')
-        product.productPrice = request.POST.get('product-price')
-
-        if request.FILES.get('product-image'):
-            product.productImage = request.FILES.get('product-image')
-
-        product.save()
-        return redirect(reverse('showdetails'))  
-    
-    return render(request, 'edit.html', {'product': product})
-
-
-def cards(request,id):
-    products=Supplement.objects.filter(id=id)
-    return render(request,'cards.html',{'products':products})
-
-# def addtocart(request,id):
-#     prodid=Supplement.objects.filter(id=id)
-#     print(prodid)
-#     addtocartproduct=cart.objects.create(productid=prodid)
-#     addtocartproduct.save()
-#     return render(request,'addtocart.html')
-
-@login_required(login_url='login')
-def addtocart(request, id):
-    # Get the current logged-in user
-    userid = request.user.id
-    user_details = get_object_or_404(User, id=userid)  # Fetch user details
-
-    # Get the supplement product
-    product = get_object_or_404(Supplement, id=id)  # Fetch the supplement product by ID
-
-    # Check if the product is already in the cart for this user
-    existing_cart_item = cart.objects.filter(productid=product, userid=user_details).exists()
-
-    # Prepare the context
-    context = {'products': [product]}
-
-    if existing_cart_item:
-        # Product already in the cart
-        context['msg'] = "Already in cart! Please check."
-    else:
-        # Add product to the cart
-        cart.objects.create(productid=product, userid=user_details)
-        context['success'] = "Successfully added to cart."
-
-    return render(request, 'cards.html', context)
-
-def addproduct(request):
-    if request.method == "POST":
-        form = SupplementForm(request.POST, request.FILES)  # Use SupplementForm
-        if form.is_valid():
-            form.save()  # Save the valid form
-            return redirect('home')
-        else:
-            # Render form with validation errors
-            return render(request, 'addproductcrud.html', {'form': form})
-    else:
-        form = SupplementForm()
-        return render(request, 'addproductcrud.html', {'form': form})
-
-def deleteproductcrud(request, id):
-    product = get_object_or_404(Supplement, id=id, is_deleted=False)
-    product.is_deleted = True
-    product.delete_details = timezone.now()
-    product.save()  # Save the soft-deleted product
-    return redirect('home')
-
-def viewcart(request):
-    userid = request.user.id
-    print(userid)
-    products = cart.objects.filter(userid=userid)
-    print(products)
-
-    total = 0
-
-    # Calculate total price based on cart items
-    for i in products:
-        total += i.productid.supplementPrice * i.quantity
-
-    # Apply delivery charges based on order value
-    if total == 0:
-        delivery_charge = 0  # No order, no delivery charge
-    elif total <= 2000:
-        delivery_charge = 120
-    elif total <= 5000:
-        delivery_charge = 70
-    else:
-        delivery_charge = 0  # Free delivery for orders above 5000
-
-    grand_total = total + delivery_charge  # Final amount after adding delivery charge
-
-    return render(request, 'viewcart.html', {
-        'products': products,
-        'total': total,
-        'delivery_charge': delivery_charge,
-        'grand_total': grand_total,
-    })
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-
-def updateqty(request, qv, id):
-    card_details = get_object_or_404(cart, id=id)  # Get cart item
-
-    if qv == '1':  # Increase quantity
-        if card_details.quantity < 5:  # Limit to 5
-            card_details.quantity += 1
-            card_details.save()
-        else:
-            messages.warning(request, "You cannot add more than 5 items of this product.")
-    else:  # Decrease quantity
-        if card_details.quantity > 1:  # Ensure it doesn't go below 1
-            card_details.quantity -= 1
-            card_details.save()
-
-    return redirect('viewcart')
 
 def searchdata(request):
-    query = request.GET.get('query', '').strip()
-    products = Supplement.objects.none()
-    categories = SupplementCategory.objects.none()
-    menu_items = []  # Store matching menu items
+    query = (request.GET.get("query") or "").strip()
 
-    # Define menu items (URL names and their display text)
     all_menu_items = [
         {"name": "Memberships", "url": "membershipannual"},
         {"name": "Diet Plan", "url": "dietplan"},
@@ -418,557 +463,671 @@ def searchdata(request):
         {"name": "Careers", "url": "careers"},
     ]
 
-    if query:
-        # Search for products
-        products_by_name = Supplement.objects.filter(supplementName__icontains=query)
-        categories = SupplementCategory.objects.filter(categoryName__icontains=query)
-        products_by_category = Supplement.objects.filter(supplementCategory__in=categories)
-        products = products_by_name.union(products_by_category)
+    results = Supplement.objects.none()
+    categories = SupplementCategory.objects.all()
+    menu_items = []
 
-        # Search for menu items (if query matches menu name)
+    if query:
+        results = (
+            Supplement.objects.filter(is_deleted=False)
+            .filter(
+                Q(supplementName__icontains=query)
+                | Q(supplementDescription__icontains=query)
+                | Q(supplementCategory__categoryName__icontains=query)
+            )
+            .select_related("supplementCategory")
+            .distinct()
+        )
         menu_items = [
             item for item in all_menu_items if query.lower() in item["name"].lower()
         ]
 
-    return render(request, 'protien.html', {
-        'query': query,
-        'products': products,
-        'categories': categories,
-        'menu_items': menu_items,
-        'no_results': not products.exists() and not menu_items,
-    })
+    return render(
+        request,
+        "protien.html",
+        {
+            "query": query,
+            "products": results,
+            "categories": categories,
+            "menu_items": menu_items,
+            "is_search": True,
+            "no_results": query and not results.exists() and not menu_items,
+        },
+    )
 
 
-def remove(request,id):
-    product=cart.objects.filter(id=id)
-    product.delete()
-    return redirect('viewcart')
+# ---------------------------------------------------------------------------
+# Cart
+# ---------------------------------------------------------------------------
+@login_required(login_url="login")
+def addtocart(request, id):
+    product = get_object_or_404(Supplement, id=id, is_deleted=False)
 
-@login_required
-def Processedtocheck(request):
-    userid = request.user.id
-    products = cart.objects.filter(userid=userid)
+    if product.stock <= 0:
+        messages.warning(request, f"{product.supplementName} is out of stock.")
+        return redirect("cards", id=product.id)
 
-    # Calculate total price
-    total = sum(i.productid.supplementPrice * i.quantity for i in products)
+    row, created = cart.objects.get_or_create(
+        productid=product, userid=request.user, defaults={"quantity": 1}
+    )
 
-    # Apply delivery charges based on order value
-    if total == 0:
-        delivery_charge = 0  # No order, no delivery charge
-    elif total <= 2000:
-        delivery_charge = 120
-    elif total <= 5000:
-        delivery_charge = 70
+    if created:
+        messages.success(request, f"{product.supplementName} added to your cart.")
+    elif row.quantity >= 5:
+        messages.warning(request, "You cannot add more than 5 units of one product.")
+    elif row.quantity >= product.stock:
+        messages.warning(request, "No more units of this product are in stock.")
     else:
-        delivery_charge = 0  # Free delivery for orders above 5000
+        row.quantity = F("quantity") + 1
+        row.save(update_fields=["quantity"])
+        messages.success(request, f"Added another {product.supplementName} to your cart.")
 
-    grand_total = total + delivery_charge  # Final amount after adding delivery charge
+    return redirect("cards", id=product.id)
 
-    # Check if the user has already submitted their details
-    form_filled = processedtocheck.objects.filter(user=request.user).exists()
 
-    if form_filled:
-        # If user has already filled the form, redirect to payment page
-        return redirect('makepayment')  # Change 'payment_page' to your actual payment URL name
+@login_required(login_url="login")
+def viewcart(request):
+    items = list(cart_for(request.user))
+    context = {"products": items}
+    context.update(cart_totals(items))
+    return render(request, "viewcart.html", context)
+
+
+@login_required(login_url="login")
+def updateqty(request, qv, id):
+    row = get_object_or_404(
+        cart.objects.select_related("productid"), id=id, userid=request.user
+    )
+
+    if str(qv) == "1":
+        if row.quantity >= 5:
+            messages.warning(request, "You cannot add more than 5 units of one product.")
+        elif row.quantity >= row.productid.stock:
+            messages.warning(request, "No more units of this product are in stock.")
+        else:
+            row.quantity += 1
+            row.save(update_fields=["quantity"])
+    else:
+        if row.quantity > 1:
+            row.quantity -= 1
+            row.save(update_fields=["quantity"])
+        else:
+            row.delete()
+            messages.info(request, "Item removed from your cart.")
+
+    return redirect("viewcart")
+
+
+@login_required(login_url="login")
+def remove(request, id):
+    deleted, _ = cart.objects.filter(id=id, userid=request.user).delete()
+    if deleted:
+        messages.info(request, "Item removed from your cart.")
+    return redirect("viewcart")
+
+
+# ---------------------------------------------------------------------------
+# Checkout + orders
+# ---------------------------------------------------------------------------
+@login_required(login_url="login")
+def Processedtocheck(request):
+    items = list(cart_for(request.user))
+    if not items:
+        messages.info(request, "Your cart is empty.")
+        return redirect("viewcart")
+
+    totals = cart_totals(items)
+    existing = processedtocheck.objects.filter(user=request.user).first()
+
+    if existing:
+        return redirect("makepayment")
 
     if request.method == "POST":
         form = processedtocheckform(request.POST)
         if form.is_valid():
-            customer = form.save(commit=False)
-            customer.user = request.user
-            customer.save()
-            return redirect('makepayment')  # Redirect to payment page after successful form submission
-
+            record = form.save(commit=False)
+            record.user = request.user
+            record.save()
+            return redirect("makepayment")
+        messages.error(request, "Please correct the highlighted fields.")
     else:
-        form = processedtocheckform()
-
-    return render(request, 'checkout.html', {
-        'form': form, 
-        'total': total, 
-        'delivery_charge': delivery_charge,
-        'grand_total': grand_total,
-        'form_filled': form_filled
-    })
-@login_required(login_url='login')
-def profile_view(request):
-    membership = membershipprocessedtocheck.objects.filter(user=request.user).first()
-
-    pending_payment = membership and not membership.payment_status  # Check if payment is pending
-
-    if pending_payment:
-        messages.warning(request, "⚠️ You need to complete your payment to activate your membership.")
-
-    return render(request, 'profile.html', {
-        'membership': membership,  # Always pass membership, even if payment is pending
-        'pending_payment': pending_payment,
-    })
-
-
-
-@login_required(login_url='login')
-def membership_processed_view(request, id):
-    """View for processing yearly membership purchase"""
-    membership = get_object_or_404(Membership, id=id)
-
-    gst_rate = Decimal('0.18')  # GST 18%
-    total_price = membership.price + (membership.price * gst_rate)
-
-    existing_membership = membershipprocessedtocheck.objects.filter(user=request.user).first()
-
-    if existing_membership:
-        if existing_membership.membership_monthly:
-            messages.warning(request, "You already have a monthly membership and cannot buy a yearly one.")
-            return redirect('profile')
-
-        if existing_membership.membership_yearly:
-            messages.warning(request, "You already have a yearly membership and cannot buy another one.")
-            return redirect('profile')
-
-    if request.method == 'POST':
-        form = membershipprocessedtocheckform(request.POST)
-        if form.is_valid():
-            membership_customer = form.save(commit=False)
-            membership_customer.user = request.user
-            membership_customer.membership_yearly = membership
-            membership_customer.membership_monthly = None  # Ensure monthly is empty
-            membership_customer.save()
-            messages.success(request, "Proceed to payment to complete your membership.")
-            return redirect('membershipprocessedtocheckouts', id=id)
-
-
-    else:
-        form = membershipprocessedtocheckform()
-
-    return render(request, 'membership_form.html', {
-        'form': form,
-        'membership': membership,
-        'total_price': total_price,
-    })
-
-
-@login_required(login_url='login')
-def membership_processed_view_month(request, id):
-    """View for processing monthly membership purchase"""
-    membership = get_object_or_404(Membershipmonth, id=id)
-
-    existing_membership = membershipprocessedtocheck.objects.filter(user=request.user).first()
-
-    if existing_membership:
-        if existing_membership.membership_yearly:
-            messages.warning(request, "You already have a yearly membership and cannot buy a monthly one.")
-            return redirect('profile')
-
-        if existing_membership.membership_monthly:
-            messages.warning(request, "You already have a monthly membership and cannot buy another one.")
-            return redirect('profile')
-
-    if request.method == 'POST':
-        form = membershipprocessedtocheckform(request.POST)
-        if form.is_valid():
-            membership_customer = form.save(commit=False)
-            membership_customer.user = request.user
-            membership_customer.membership_monthly = membership
-            membership_customer.membership_yearly = None  # Ensure yearly is empty
-            membership_customer.save()
-            messages.success(request, "Proceed to payment to complete your membership.")
-            return redirect('membershipprocessedtocheckout', id=id)
-
-    else:
-        form = membershipprocessedtocheckform()
-
-    return render(request, 'membership_form_month.html', {
-        'form': form,
-        'membership': membership,
-    })
-
-
-def makepayment(request):
-    uid = request.user.id  # Get logged-in user's ID
-    print(uid)  # Debugging
-
-    products = cart.objects.filter(userid=uid)  # Get cart items
-    print(products)  # Debugging
-
-    totalCount = sum(prod.quantity for prod in products)  # Total quantity
-    totalamount = sum(prod.productid.supplementPrice * prod.quantity for prod in products)  # Total price
-
-    # Apply delivery charges based on order value
-    if totalamount == 0:
-        delivery_charge = 0  # No order, no delivery charge
-    elif totalamount <= 2000:
-        delivery_charge = 120
-    elif totalamount <= 5000:
-        delivery_charge = 70
-    else:
-        delivery_charge = 0  # Free delivery for orders above 5000
-
-    grand_total = totalamount + delivery_charge  # Final amount after adding delivery charge
-
-    custformdetail = processedtocheck.objects.filter(user=uid)
-
-    host = request.get_host()
-
-    paypal_checkout = {
-        'business': settings.PAYPAL_RECEIVER_EMAIL,
-        'amount': grand_total,  # Use grand total instead of just totalamount
-        'item_name': 'Suppliment',
-        'invoice': uuid.uuid4(),  # Unique invoice number
-        'currency_code': 'USD',
-        'notify_url': f"http://{host}{reverse('paypal-ipn')}",
-        'return_url': f"http://{host}{reverse('paymentsuccess')}",
-        'cancel_url': f"http://{host}{reverse('paymentfailed')}",
-    }
-
-    paypal_payment = PayPalPaymentsForm(initial=paypal_checkout)
-
-    return render(request, 'processedtocheckout.html', {
-        'products': products,
-        'totalCount': totalCount,
-        'totalamount': totalamount,
-        'delivery_charge': delivery_charge,
-        'grand_total': grand_total,  # Pass grand total to template
-        'custformdetail': custformdetail,
-        'paypalpayment': paypal_payment
-    })  
-  
-def paymentsuccess(request):
-    userid = request.user.id
-    print(userid)
-    
-    products = cart.objects.filter(userid=userid)
-    print(products)
-
-    order_list = []  # To store newly created orders
-    total = 0
-
-    for i in products:
-        total += i.productid.supplementPrice * i.quantity
-        order = Orders.objects.create(
-            customer=i.userid,
-            supplement=i.productid,
-            quantity=i.quantity,
-            total_price=total
+        profile = UserProfile.objects.filter(user=request.user).first()
+        form = processedtocheckform(
+            initial={
+                "full_name": (profile.full_name if profile else "")
+                or request.user.get_full_name(),
+                "email": (profile.email if profile else "") or request.user.email,
+                "phone_number": profile.phone if profile else "",
+                "country": "India",
+            }
         )
-        order.save()
-        order_list.append(order)  # Store the current order details
-        i.delete()  # Remove the product from the cart after ordering
 
-    return render(request, 'paymentsuccess.html', {'orders': order_list})  
+    context = {"form": form, "form_filled": False}
+    context.update(totals)
+    return render(request, "checkout.html", context)
 
+
+@login_required(login_url="login")
+def edit_address(request, id):
+    record = get_object_or_404(processedtocheck, id=id, user=request.user)
+    if request.method == "POST":
+        form = processedtocheckform(request.POST, instance=record)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Address updated.")
+            return redirect("makepayment")
+        messages.error(request, "Please correct the highlighted fields.")
+    else:
+        form = processedtocheckform(instance=record)
+
+    return render(request, "edit_address.html", {"form": form, "address": record})
+
+
+@login_required(login_url="login")
+def makepayment(request):
+    items = list(cart_for(request.user))
+    if not items:
+        messages.info(request, "Your cart is empty.")
+        return redirect("viewcart")
+
+    totals = cart_totals(items)
+    address = processedtocheck.objects.filter(user=request.user).first()
+    if not address:
+        return redirect("checkout")
+
+    context = {
+        "products": items,
+        "custformdetail": [address],
+        "address": address,
+        "paypalpayment": paypal_form(
+            request,
+            amount=totals["grand_total"],
+            item_name="Fitness Empire order",
+            return_url_name="paymentsuccess",
+        ),
+    }
+    context.update(totals)
+    return render(request, "processedtocheckout.html", context)
+
+
+@login_required(login_url="login")
+def paymentsuccess(request):
+    items = list(cart_for(request.user))
+
+    order_list = []
+    grand_total = Decimal("0")
+
+    with transaction.atomic():
+        for row in items:
+            # Each order row stores its own line total. It previously stored a
+            # running cumulative total, so the second item in a cart was
+            # recorded at the price of every item before it combined.
+            line_total = row.productid.supplementPrice * row.quantity
+            grand_total += line_total
+
+            order = Orders.objects.create(
+                customer=row.userid,
+                supplement=row.productid,
+                quantity=row.quantity,
+                total_price=line_total,
+            )
+            order_list.append(order)
+
+            Supplement.objects.filter(id=row.productid_id, stock__gte=row.quantity).update(
+                stock=F("stock") - row.quantity
+            )
+            row.delete()
+
+    if order_list:
+        messages.success(request, "Payment received. Your order is confirmed.")
+
+    return render(
+        request,
+        "paymentsuccess.html",
+        {"orders": order_list, "grand_total": grand_total},
+    )
+
+
+def paymentfailed(request):
+    return render(request, "paymentfailed.html")
+
+
+@login_required(login_url="login")
 def orders(request):
-    orders=Orders.objects.filter(customer=request.user.id)
-    return render(request,'orders.html',{'orders':orders})
+    return render(
+        request,
+        "orders.html",
+        {
+            "orders": Orders.objects.filter(customer=request.user)
+            .select_related("supplement")
+            .order_by("-order_date")
+        },
+    )
 
+
+@login_required(login_url="login")
 def myorders(request):
-    orders=Orders.objects.filter(customer=request.user.id)
-    return render(request,'myorder.html',{'orders':orders})
+    return render(
+        request,
+        "myorder.html",
+        {
+            "orders": Orders.objects.filter(customer=request.user)
+            .select_related("supplement")
+            .order_by("-order_date")
+        },
+    )
 
 
+@login_required(login_url="login")
 def remove_order(request, order_id):
     order = get_object_or_404(Orders, id=order_id, customer=request.user)
 
-    # Check if the order is already delivered, prevent deletion if needed
-    if order.status == "Delivered":
+    # Status is stored as the uppercase choice value ("DELIVERED"), so the old
+    # comparison against "Delivered" never matched and delivered orders could
+    # be deleted.
+    if order.status.upper() == "DELIVERED":
         messages.warning(request, "You cannot remove a delivered order.")
     else:
         order.delete()
         messages.success(request, "Order removed successfully.")
 
-    return redirect('orders')  # Redirect to the orders page
+    return redirect("orders")
 
+
+@login_required(login_url="login")
 def cancel_order(request, order_id):
     order = get_object_or_404(Orders, id=order_id, customer=request.user)
-    
-    if order.status != "Cancelled":  # Ensure order is not already canceled
-        order.status = "Cancelled"
-        order.save()
-        messages.success(request, "Your order has been cancelled successfully.")
-    else:
+
+    if order.status.upper() == "CANCELLED":
         messages.warning(request, "Order is already cancelled.")
+    elif order.status.upper() in {"SHIPPED", "DELIVERED"}:
+        messages.warning(
+            request, "This order has already shipped and can no longer be cancelled."
+        )
+    else:
+        order.status = "CANCELLED"
+        order.save(update_fields=["status"])
+        Supplement.objects.filter(id=order.supplement_id).update(
+            stock=F("stock") + order.quantity
+        )
+        messages.success(request, "Your order has been cancelled successfully.")
 
-    return redirect('orders')
-
-def paymentfailed(request):
-    return render(request,'paymentfailed.html')
+    return redirect("orders")
 
 
-def edit_address(request, id):
-    customer = get_object_or_404(processedtocheck, id=id)
+# ---------------------------------------------------------------------------
+# Accounts
+# ---------------------------------------------------------------------------
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
-        form = processedtocheckform(request.POST, instance=customer)
-        if form.is_valid():
-            form.save()
-            return redirect('makepayment')
+        registerForm = RegisterForm(request.POST)
+        if registerForm.is_valid():
+            registerForm.save()
+            messages.success(request, "Successfully registered, you can now log in.")
+            return redirect("login")
+        messages.error(request, "Please correct the errors below and try again.")
     else:
-        form = processedtocheckform(instance=customer)
-    
-    return render(request, 'edit_address.html', {'form': form}) 
+        registerForm = RegisterForm()
 
-#Annuual
-@login_required(login_url='login')
-def membership_processedtocheckout(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    
-    # Fetch pending payment
-    membership_record = membershipprocessedtocheck.objects.filter(user=request.user, membership_yearly=membership).first()
+    return render(request, "register.html", {"registerForm": registerForm})
 
-    if not membership_record:
-        messages.warning(request, "No pending payment found.")
-        return redirect('profile')
 
-    gst_rate = Decimal('0.18')
-    total_price = membership.price + (membership.price * gst_rate)
+def loginuser(request):
+    if request.user.is_authenticated:
+        return redirect("home")
 
-    host = request.get_host()
-    paypal_checkout = {
-        'business': settings.PAYPAL_RECEIVER_EMAIL,
-        'amount': total_price,
-        'item_name': membership.name,
-        'invoice': uuid.uuid4(),
-        'currency_code': 'USD',
-        'notify_url': f"http://{host}{reverse('paypal-ipn')}",
-        'return_url': f"http://{host}{reverse('paymentmembership')}",
-        'cancel_url': f"http://{host}{reverse('paymentfailed')}",
-    }
+    if request.method == "POST":
+        uname = (request.POST.get("username") or "").strip()
+        upass = request.POST.get("password") or ""
+        user = authenticate(request, username=uname, password=upass)
 
-    paypal_payment = PayPalPaymentsForm(initial=paypal_checkout)
+        if user is not None:
+            auth_login(request, user)
+            request.session["username"] = uname
+            next_url = request.GET.get("next") or request.POST.get("next")
+            response = redirect(next_url or "home")
+            response.set_cookie("username", uname, samesite="Lax")
+            response.set_cookie(
+                "Time", datetime.datetime.now().isoformat(), samesite="Lax"
+            )
+            messages.success(request, f"Welcome back, {user.username}!")
+            return response
 
-    return render(request, 'membershipprocessedtocheckout.html', {
-        'membership': membership,
-        'total_price': total_price,
-        'paypalpayment': paypal_payment,
-    })
-@login_required(login_url='login')
-def membership_processedtocheckout_monthly(request, id):
-    membership = get_object_or_404(Membershipmonth, id=id)
+        messages.error(request, "Invalid username or password. Please try again.")
+        return redirect("login")
 
-    # Fetch pending payment
-    membership_record = membershipprocessedtocheck.objects.filter(user=request.user, membership_monthly=membership).first()
+    return render(request, "login.html", {"userform": userAuthentication()})
 
-    if not membership_record:
-        messages.warning(request, "No pending payment found.")
-        return redirect('profile')
 
-    gst_rate = Decimal('0.18')
-    total_price = membership.price + (membership.price * gst_rate)
+def signout(request):
+    logout(request)
+    messages.info(request, "You have been signed out.")
+    return redirect("home")
 
-    host = request.get_host()
-    paypal_checkout = {
-        'business': settings.PAYPAL_RECEIVER_EMAIL,
-        'amount': membership.price,
-        'item_name': membership.name,
-        'invoice': uuid.uuid4(),
-        'currency_code': 'USD',
-        'notify_url': f"http://{host}{reverse('paypal-ipn')}",
-        'return_url': f"http://{host}{reverse('paymentmembership')}",
-        'cancel_url': f"http://{host}{reverse('paymentfailed')}",
-    }
 
-    paypal_payment = PayPalPaymentsForm(initial=paypal_checkout)
-
-    return render(request, 'membershipprocessedtocheckoutmonthly.html', {
-        'membership': membership,
-        'total_price': total_price,
-        'paypalpayment': paypal_payment,
-    })
-
-@login_required(login_url='login')
-def paymentmembership(request):
-    membership = membershipprocessedtocheck.objects.filter(user=request.user, payment_status=False).first()
-    
-    if membership:
-        membership.payment_status = True  # ✅ Mark as paid
-        membership.save()
-
-        messages.success(request, "Payment successful! Your membership is now active.")
-    else:
-        messages.warning(request, "No pending membership found.")
-
-    return render(request,'finalthankyou.html')
-
-@login_required
+@login_required(login_url="login")
 def my_profile(request):
-    user_profile = UserProfile.objects.filter(user=request.user).first()  # Fetch profile
+    profile = UserProfile.objects.filter(user=request.user).first()
+    return render(request, "my_profile.html", {"user_profile": profile})
 
-    return render(request, 'my_profile.html', {'user_profile': user_profile})
 
-
-@login_required
+@login_required(login_url="login")
 def edit_profile(request, user_id):
-    user_profile, created = UserProfile.objects.get_or_create(user_id=user_id)  
+    if request.user.id != user_id and not request.user.is_superuser:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect("my_profile")
 
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user_profile)
+    profile, _ = UserProfile.objects.get_or_create(user_id=user_id)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('my_profile')  # Redirect to profile page after update
+            messages.success(request, "Profile updated.")
+            return redirect("my_profile")
+        messages.error(request, "Please correct the highlighted fields.")
     else:
-        form = UserProfileForm(instance=user_profile)
+        form = UserProfileForm(instance=profile)
 
-    return render(request, 'profile_edit.html', {'form': form})
+    return render(request, "profile_edit.html", {"form": form, "user_profile": profile})
 
-@login_required
+
+@login_required(login_url="login")
 def my_addresses(request):
-    user_profile = UserProfile.objects.filter(user=request.user).first()  # Fetch profile
-    addresses = processedtocheck.objects.filter(user=request.user)
-    return render(request, 'my_addresses.html', {'addresses': addresses,'user_profile': user_profile})
+    return render(
+        request,
+        "my_addresses.html",
+        {
+            "addresses": processedtocheck.objects.filter(user=request.user),
+            "user_profile": UserProfile.objects.filter(user=request.user).first(),
+        },
+    )
 
 
-from rest_framework.decorators import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import customerSerializer
+# ---------------------------------------------------------------------------
+# Password reset by OTP
+# ---------------------------------------------------------------------------
+OTP_TTL_SECONDS = 10 * 60
 
-class crudapi(APIView):
-    def get(self,request):
-        id=request.data.get('id',None)
-        if id:
-            try:
-                customer=Customer.objects.get(customerId=id)
-                customerdata=customerSerializer(customer)
-                print(customerdata)
-                return Response(customerdata.data,status.HTTP_200_OK)
-            except:
-                return Response({'msg':'Data not Found'},status=status.HTTP_404_NOT_FOUND)
-            
-        else:
-            customer=Customer.objects.all()
-            print(customer)
-            customerdata=customerSerializer(customer,many=True)
-            print(customerdata)
-            return Response(customerdata.data,status=status.HTTP_200_OK)
-        
-
-    def post(self,request):
-        customerdetails=request.data
-        print(customerdetails)
-        customerdata=customerSerializer(data=customerdetails)
-        print(customerdata)
-        if customerdata.is_valid():
-            customerdata.save()
-            return Response({'msg':'Data is successfully inserted'},status=status.HTTP_200_OK)
-        return Response({'msg':'Data is not available'},status=status.HTTP_404_NOT_FOUND)
-    
-
-    def patch(self,request):
-        new_data=request.data
-        id=new_data.get('id',None)
-        if id:
-            try:
-                customer_data=Customer.objects.get(customerid=id)
-                print(customer_data)
-                customer_data=customerSerializer(customer_data,new_data,partial=True)
-                if customer_data.is_valid():
-                    customer_data.save()
-                    return Response({'msg':'Data update successfully'},status=status.HTTP_200_OK)
-            except:
-                return Response({'msg':'data is not available'},status=status.HTTP_404_NOT_FOUND)
-    
-    def delete(self,request):
-        id=request.data.get('id',None)
-        if id:
-            try:
-                customer=Customer.objects.get(customerId=id)
-                customer.delete()
-                return Response({'msg':'data delete successfully'},status.HTTP_200_OK)
-            except:
-                return Response({'msg':'Data not Found'},status=status.HTTP_404_NOT_FOUND)
-            
-        else:
-            return Response({'msg':'please provied a valid id'},status=status.HTTP_200_OK)
-        
-import random  
-from django.core.mail import send_mail
 
 def forgetpassword(request):
     if request.method == "POST":
-        email = request.POST.get('email')
+        email = (request.POST.get("email") or "").strip()
+        user = User.objects.filter(email__iexact=email).first()
 
-        users = User.objects.filter(email=email)
-        print(users)
-        if users.exists():
-            user = users.first()
-            otp = random.randint(100000, 999999)
-            request.session['reset_otp'] = otp
-            request.session['reset_email'] = email
-            request.session['otp_purpose'] = "login"
+        if not user:
+            messages.error(request, "Email not found. Please enter a registered email.")
+            return render(request, "forgetpassword.html")
 
-            subject = "Password Reset Request - Your OTP Inside"
-            message = f"""
-            Hello {user.username},
+        otp = random.randint(100000, 999999)
+        request.session["reset_otp"] = otp
+        request.session["reset_email"] = user.email
+        request.session["reset_otp_at"] = timezone.now().isoformat()
+        request.session["otp_purpose"] = "login"
 
-            We received a request to reset your password. To proceed, please use the One-Time Password (OTP) below:
+        subject = "Password Reset Request - Your OTP Inside"
+        message = (
+            f"Hello {user.username},\n\n"
+            "We received a request to reset your password. Use the one-time "
+            f"password below to continue:\n\n"
+            f"    OTP: {otp}\n\n"
+            "This code is valid for 10 minutes. If you did not request it you "
+            "can safely ignore this email.\n\n"
+            "Never share this code with anyone.\n\n"
+            "Fitness Empire Support"
+        )
 
-            🔐 **Your OTP:** {otp}
-
-            This OTP is valid for a limited time. If you did not request this, please ignore this email, and your account will remain secure.
-
-            For security reasons, never share your OTP with anyone.
-
-            Best regards,  
-            Your Support Team
-            """
-
+        try:
             send_mail(
-                subject,message,settings.EMAIL_HOST_USER,[email],fail_silently=False
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
             )
-            return redirect ('verifyotp')
-        else:
-            messages.error(request, "Email not found ! Please enter a registered email")
-            return render(request, 'forgetpassword.html')
-    return render(request,'forgetpassword.html')
+        except Exception:
+            # A mail-server outage should not produce a 500 page.
+            messages.error(
+                request,
+                "We could not send the email right now. Please try again shortly.",
+            )
+            return render(request, "forgetpassword.html")
 
-def resetpassword(request):
-    if request.method == "POST":
-        new_password = request.POST['new_password']
-        confirm_password = request.POST['confirm_password']
-        email = request.session.get('reset_email')
+        messages.success(request, f"We sent a one-time code to {user.email}.")
+        return redirect("verifyotp")
 
-        if new_password == confirm_password:
-            try:
-                user =  User.objects.get(email=email)
-                user.set_password(new_password)
-                user.save()
+    return render(request, "forgetpassword.html")
 
-                del request.session['reset_otp']
-                del request.session['reset_email']
-
-                messages.success(request,"Password reset successful ! You can login ")
-                return redirect('login')
-            except User.DoesNotExist:
-                messages.error(request,"Somthing went wrong")
-                return redirect('forgotpassword')
-        else:
-            messages.error(request,"Password do not match ! Try again")
-            return render(request, 'resetpassword.html')
-    return render(request,'resetpassword.html')
-                
 
 def verifyotp(request):
     if request.method == "POST":
-        entered_otp = request.POST.get('otp')
-        stored_otp = request.session.get('reset_otp')
-        otp_purpose = request.session.get('otp_purpose','')
+        entered = (request.POST.get("otp") or "").strip()
+        stored = request.session.get("reset_otp")
+        issued_at = request.session.get("reset_otp_at")
+        purpose = request.session.get("otp_purpose", "")
 
-        if stored_otp and entered_otp == str(stored_otp):
-            if otp_purpose == "login":
-                return redirect('resetpassword')
-            elif otp_purpose == "payment":
-                return  redirect('checkout')
-            else:
-                return redirect('home')
-            
-        else:
-            messages.error(request, "Invalid OTP! Please enter valid otp or try again")
-    return render(request,'verifyotp.html')
+        expired = True
+        if issued_at:
+            try:
+                age = (
+                    timezone.now() - datetime.datetime.fromisoformat(issued_at)
+                ).total_seconds()
+                expired = age > OTP_TTL_SECONDS
+            except ValueError:
+                expired = True
 
-def weightlossplan(request):
-    return render(request,'weightlossplan.html')
+        if not stored:
+            messages.error(request, "No code was requested. Please start again.")
+            return redirect("forgetpassword")
 
-def muselloss(request):
-    return render(request,'musel.html')
+        if expired:
+            messages.error(request, "That code has expired. Please request a new one.")
+            return redirect("forgetpassword")
 
-def healthlyplan(request):
-    return render(request,'healthlyplan.html')
+        if entered == str(stored):
+            request.session["otp_verified"] = True
+            if purpose == "payment":
+                return redirect("checkout")
+            return redirect("resetpassword")
+
+        messages.error(request, "Invalid OTP. Please check the code and try again.")
+
+    return render(request, "verifyotp.html")
 
 
+def resetpassword(request):
+    if not request.session.get("otp_verified"):
+        messages.error(request, "Please verify your one-time code first.")
+        return redirect("forgetpassword")
+
+    if request.method == "POST":
+        new_password = request.POST.get("new_password") or ""
+        confirm_password = request.POST.get("confirm_password") or ""
+        email = request.session.get("reset_email")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match. Try again.")
+            return render(request, "resetpassword.html")
+
+        if len(new_password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, "resetpassword.html")
+
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            messages.error(request, "Something went wrong. Please start again.")
+            return redirect("forgetpassword")
+
+        user.set_password(new_password)
+        user.save()
+
+        for key in ("reset_otp", "reset_email", "reset_otp_at", "otp_verified"):
+            request.session.pop(key, None)
+
+        messages.success(request, "Password reset successful. You can now log in.")
+        return redirect("login")
+
+    return render(request, "resetpassword.html")
+
+
+# ---------------------------------------------------------------------------
+# Staff product management
+# ---------------------------------------------------------------------------
+@login_required(login_url="login")
+def crud(request):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    if request.method == "POST":
+        Product.objects.create(
+            productId=request.POST.get("product-id"),
+            productName=request.POST.get("product-name"),
+            productPrice=request.POST.get("product-price"),
+            productDescription=request.POST.get("product-description"),
+            productImage=request.FILES.get("product-image"),
+        )
+        messages.success(request, "Product added.")
+        return redirect("showdetails")
+
+    return render(request, "crud_operation.html")
+
+
+@login_required(login_url="login")
+def showdetails(request):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    return render(request, "dashboard.html", {"products": Product.objects.all()})
+
+
+@login_required(login_url="login")
+def editproduct(request, id):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    product = get_object_or_404(Product, id=id)
+
+    if request.method == "POST":
+        product.productId = request.POST.get("product-id")
+        product.productName = request.POST.get("product-name")
+        product.productDescription = request.POST.get("product-description")
+        product.productPrice = request.POST.get("product-price")
+        if request.FILES.get("product-image"):
+            product.productImage = request.FILES.get("product-image")
+        product.save()
+        messages.success(request, "Product updated.")
+        return redirect("showdetails")
+
+    return render(request, "edit.html", {"product": product})
+
+
+@login_required(login_url="login")
+def deleteproduct(request, id):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    get_object_or_404(Product, id=id).delete()
+    messages.success(request, "Product deleted.")
+    return redirect("showdetails")
+
+
+@login_required(login_url="login")
+def addproduct(request):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    if request.method == "POST":
+        form = SupplementForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Supplement added.")
+            return redirect("protien")
+    else:
+        form = SupplementForm()
+
+    return render(request, "crud_operation.html", {"form": form})
+
+
+@login_required(login_url="login")
+def deleteproductcrud(request, id):
+    if not request.user.is_superuser:
+        messages.error(request, "You do not have permission to manage products.")
+        return redirect("home")
+
+    product = get_object_or_404(Supplement, id=id, is_deleted=False)
+    product.is_deleted = True
+    product.delete_details = timezone.now()
+    product.save(update_fields=["is_deleted", "delete_details"])
+    messages.success(request, "Product removed from the store.")
+    return redirect("protien")
+
+
+# ---------------------------------------------------------------------------
+# REST API
+# ---------------------------------------------------------------------------
+class crudapi(APIView):
+    def get(self, request):
+        customer_id = request.query_params.get("id") or request.data.get("id")
+        if customer_id:
+            customer = Customer.objects.filter(customerId=customer_id).first()
+            if not customer:
+                return Response(
+                    {"msg": "Data not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            return Response(customerSerializer(customer).data, status=status.HTTP_200_OK)
+
+        customers = Customer.objects.select_related("membership").all()
+        return Response(
+            customerSerializer(customers, many=True).data, status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+        serializer = customerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"msg": "Data inserted successfully", "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        customer_id = request.data.get("id")
+        if not customer_id:
+            return Response(
+                {"msg": "Please provide a valid id"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        customer = Customer.objects.filter(customerId=customer_id).first()
+        if not customer:
+            return Response({"msg": "Data not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = customerSerializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"msg": "Data updated successfully"}, status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        customer_id = request.data.get("id")
+        if not customer_id:
+            return Response(
+                {"msg": "Please provide a valid id"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        customer = Customer.objects.filter(customerId=customer_id).first()
+        if not customer:
+            return Response({"msg": "Data not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        customer.delete()
+        return Response({"msg": "Data deleted successfully"}, status=status.HTTP_200_OK)

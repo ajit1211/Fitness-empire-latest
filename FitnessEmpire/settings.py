@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-prune4#&!p_-_uwr!g1)s$-5owq*%o&mn5na(4g)d@2wov)8q$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'testserver']
 
 
 # Application definition
@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'FitnessGYM.context_processors.cart_summary',
             ],
         },
     },
@@ -150,7 +151,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-print("path is :",BASE_DIR)
 
 
 MEDIA_URL = '/media/'
@@ -161,9 +161,75 @@ PAYPAL_RECEIVER_EMAIL = 'sb-owhlw37372559@business.example.com'
 PAYPAL_TEST = True
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
+
+# ---------------------------------------------------------------------------
+# Email (used by the forgot-password OTP flow)
+#
+# Credentials come from the environment. The existing Gmail account is kept as
+# the fallback so the flow keeps working out of the box, but you should move it
+# to EMAIL_HOST_USER / EMAIL_HOST_PASSWORD env vars and revoke the app password
+# that used to be committed here in plain text.
+#
+# With no password configured we fall back to the console backend, so the OTP is
+# printed to the terminal instead of raising an SMTP error.
+# ---------------------------------------------------------------------------
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'pandeyajit2002@gmail.com'
-EMAIL_HOST_PASSWORD = 'ugkn dzye yjez kimx'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'pandeyajit2002@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ugkn dzye yjez kimx')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_TIMEOUT = 10
+
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend'
+    if EMAIL_HOST_PASSWORD
+    else 'django.core.mail.backends.console.EmailBackend',
+)
+
+# ---------------------------------------------------------------------------
+# Messages: use Bootstrap-free tags that match the stylesheet
+# ---------------------------------------------------------------------------
+from django.contrib.messages import constants as message_constants  # noqa: E402
+
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'info',
+    message_constants.INFO: 'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR: 'error',
+}
+
+# ---------------------------------------------------------------------------
+# Static files: hash + compress on collectstatic so browsers can cache forever
+# ---------------------------------------------------------------------------
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'
+        if DEBUG
+        else 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    },
+}
+
+# Cache rendered fragments and querysets in memory (per process).
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'fitness-empire',
+        'TIMEOUT': 300,
+    }
+}
+
+# Keep DB connections open between requests instead of reconnecting each time.
+CONN_MAX_AGE = 60

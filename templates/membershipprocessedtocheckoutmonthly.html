@@ -1,185 +1,59 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Membership Checkout
-{% endblock title %}
+{% block page_title %}Pay for {{ membership.name }} - Fitness Empire{% endblock %}
+{% block page_id %}plans{% endblock %}
 
 {% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-<style>
-    /* General Styling */
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: white;
-        color: white;
-        margin: 0;
-        padding: 0;
-    }
+        <h1>Complete Your Membership</h1>
+        <p class="muted" style="margin-bottom:var(--sp-5);">Step 2 of 2 &mdash; confirm and pay.</p>
 
-    .container {
-        width: 90%;
-        max-width: 1100px;
-        margin: 40px auto;
-        padding: 20px;
-    }
+        <div class="panel">
+            <h2 class="panel__title">{{ membership.name }} &mdash; Monthly</h2>
 
-    h2 {
-        text-align: center;
-        font-size: 2rem;
-        margin-bottom: 25px;
-        color: #fff;
-    }
+            {% if record %}
+            <div class="address-card" style="margin-bottom:var(--sp-5);">
+                <strong>{{ record.full_name }}</strong>
+                {{ record.email }}<br>
+                {{ record.phone_number }}<br>
+                {{ record.city }} {{ record.pin_code }}
+            </div>
+            {% endif %}
 
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 25px;
-        justify-content: space-between;
-    }
-
-    /* Left Column: Membership Details */
-    .left-column {
-        width: 60%;
-        background: #1e1e1e;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0px 5px 15px rgba(255, 255, 255, 0.1);
-    }
-
-    .membership-details h3 {
-        font-size: 1.7rem;
-        color: #e63946;
-        margin-bottom: 12px;
-    }
-
-    .membership-details h4 {
-        font-size: 1.5rem;
-        color: #fff;
-        margin-bottom: 12px;
-    }
-
-    .membership-details p {
-        font-size: 1rem;
-        color: #ccc;
-        margin-bottom: 8px;
-        line-height: 1.6;
-    }
-
-    /* Right Column: Payment */
-    .right-column {
-        width: 35%;
-        background: #222;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0px 5px 15px rgba(255, 255, 255, 0.1);
-    }
-
-    .summary-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #e63946;
-        text-align: center;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e63946;
-    }
-
-    .summary-content p {
-        display: flex;
-        justify-content: space-between;
-        font-size: 1rem;
-        margin: 5px 0;
-        color: #ccc;
-    }
-
-    .total-amount {
-        background-color: crimson;
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-top: 10px;
-        box-shadow: 0px 4px 12px rgba(255, 0, 0, 0.4);
-        letter-spacing: 1px;
-    }
-
-    /* PayPal Button Styling */
-    .paypal-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-
-    .paypal-button input[type="submit"] {
-        width: 100%;
-        background-color: crimson;
-        color: white;
-        padding: 12px;
-        font-size: 1rem;
-        font-weight: bold;
-        border: 2px solid crimson;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: 0.3s ease-in-out;
-        box-shadow: 0px 3px 10px rgba(255, 0, 0, 0.3);
-    }
-
-    .paypal-button input[type="submit"]:hover {
-        background-color: white;
-        color: crimson;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .row {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .left-column, .right-column {
-            width: 100%;
-        }
-    }
-</style>
-
-<div class="container">
-    <h2 style="color: #1e1e1e;font-weight: bold;">Membership Checkout</h2>
-
-    {% if membership %}
-        <div class="row">
-            <!-- Left Side: Selected Membership -->
-            <div class="left-column">
-                <div class="membership-details">
-                    <h3>Selected Membership:</h3>
-                    <h4>{{ membership.name }}</h4>
-                    <p><strong>Plan:</strong> {{ membership.name }}</p>
-                    <p><strong>Price:</strong> Rs. {{ membership.price }}</p>
-                    <p><strong>Description:</strong> {{ membership.description }}</p>
+            <div class="plan-summary">
+                <div class="plan-summary__row">
+                    <span>Plan</span><span><strong>{{ membership.name }}</strong></span>
+                </div>
+                <div class="plan-summary__row">
+                    <span>Billing period</span><span>1 month</span>
+                </div>
+                <div class="plan-summary__row">
+                    <span>Plan price</span><span>&#8377;{{ membership.price|floatformat:0 }}</span>
+                </div>
+                <div class="plan-summary__row">
+                    <span>GST (18%)</span><span>&#8377;{{ gst|floatformat:0 }}</span>
+                </div>
+                <div class="plan-summary__row plan-summary__row--total">
+                    <span>Amount due</span><span>&#8377;{{ total_price|floatformat:0 }}</span>
                 </div>
             </div>
 
-            <!-- Right Side: Payment -->
-            <div class="right-column">
-                <div class="summary-title">Summary</div>
-                <div class="summary-content">
-                    <p><span>Amount:</span> <span>₹{{ membership.price }}</span></p>
-                    <p><span>GST :</span> <span>18%</span></p>
-                    <p><span>Total: Rs.</span> <span>₹{{ total_price }}</span></p>
-                </div>
+            <p class="muted" style="font-size:var(--fs-sm);">{{ membership.description }}</p>
 
-                <div class="paypal-container">
-                    <div class="paypal-button">
-                        {{ paypalpayment.render }}
-                    </div>
-                </div>
+            <div class="paypal-slot">
+                {{ paypalpayment.render }}
             </div>
+
+            <p class="summary__note">Payments are processed by PayPal in the sandbox environment.</p>
         </div>
-    {% else %}
-        <p style="color:red; text-align: center; font-size: 1.2rem;">Error: No Membership Data Found!</p>
-    {% endif %}
-</div>
 
+        <p class="text-center" style="margin-top:var(--sp-5);">
+            <a href="{% url 'membershipmonthly' %}" class="link-quiet">&larr; Back to plans</a>
+        </p>
+
+    </div>
+</section>
 {% endblock 'main' %}

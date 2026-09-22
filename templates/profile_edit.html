@@ -1,143 +1,47 @@
-<style>
-    /* Profile Page Styles */
-.new-profile-container {
-    width: 80%;
-    margin: 20px auto;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    color: black;
-}
-
-.new-profile-tabs {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #ddd;
-}
-
-.new-profile-tab-item {
-    margin-right: 20px;
-}
-
-.new-profile-tab-link {
-    text-decoration: none;
-    color: #333;
-    padding: 10px 15px;
-    display: inline-block;
-    font-weight: bold;
-}
-
-.new-profile-tab-link.active {
-    border-bottom: 3px solid #007bff;
-    color: #007bff;
-}
-
-.new-profile-card {
-    background: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.new-profile-card h2, .new-profile-container h2 {
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.new-profile-row {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.new-profile-col {
-    width: 48%;
-}
-
-.new-profile-col p {
-    background: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-}
-
-.new-profile-btn-edit {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 10px 20px;
-    background: crimson;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
-
-.new-profile-btn-edit:hover {
-    background: darkred;
-}
-
-/* Edit Profile Form Styles */
-.new-profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-
-.new-profile-form p {
-    display: flex;
-    flex-direction: column;
-    font-size: 16px;
-}
-
-.new-input, .new-select, .new-textarea {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-button.new-profile-btn-edit {
-    align-self: flex-start;
-}
-input, select, textarea {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    height: 45px; /* Set height to 100px */
-}
-</style>
-
 {% extends "base.html" %}
 {% load static %}
 
+{% block page_title %}Edit Profile - Fitness Empire{% endblock %}
+{% block page_id %}account{% endblock %}
+
 {% block 'main' %}
-<div class="new-profile-container">
-    <h2>Edit Your Profile</h2>
-    <form method="POST" class="new-profile-form">
-        {% csrf_token %}
-        
-        <label for="id_full_name"><strong>Enter Your Full Name:</strong></label>
-        {{ form.full_name }}
-        
-        <label for="id_email"><strong>Enter Your Email:</strong></label>
-        {{ form.email }}
-        
-        <label for="id_phone"><strong>Enter Your Phone Number:</strong></label>
-        {{ form.phone }}
-        
-        <label for="id_gender"><strong>Select Your Gender:</strong></label>
-        {{ form.gender }}
-        
-        <button type="submit" class="new-profile-btn-edit">Save</button>
-    </form>
-</div>
+<section class="section">
+    <div class="container container--tight">
+
+        <div class="panel">
+            <div class="auth-card__head">
+                <h1>Edit Profile</h1>
+                <p>Keep your contact details current so we can reach you about orders.</p>
+            </div>
+
+            <form action="" method="POST" class="form-body" novalidate>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="field">
+                    <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                    {{ form.full_name.errors }}{{ form.full_name }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.gender.id_for_label }}">Gender</label>
+                    {{ form.gender.errors }}{{ form.gender }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+                    {{ form.phone.errors }}{{ form.phone }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.email.id_for_label }}">Email Address</label>
+                    {{ form.email.errors }}{{ form.email }}
+                </div>
+
+                <div class="cluster" style="margin-top:var(--sp-5);">
+                    <button type="submit" class="btn">Save Changes</button>
+                    <a href="{% url 'my_profile' %}" class="btn btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
 {% endblock 'main' %}

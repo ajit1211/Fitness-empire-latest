@@ -1,301 +1,103 @@
-<style>
-    /* Reset margins and paddings */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    background-color: white; /* Black background for contrast */
-}
-
-.main-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%; /* Full viewport height */
-    padding: 20px;
-    box-sizing: border-box;
-    background-color: white; /* Black background for full-screen effect */
-}
-
-.product-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 30px; /* Spacing between product cards */
-    width: 90%;
-    max-width: 1200px;
-}
-
-.product-card {
-    background: #fff; /* White card for contrast */
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex; /* Flex for horizontal layout */
-    flex-direction: row; /* Image on the left, description on the right */
-    gap: 20px;
-    padding: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 8px black; /* Red shadow */
-}
-
-
-.product-image {
-    width: 50%; /* Image takes half the card width */
-    height: 500px; /* Maintain aspect ratio */
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.product-details {
-    flex-grow: 1;
-    padding: 20px;
-    text-align: left;
-    display: flex;
-    flex-direction: column; /* Stack content vertically */
-    justify-content: space-between; /* Even spacing between items */
-    color: #000; /* Black text for readability */
-}
-
-.product-title {
-    font-size: 2.2em;
-    margin: 10px 0;
-    color: #d9534f; /* Red title for impact */
-    font-weight: bold;
-}
-
-.product-description {
-    font-size: 1.2em;
-    margin: 20px 0;
-    color: #333; /* Darker text for readability */
-    line-height: 1.6;
-}
-
-.product-price {
-    font-size: 1.5em;
-    color: #d9534f; /* Red price for emphasis */
-    margin: 10px 0;
-    font-weight: bold;
-}
-
-.rating-badge {
-    display: inline-flex;
-    align-items: center;
-    background: #d9534f; /* Red badge for consistency */
-    color: #fff; /* White text for contrast */
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-    width: 80px;
-}
-
-.rating-badge .rating {
-    margin-right: 5px;
-}
-
-.star {
-    color: #fff; /* White star for consistency */
-}
-
-.add-to-cart-button {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 15px 20px;
-    background: #d9534f; /* Red button */
-    color: #fff; /* White text */
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    text-align: center;
-    transition: background 0.3s ease;
-}
-
-/* Base style for messages */
-.alert-message {
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-    font-size: 1.2em;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* Error message styling */
-.alert-message.error {
-    background-color: #f8d7da; /* Light red background */
-    color: #842029; /* Dark red text */
-    border: 1px solid #f5c2c7; /* Light red border */
-    box-shadow: 0 4px 8px rgba(242, 38, 19, 0.3); /* Subtle shadow */
-}
-
-/* Success message styling */
-.alert-message.success {
-    background-color: #d1e7dd; /* Light green background */
-    color: #0f5132; /* Dark green text */
-    border: 1px solid #badbcc; /* Light green border */
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3); /* Subtle shadow */
-}
-
-/* Hover effect for messages */
-.alert-message:hover {
-    transform: scale(1.02);
-    transition: transform 0.2s ease-in-out;
-}
-
-/* Responsive Styles */
-
-/* For small screens like mobile phones */
-@media (max-width: 600px) {
-    .product-card {
-        flex-direction: column; /* Stack the image and details vertically */
-        padding: 15px;
-    }
-
-    .product-image {
-        width: 100%; /* Image takes full width */
-        height: auto;
-        border-radius: 8px;
-    }
-
-    .product-details {
-        padding: 15px;
-    }
-
-    .product-title {
-        font-size: 1.8em;
-    }
-
-    .product-description {
-        font-size: 1.1em;
-    }
-
-    .product-price {
-        font-size: 1.3em;
-    }
-
-    .rating-badge {
-        padding: 6px 12px;
-    }
-
-    .add-to-cart-button {
-        padding: 12px 15px;
-        font-size: 1em;
-    }
-}
-
-/* For medium screens (e.g., tablets) */
-@media (max-width: 768px) {
-    .product-card {
-        flex-direction: column; /* Stack the image and details vertically */
-        padding: 15px;
-    }
-
-    .product-image {
-        width: 100%; /* Image takes full width */
-        height: auto;
-        border-radius: 8px;
-    }
-
-    .product-details {
-        padding: 15px;
-    }
-
-    .product-title {
-        font-size: 2em;
-    }
-
-    .product-description {
-        font-size: 1.1em;
-    }
-
-    .product-price {
-        font-size: 1.4em;
-    }
-
-    .rating-badge {
-        padding: 7px 14px;
-    }
-
-    .add-to-cart-button {
-        padding: 14px 18px;
-        font-size: 1.1em;
-    }
-}
-
-/* For larger screens (e.g., desktops) */
-@media (min-width: 1200px) {
-    .product-card {
-        flex-direction: row; /* Horizontal layout */
-        padding: 20px;
-    }
-
-    .product-image {
-        width: 50%; /* Image takes half the card width */
-    }
-
-    .product-title {
-        font-size: 2.2em;
-    }
-
-    .product-description {
-        font-size: 1.2em;
-    }
-
-    .product-price {
-        font-size: 1.5em;
-    }
-
-    .add-to-cart-button {
-        padding: 15px 20px;
-        font-size: 1.2em;
-    }
-}
-
-</style>
-
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Products
-{% endblock title %}
+{% block page_title %}{{ product.supplementName }} - Fitness Empire{% endblock %}
+{% block page_id %}product{% endblock %}
+{% block meta_description %}{{ product.supplementDescription|truncatewords:25 }}{% endblock %}
 
 {% block 'main' %}
-<div class="main-content">
-    <div class="product-grid">
-        {% for i in products %}
-        <div class="product-card">
-            <!-- Image on the left -->
-            <img src="{{ i.supplementImage.url }}" alt="{{ i.supplementName }}" class="product-image">
-            
-            <!-- Description on the right -->
-            <div class="product-details">
-                <h5 class="product-title">{{ i.supplementName }}</h5>
-                <p class="product-description">{{ i.supplementDescription }}</p>
-                <h5 class="product-price">Rs {{ i.supplementPrice }}/-</h5>
-                <div class="rating-badge">
-                    <span class="rating">{{ i.supplementRating }}</span>
-                    <span class="star">★</span>
-                </div>
-                <a href="{% url 'addtocart' i.id %}" class="add-to-cart-button">Add to Cart</a>
-                {% if msg %}
-              <div class="alert alert-danger mt-4" role="alert">{{ msg }}
-              </div>
-              {% endif %}
+<section class="section">
+    <div class="container">
 
-              {% if success %}
-              <div class="alert alert-success mt-4" role="alert">{{ success }}
-              </div>
-              {% endif %}
-                <a href="{% url 'viewcart' %}" class="add-to-cart-button">View Cart</a>
-                
-              
+        <p class="muted" style="font-size:var(--fs-sm); margin-bottom:var(--sp-5);">
+            <a href="{% url 'protien' %}" class="link-quiet">Store</a>
+            <span aria-hidden="true">/</span>
+            <a href="{% url 'supplementCategory' product.supplementCategory.id %}" class="link-quiet">{{ product.supplementCategory.categoryName }}</a>
+            <span aria-hidden="true">/</span>
+            {{ product.supplementName }}
+        </p>
+
+        <div class="product-detail">
+            <div class="product-detail__media">
+                {% if product.supplementImage %}
+                    <img src="{{ product.supplementImage.url }}" alt="{{ product.supplementName }}"
+                         width="600" height="600" fetchpriority="high">
+                {% else %}
+                    <img src="{% static 'images/default-product.png' %}" alt="No image available"
+                         width="600" height="600">
+                {% endif %}
+            </div>
+
+            <div class="product-detail__info">
+                <span class="prod__cat">{{ product.supplementCategory.categoryName }}</span>
+                <h1>{{ product.supplementName }}</h1>
+
+                <div class="product-detail__meta">
+                    <span class="rating">{{ product.supplementRating|default:"4.5" }} <span class="star">&#9733;</span></span>
+                    {% if product.stock == 0 %}
+                        <span class="badge badge--danger">Out of stock</span>
+                    {% elif product.low_stock %}
+                        <span class="badge badge--warning">Only {{ product.stock }} left</span>
+                    {% else %}
+                        <span class="badge badge--success">In stock</span>
+                    {% endif %}
+                </div>
+
+                <div class="price price--lg">&#8377;{{ product.supplementPrice|floatformat:0 }}<small>Inclusive of all taxes</small></div>
+
+                <p style="margin-top:var(--sp-4); color:var(--text-2);">{{ product.supplementDescription }}</p>
+
+                <ul class="spec-list">
+                    <li><span>Category</span><span>{{ product.supplementCategory.categoryName }}</span></li>
+                    <li><span>Rating</span><span>{{ product.supplementRating|default:"4.5" }} / 5</span></li>
+                    <li><span>Availability</span><span>{{ product.stock }} unit{{ product.stock|pluralize }}</span></li>
+                    <li><span>Delivery</span><span>Free over &#8377;5,000</span></li>
+                </ul>
+
+                <div class="product-detail__actions">
+                    {% if product.stock > 0 %}
+                        <a href="{% url 'addtocart' product.id %}" class="btn btn--lg">Add to Cart</a>
+                    {% else %}
+                        <span class="btn btn--lg btn--disabled">Out of Stock</span>
+                    {% endif %}
+                    <a href="{% url 'viewcart' %}" class="btn btn--ghost btn--lg">View Cart</a>
+                </div>
             </div>
         </div>
-        {% endfor %}
+
     </div>
-</div>
+</section>
+
+{% if related %}
+<section class="section section--surface">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">You might also like</span>
+            <h2>More in {{ product.supplementCategory.categoryName }}</h2>
+        </div>
+
+        <div class="prod-grid">
+            {% for i in related %}
+            <article class="prod">
+                <a href="{% url 'cards' i.id %}" class="prod__media">
+                    {% if i.supplementImage %}
+                        <img src="{{ i.supplementImage.url }}" alt="{{ i.supplementName }}" loading="lazy" width="300" height="300">
+                    {% else %}
+                        <img src="{% static 'images/default-product.png' %}" alt="" loading="lazy" width="300" height="300">
+                    {% endif %}
+                </a>
+                <div class="prod__body">
+                    <h3 class="prod__title"><a href="{% url 'cards' i.id %}">{{ i.supplementName }}</a></h3>
+                    <div class="prod__foot">
+                        <span class="price">&#8377;{{ i.supplementPrice|floatformat:0 }}</span>
+                        <a href="{% url 'cards' i.id %}" class="btn btn--sm">View</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 {% endblock 'main' %}

@@ -1,133 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details</title>
-    <style>
-        /* Basic table styling */
-        table, th, tr, td {
-            border: 2px solid #ddd;
-            border-collapse: collapse;
-        }
+{% extends "base.html" %}
+{% load static %}
 
-        table {
-            width: 80%;
-            margin: 20px auto;
-            text-align: center;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+{% block page_title %}Manage Products - Fitness Empire{% endblock %}
+{% block page_id %}admin{% endblock %}
 
-        th {
-            background-color: #f2f2f2;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
+{% block 'main' %}
+<section class="section">
+    <div class="container">
 
-        td {
-            padding: 12px;
-            font-size: 14px;
-            color: #555;
-        }
+        <div class="crud-toolbar">
+            <div>
+                <h1 style="margin-bottom:var(--sp-1);">Manage Products</h1>
+                <p class="muted" style="margin:0;">
+                    {{ products|length }} product{{ products|length|pluralize }} in the merchandise catalogue.
+                </p>
+            </div>
+            <div class="btn-row">
+                <a href="{% url 'crud_operations' %}" class="btn">Add Product</a>
+                <a href="/admin/" class="btn btn--ghost">Django Admin</a>
+            </div>
+        </div>
 
-        /* Styling for the Edit and Delete buttons */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+        {% if products %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th class="num">Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            {% if product.productImage %}
+                                <img src="{{ product.productImage.url }}" alt="{{ product.productName }}"
+                                     class="thumb" loading="lazy" width="56" height="56">
+                            {% else %}
+                                <img src="{% static 'images/default-product.png' %}" alt=""
+                                     class="thumb" loading="lazy" width="56" height="56">
+                            {% endif %}
+                        </td>
+                        <td>{{ product.productId }}</td>
+                        <td><strong>{{ product.productName }}</strong></td>
+                        <td class="muted">{{ product.productDescription|truncatewords:12 }}</td>
+                        <td class="num">&#8377;{{ product.productPrice|floatformat:0 }}</td>
+                        <td>
+                            <div class="btn-row">
+                                <a href="/edit/{{ product.id }}/" class="btn btn--ghost btn--sm">Edit</a>
+                                <a href="/delete/{{ product.id }}/" class="btn btn--sm"
+                                   style="--btn-bg: var(--danger);"
+                                   data-confirm="Delete {{ product.productName }}? This cannot be undone.">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <img src="{% static 'images/default-product.png' %}" alt="" width="180" height="180">
+            <h3>No products yet</h3>
+            <p>Add your first merchandise item to see it listed here.</p>
+            <a href="{% url 'crud_operations' %}" class="btn">Add Product</a>
+        </div>
+        {% endif %}
 
-        .btn-edit {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background-color: #45a049;
-        }
-
-        .btn-delete {
-            background-color: #f44336; /* Red */
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background-color: #d32f2f;
-        }
-
-        /* Title styling */
-        h2 {
-            text-align: center;
-            margin: 20px 0;
-            color: #333;
-        }
-
-        /* Responsive table for smaller screens */
-        @media (max-width: 768px) {
-            table {
-                width: 100%;
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px;
-            }
-
-            .btn {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-        }
-
-        /* Styling for product images */
-        .product-image {
-            width: 100px;
-            height: auto;
-            border-radius: 5px;
-            object-fit: cover;
-        }
-    </style>
-</head>
-<body>
-
-    <h2>Product Details</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Product Id</th>
-                <th>Product Name</th>
-                <th>Product Description</th>
-                <th>Product Price</th>
-                <th>Product Image</th> <!-- Added the Product Image column -->
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.productId }}</td>
-                <td>{{ product.productName }}</td>
-                <td>{{ product.productDescription }}</td>
-                <td>Rs {{ product.productPrice }}</td>
-                <td>
-                    <img src="{{ product.productImage.url }}" alt="{{ product.productName }}" class="product-image"> <!-- Displaying product image -->
-                </td>
-                <td>
-                    <a href="/edit/{{ product.id }}/" class="btn btn-edit">Edit</a>
-                    <a href="/delete/{{ product.id }}/" class="btn btn-delete">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+    </div>
+</section>
+{% endblock 'main' %}

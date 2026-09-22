@@ -1,112 +1,87 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block page_title %}Healthy Living Diet Plan - Fitness Empire{% endblock %}
+{% block page_id %}diet{% endblock %}
+
 {% block 'main' %}
-<style>
-        .healthylifestyle-body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            color: #000;
-            line-height: 1.6;
-        }
-        .healthylifestyle-header {
-            background: linear-gradient(to right, white);
-            color: black;
-            padding: 40px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            text-decoration: underline 3;
-        }
-        .healthylifestyle-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 60px 10%;
-            border-bottom: 2px solid #ddd;
-        }
-        .healthylifestyle-section:nth-child(even) {
-            flex-direction: row-reverse;
-        }
-        .healthylifestyle-image {
-            width: 45%;
-            border-radius: 12px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        .healthylifestyle-content {
-            width: 50%;
-            padding: 20px;
-        }
-        .healthylifestyle-heading {
-            color: #000;
-            font-size: 26px;
-        }
-        .healthylifestyle-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .healthylifestyle-item {
-            padding: 12px;
-            font-size: 18px;
-            border-left: 4px solid #000;
-            padding-left: 10px;
-            margin-bottom: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-    </style>
-<body class="healthylifestyle-body">
-    <header class="healthylifestyle-header">
-        Healthy Lifestyle Plan
-    </header>
-    <section class="healthylifestyle-section">
-        <img class="healthylifestyle-image" src="{% static 'images/healthy1.jpeg' %}" alt="Healthy Eating">
-        <div class="healthylifestyle-content">
-            <h2 class="healthylifestyle-heading">Balanced Diet</h2>
-            <ul class="healthylifestyle-list">
-                <li class="healthylifestyle-item">Eat a variety of foods</li>
-                <li class="healthylifestyle-item">Reduce sugar and salt intake</li>
-                <li class="healthylifestyle-item">Choose whole grains over refined grains</li>
-                <li class="healthylifestyle-item">Increase fruit and vegetable consumption</li>
-            </ul>
+
+<section class="hero-banner">
+    <img src="{% static 'img/diet-plan-768x492.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
+    <div class="hero-banner__inner">
+        <span class="eyebrow" style="color:var(--brand);">Diet Plan</span>
+        <h1>Healthy Living</h1>
+        <p>Maintenance eating for people who train to feel good, not to hit a number.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="stat-row">
+            <div>
+                <div class="stat__value">2,200</div>
+                <div class="stat__label">Calories Per Day</div>
+            </div>
+            <div>
+                <div class="stat__value">110g</div>
+                <div class="stat__label">Protein</div>
+            </div>
+            <div>
+                <div class="stat__value">260g</div>
+                <div class="stat__label">Carbohydrates</div>
+            </div>
+            <div>
+                <div class="stat__value">70g</div>
+                <div class="stat__label">Fat</div>
+            </div>
         </div>
-    </section>
-    <section class="healthylifestyle-section">
-        <img class="healthylifestyle-image" src="{% static 'images/healthy2.jpeg' %}" alt="Exercise">
-        <div class="healthylifestyle-content">
-            <h2 class="healthylifestyle-heading">Regular Physical Activity</h2>
-            <ul class="healthylifestyle-list">
-                <li class="healthylifestyle-item">Engage in daily exercise</li>
-                <li class="healthylifestyle-item">Include strength training and cardio</li>
-                <li class="healthylifestyle-item">Take breaks from prolonged sitting</li>
-                <li class="healthylifestyle-item">Stretch regularly to stay flexible</li>
-            </ul>
+    </div>
+</section>
+
+<section class="section section--surface">
+    <div class="container container--narrow">
+        <h2>A day on this plan</h2>
+        <div class="table-wrap" style="margin-top:var(--sp-4);">
+            <table class="table meal-table">
+                <thead>
+                    <tr><th>Meal</th><th>What to eat</th><th class="num">kcal</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Breakfast</td><td>Poha or upma with vegetables, plus a boiled egg or curd</td><td class="num">420</td></tr>
+                    <tr><td>Mid-morning</td><td>Seasonal fruit and a handful of mixed nuts</td><td class="num">220</td></tr>
+                    <tr><td>Lunch</td><td>2 roti, dal, seasonal sabzi, curd and salad</td><td class="num">620</td></tr>
+                    <tr><td>Evening</td><td>Green tea with roasted chana or sprouts</td><td class="num">180</td></tr>
+                    <tr><td>Dinner</td><td>Khichdi or grilled protein with vegetables</td><td class="num">520</td></tr>
+                    <tr><td>Before bed</td><td>Warm milk with turmeric</td><td class="num">160</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
-    <section class="healthylifestyle-section">
-        <img class="healthylifestyle-image" src="{% static 'images/healthy3.jpeg' %}" alt="Mental Well-being">
-        <div class="healthylifestyle-content">
-            <h2 class="healthylifestyle-heading">Mental Well-being</h2>
-            <ul class="healthylifestyle-list">
-                <li class="healthylifestyle-item">Practice mindfulness and meditation</li>
-                <li class="healthylifestyle-item">Get enough sleep every night</li>
-                <li class="healthylifestyle-item">Reduce stress through hobbies</li>
-                <li class="healthylifestyle-item">Stay socially connected</li>
-            </ul>
+
+        <h2 style="margin-top:var(--sp-7);">The rules that matter</h2>
+        <div class="grid grid--2" style="margin-top:var(--sp-4);">
+            <div class="info-card">
+                <h3>Half your plate is vegetables</h3>
+                <p>Fibre and micronutrients first, everything else fits around them.</p>
+            </div>
+            <div class="info-card">
+                <h3>Protein at every meal</h3>
+                <p>Dal, curd, eggs, paneer, fish or chicken. Something in each sitting.</p>
+            </div>
+            <div class="info-card">
+                <h3>Drink three litres of water</h3>
+                <p>More on training days and through summer.</p>
+            </div>
+            <div class="info-card">
+                <h3>Eat out twice a week</h3>
+                <p>Planned, guilt-free, and it keeps the other nineteen meals on track.</p>
+            </div>
         </div>
-    </section>
-    <section class="healthylifestyle-section">
-        <img class="healthylifestyle-image" src="{% static 'images/healthy4.jpeg' %}" alt="Hydration">
-        <div class="healthylifestyle-content">
-            <h2 class="healthylifestyle-heading">Proper Hydration</h2>
-            <ul class="healthylifestyle-list">
-                <li class="healthylifestyle-item">Drink at least 8 glasses of water daily</li>
-                <li class="healthylifestyle-item">Avoid sugary drinks</li>
-                <li class="healthylifestyle-item">Consume herbal teas for benefits</li>
-                <li class="healthylifestyle-item">Eat water-rich foods like cucumbers and melons</li>
-            </ul>
+
+        <div class="cluster" style="margin-top:var(--sp-6);">
+            <a href="{% url 'protien' %}" class="btn">Shop Vitamins</a>
+            <a href="{% url 'dietplan' %}" class="btn btn--ghost">All Diet Plans</a>
         </div>
-    </section>
-</body>
+    </div>
+</section>
+
 {% endblock 'main' %}

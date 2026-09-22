@@ -1,249 +1,111 @@
-
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #000000;
-    color: #FFFFFF;
-  }
-
-  .main-content {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    padding: 20px;
-  }
-
-  /* Category Section */
-  .category-section {
-    width: 25%;
-    background: #1C1C1C;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-  }
-
-  .category-section h3 {
-    font-size: 20px;
-    margin-bottom: 15px;
-    text-align: center;
-    color: #FF0033;
-  }
-
-  .category-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .category-list li {
-    margin-bottom: 10px;
-  }
-
-  .category-list a {
-    text-decoration: none;
-    color: #FFFFFF;
-    font-size: 16px;
-    padding: 10px;
-    display: block;
-    background: #333333;
-    border-radius: 5px;
-    text-align: center;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  .category-list a:hover {
-    background: #FF0033;
-    color: #000000;
-  }
-
-  /* Product Section */
-  .product-section {
-    width: 75%;
-  }
-
-  .product-section h3 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #FF0033;
-    padding-bottom: 5px;
-  }
-
-  .product-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  .product-card {
-    background: #1C1C1C;
-    border: 1px solid #333333;
-    border-radius: 10px;
-    padding: 15px;
-    width: calc(33.333% - 20px);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    color: #FFFFFF;
-  }
-
-  .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(255, 0, 51, 0.5);
-  }
-
-  .product-image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    margin-bottom: 15px;
-  }
-
-  .product-title {
-    font-size: 18px;
-    margin: 10px 0;
-    color: #FF0033;
-  }
-
-  .product-description {
-    font-size: 14px;
-    margin-bottom: 10px;
-    color: #AAAAAA;
-  }
-
-  .product-price {
-    font-size: 16px;
-    color: #00FF00;
-    margin-bottom: 10px;
-  }
-
-  .rating-badge {
-    display: inline-flex;
-    align-items: center;
-    background-color: #FF0033;
-    color: #FFFFFF;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-
-  .rating-badge .rating {
-    font-size: 14px;
-  }
-
-  .rating-badge .star {
-    font-size: 16px;
-    margin-left: 5px;
-  }
-
-  .view-button {
-    text-decoration: none;
-    background: #FF0033;
-    color: #FFFFFF;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-
-  .view-button:hover {
-    background: #FFFFFF;
-    color: #FF0033;
-  }
-
-  .text-muted{
-    color: white !important;
-  }
-  .no-products-message {
-    text-align: center;
-    font-size: 18px;
-    color: #AAAAAA;
-    margin-top: 20px;
-  }
-
-  /* Responsive Design for All Screen Sizes */
-  @media (max-width: 1200px) {
-    .product-card {
-      width: calc(50% - 20px);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .main-content {
-      flex-direction: column;
-      align-items: center;
-    }
-    .category-section {
-      width: 100%;
-    }
-    .product-card {
-      width: 100%;
-    }
-  }
-
-</style>
 {% extends 'base.html' %}
 {% load static %}
 
+{% block page_title %}{% if is_search %}Search results{% else %}Supplements &amp; Gear{% endif %} - Fitness Empire{% endblock %}
+{% block page_id %}shop{% endblock %}
+
 {% block 'main' %}
 
-{% if categories %}
-<div class="main-content">
-  <!-- Category Section -->
-  <div class="category-section">
-    <h3>Category</h3>
-      <ul class="category-list">
-        {% for i in categories %}
-          <li>
-            <a href="{% url 'supplementCategory' i.id %}">
-              {{ i.categoryName|default:"Unnamed Category" }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-    
-    {% endif %}
-  </div>
-
-  <!-- Product Section -->
-{% if products %}
-  <div class="product-section">
-    <h3>Products</h3>
-    <div class="product-grid">
-        {% for i in products %}
-          <div class="product-card">
-            {% if i.supplementImage %}
-              <img src="{{ i.supplementImage.url }}" alt="{{ i.supplementName }}" class="product-image">
+<section class="section section--tight section--dark">
+    <div class="container">
+        <div class="section-head" style="margin-bottom:0;">
+            <span class="eyebrow">Nutrition Store</span>
+            {% if is_search %}
+                <h1>Results for &ldquo;{{ query }}&rdquo;</h1>
+                <p>{{ products|length }} product{{ products|length|pluralize }} matched your search.</p>
+            {% elif selected_category %}
+                <h1>{{ selected_category.categoryName }}</h1>
+                <p>{{ selected_category.categoryDescription }}</p>
             {% else %}
-              <img src="{% static 'images/default-product.png' %}" alt="No Image Available" class="product-image">
+                <h1>Supplements &amp; Gear</h1>
+                <p>Tested products, honest labels and next-day dispatch from our own warehouse.</p>
             {% endif %}
-            
-            <div class="product-details">
-              <h5 class="product-title">{{ i.supplementName|default:"Unnamed Product" }}</h5>
-              <p class="product-description">{{ i.supplementDescription|default:"No description available." }}</p>
-              <h5 class="product-price">Rs {{ i.supplementPrice|default:"0" }}/-</h5>
-
-              <!-- Rating Badge -->
-              <div class="rating-badge">
-                <span class="rating">
-                  {% if i.supplementRating %}{{ i.supplementRating }}{% else %}4.8{% endif %}
-                </span>
-                <span class="star">★</span>
-              </div>
-                   
-              <a href="{% url 'cards' i.id %}" class="view-button">View Product</a>
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p class="no-products-message" style="background-color: white;">
-          <img src="{% static 'images/noproduct.jpg' %}" alt="">
-        </p>
-      {% endif %}
+        </div>
     </div>
-  </div>
-</div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="shop">
+
+            <aside class="filter-card">
+                <h3>Categories</h3>
+                <ul>
+                    <li>
+                        <a href="{% url 'protien' %}"
+                           {% if not selected_category and not is_search %}aria-current="true"{% endif %}>All products</a>
+                    </li>
+                    {% for c in categories %}
+                    <li>
+                        <a href="{% url 'supplementCategory' c.id %}"
+                           {% if selected_category.id == c.id %}aria-current="true"{% endif %}>{{ c.categoryName }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </aside>
+
+            <div>
+                {% if menu_items %}
+                <div class="panel" style="margin-bottom: var(--sp-5);">
+                    <h3 style="font-size:var(--fs-lg);">Pages matching &ldquo;{{ query }}&rdquo;</h3>
+                    <div class="cluster">
+                        {% for item in menu_items %}
+                            <a href="{% url item.url %}" class="btn btn--ghost btn--sm">{{ item.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if products %}
+                <div class="prod-grid">
+                    {% for i in products %}
+                    <article class="prod">
+                        <a href="{% url 'cards' i.id %}" class="prod__media">
+                            {% if i.supplementImage %}
+                                <img src="{{ i.supplementImage.url }}" alt="{{ i.supplementName }}"
+                                     loading="lazy" width="300" height="300">
+                            {% else %}
+                                <img src="{% static 'images/default-product.png' %}" alt="No image available"
+                                     loading="lazy" width="300" height="300">
+                            {% endif %}
+                            <span class="rating prod__rating">{{ i.supplementRating|default:"4.5" }} <span class="star">&#9733;</span></span>
+                        </a>
+
+                        <div class="prod__body">
+                            <span class="prod__cat">{{ i.supplementCategory.categoryName }}</span>
+                            <h2 class="prod__title"><a href="{% url 'cards' i.id %}">{{ i.supplementName }}</a></h2>
+                            <p class="prod__desc">{{ i.supplementDescription }}</p>
+
+                            {% if i.stock == 0 %}
+                                <span class="badge badge--danger">Out of stock</span>
+                            {% elif i.low_stock %}
+                                <span class="badge badge--warning">Only {{ i.stock }} left</span>
+                            {% endif %}
+
+                            <div class="prod__foot">
+                                <span class="price">&#8377;{{ i.supplementPrice|floatformat:0 }}</span>
+                                <a href="{% url 'cards' i.id %}" class="btn btn--sm">View</a>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <img src="{% static 'images/default-product.png' %}" alt="" width="180" height="180">
+                    <h3>Nothing to show here</h3>
+                    {% if is_search %}
+                        <p>We could not find anything matching &ldquo;{{ query }}&rdquo;. Try a shorter search term.</p>
+                    {% else %}
+                        <p>There are no products in this category yet. Check back soon.</p>
+                    {% endif %}
+                    <a href="{% url 'protien' %}" class="btn">Browse all products</a>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</section>
 
 {% endblock 'main' %}

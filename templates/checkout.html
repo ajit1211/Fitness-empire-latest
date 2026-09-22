@@ -1,104 +1,89 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block 'main' %}
-<style>
-    .main-viewport {
-        font-family: Arial, sans-serif;
-        background-color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        padding: 20px;
-    }
-    .checkout-container {
-        display: flex;
-        flex-direction: column;
-        background: #fff;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-        width: 100%;
-        max-width: 600px;
-    }
-    .customer-heading {
-        font-size: 22px;
-        font-weight: bold;
-        color: #000;
-        border-bottom: 3px solid crimson;
-        padding-bottom: 5px;
-        margin-bottom: 15px;
-    }
-    .form-group {
-        color: #000;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-    }
-    .form-group input, .form-group select, .form-group textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #bbb;
-        border-radius: 6px;
-        font-size: 16px;
-    }
-    .btn-submit {
-        background: crimson;
-        color: white;
-        padding: 12px;
-        font-size: 16px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        width: 100%;
-        transition: background 0.3s;
-    }
-    .btn-submit:hover {
-        background: darkred;
-    }
-</style>
+{% block page_title %}Checkout - Fitness Empire{% endblock %}
+{% block page_id %}checkout{% endblock %}
 
-<div class="main-viewport">
-    <div class="checkout-container">
-        {% if not form_filled %}
-            <h2 class="customer-heading">Customer Details</h2>
-            <form action="" method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_full_name">Full Name</label>
-                    {{ form.full_name }}
+{% block 'main' %}
+<section class="section">
+    <div class="container">
+        <h1>Checkout</h1>
+        <p class="muted" style="margin-bottom:var(--sp-5);">Step 1 of 2 &mdash; where should we deliver your order?</p>
+
+        <div class="checkout-layout">
+
+            <div class="panel">
+                <h2 class="panel__title">Delivery Details</h2>
+
+                <form action="" method="POST" class="form-body" novalidate>
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                            {{ form.full_name.errors }}{{ form.full_name }}
+                        </div>
+                        <div class="field">
+                            <label for="{{ form.email.id_for_label }}">Email Address</label>
+                            {{ form.email.errors }}{{ form.email }}
+                        </div>
+                        <div class="field">
+                            <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                            {{ form.phone_number.errors }}{{ form.phone_number }}
+                        </div>
+                        <div class="field">
+                            <label for="{{ form.city.id_for_label }}">City</label>
+                            {{ form.city.errors }}{{ form.city }}
+                        </div>
+                        <div class="field">
+                            <label for="{{ form.pin_code.id_for_label }}">PIN Code</label>
+                            {{ form.pin_code.errors }}{{ form.pin_code }}
+                        </div>
+                        <div class="field">
+                            <label for="{{ form.country.id_for_label }}">Country</label>
+                            {{ form.country.errors }}{{ form.country }}
+                        </div>
+                        <div class="field field--full">
+                            <label for="{{ form.address.id_for_label }}">Street Address</label>
+                            {{ form.address.errors }}{{ form.address }}
+                        </div>
+                        <div class="field field--full">
+                            <label for="{{ form.additional_notes.id_for_label }}">Delivery Notes <span class="muted">(optional)</span></label>
+                            {{ form.additional_notes.errors }}{{ form.additional_notes }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn--lg btn--block" style="margin-top:var(--sp-4);">
+                        Continue to Payment
+                    </button>
+                </form>
+            </div>
+
+            <aside class="panel summary">
+                <h2 class="panel__title">Order Summary</h2>
+
+                <div class="summary__row">
+                    <span>Subtotal ({{ totalCount }} item{{ totalCount|pluralize }})</span>
+                    <span>&#8377;{{ total|floatformat:0 }}</span>
                 </div>
-                <div class="form-group">
-                    <label for="id_email">Email Address</label>
-                    {{ form.email }}
+                <div class="summary__row">
+                    <span>Delivery</span>
+                    <span>{% if delivery_charge == 0 %}Free{% else %}&#8377;{{ delivery_charge|floatformat:0 }}{% endif %}</span>
                 </div>
-                <div class="form-group">
-                    <label for="id_phone_number">Phone Number</label>
-                    {{ form.phone_number }}
+
+                <div class="summary__total">
+                    <span>Total</span>
+                    <span>&#8377;{{ grand_total|floatformat:0 }}</span>
                 </div>
-                <div class="form-group">
-                    <label for="id_address">Address</label>
-                    {{ form.address }}
-                </div>
-                <div class="form-group">
-                    <label for="id_city">City</label>
-                    {{ form.city }}
-                </div>
-                <div class="form-group">
-                    <label for="id_pin_code">PIN Code</label>
-                    {{ form.pin_code }}
-                </div>
-                <div class="form-group">
-                    <label for="id_country">Country</label>
-                    {{ form.country }}
-                </div>
-                <button type="submit" class="btn-submit">Submit</button>
-            </form>
-        {% endif %}
+
+                <a href="{% url 'viewcart' %}" class="btn btn--ghost btn--block" style="margin-top:var(--sp-4);">
+                    Back to Cart
+                </a>
+                <p class="summary__note">Your details are only used to ship this order.</p>
+            </aside>
+
+        </div>
     </div>
-</div>
+</section>
 {% endblock 'main' %}

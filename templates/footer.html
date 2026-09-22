@@ -1,138 +1,58 @@
-<style>
-    
-    @media (max-width: 768px) {
-    .footer-top {
-        flex-direction: column;
-        text-align: center;
-        align-items: center;
-        padding: 15px;
-    }
-
-    .footer-links {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .footer-links ul {
-        padding: 0;
-    }
-
-    .footer-links li {
-        margin: 5px 0;
-    }
-
-    .footer-membership {
-        margin-top: 15px;
-    }
-
-    .membership-link {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
-    .footer-bottom {
-        padding: 8px 0;
-    }
-
-    .social-links {
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .footer-social {
-        margin-top: 15px;
-        gap: 10px;
-    }
-
-    .footer-social a img {
-        width: 25px;
-        height: 25px;
-    }
-
-    .footer-logo img {
-        height: 60px;
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .footer {
-        padding: 15px 0;
-    }
-
-    .footer-top {
-        padding: 10px;
-    }
-
-    .footer-logo img {
-        height: 50px;
-    }
-
-    .membership-link {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    .footer-bottom p {
-        font-size: 10px;
-    }
-
-    .footer-links a {
-        font-size: 12px;
-    }
-
-    .footer-social a img {
-        width: 20px;
-        height: 20px;
-    }
-}
-
-</style>
 {% load static %}
-
 <footer class="footer">
-    <div class="footer-top">
-        <div class="footer-logo">
+    <div class="footer__top">
+        <div class="footer__brand">
+            <img src="{% static 'img/logo_fitness_empire-removebg-preview.webp' %}"
+                 alt="Fitness Empire" width="84" height="84" loading="lazy">
             <p>FITNESS EMPIRE</p>
-            <a href="#">
-                <img src="{% static 'images/Logo_Fitness_empire-removebg-preview.png' %}" alt="Fitness Empire Logo">
-            </a>
         </div>
-        <div class="footer-links">
-            <ul>
-                <li><a href="#">FITNESS EMPIRE</a></li>
-                <li><a href="#">CONNECT US</a></li>
-                <li><a href="#">CLASSES</a></li>
-                <li><a href="#">MEMBERSHIPS</a></li>
-                <li><a href="#">WORKSHOPS</a></li>
-                <li><a href="#">TRAINING</a></li>
-                <li><a href="#">LITTLE MVRS (CHILD MINDING)</a></li>
-            </ul>
-            <ul>
-                <li><a href="#">CONTACT FITNESS EMPIRE</a></li>
-                <li><a href="#">ABOUT US</a></li>
-                <li><a href="#">REVIEWS</a></li>
-                <li><a href="#">GYMVMT FAQ</a></li>
-                <li><a href="#">CAREERS</a></li>
-                <li><a href="#">NEWS</a></li>
-            </ul>
+
+        <div class="footer__cols">
+            <div>
+                <h4>Train</h4>
+                <ul>
+                    <li><a href="{% url 'membershipannual' %}">Memberships</a></li>
+                    <li><a href="{% url 'all_classes' %}">Classes</a></li>
+                    <li><a href="{% url 'training' %}">Personal Training</a></li>
+                    <li><a href="{% url 'dietplan' %}">Diet Plans</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="{% url 'protien' %}">Supplements</a></li>
+                    <li><a href="{% url 'viewcart' %}">My Cart</a></li>
+                    <li><a href="{% url 'myorders' %}">My Orders</a></li>
+                    <li><a href="{% url 'profile' %}">My Membership</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="{% url 'aboutus' %}">About Us</a></li>
+                    <li><a href="{% url 'careers' %}">Careers</a></li>
+                    <li><a href="{% url 'aboutus' %}">Contact</a></li>
+                    <li><a href="{% url 'aboutus' %}">Reviews</a></li>
+                </ul>
+            </div>
         </div>
-        <div class="footer-membership">
-            <p>CLICK HERE FOR</p>
-            <a href="{% url 'membershipannual' %}" class="membership-link">
-                FITNESS EMPIRE <br> MEMBERSHIPS
-            </a>
+
+        <div class="footer__cta">
+            <p>Ready to start?</p>
+            <a href="{% url 'membershipannual' %}" class="btn btn--outline-light">Join Fitness Empire</a>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>© 2024 Fitness Empire | <a href="#">PRIVACY POLICY</a> | <a href="#">TERMS & CONDITIONS</a></p>
-        <div class="footer-social">
-            <a href="#"><img src="{% static 'images/facebook-logo.png' %}" alt="Facebook"></a>
-            <a href="#"><img src="{% static 'images/Twitter-Symbol.png' %}" alt="Twitter"></a>
-            <a href="#"><img src="{% static 'images/linkedin.jpeg' %}" alt="LinkedIn"></a>
-            <a href="#"><img src="{% static 'images/insta logo.jpeg' %}" alt="Instagram"></a>
+
+    <div class="footer__bottom">
+        <div class="footer__bottom-inner">
+            <p>&copy; {% now "Y" %} Fitness Empire. All rights reserved.</p>
+            <div class="footer__social">
+                <a href="#" aria-label="Facebook"><img src="{% static 'img/facebook-logo.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
+                <a href="#" aria-label="Twitter"><img src="{% static 'img/twitter-symbol.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
+                <a href="#" aria-label="LinkedIn"><img src="{% static 'img/linkedin.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
+                <a href="#" aria-label="Instagram"><img src="{% static 'img/insta_logo.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
+            </div>
+            <p><a href="#">Privacy Policy</a> &middot; <a href="#">Terms &amp; Conditions</a></p>
         </div>
     </div>
 </footer>

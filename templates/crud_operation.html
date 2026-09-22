@@ -1,119 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD Operations Form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+{% extends "base.html" %}
+{% load static %}
 
-        table {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 400px;
-            border-collapse: separate;
-            border-spacing: 15px;
-        }
+{% block page_title %}Add Product - Fitness Empire{% endblock %}
+{% block page_id %}admin{% endblock %}
 
-        th {
-            font-size: 18px;
-            text-align: center;
-            padding-bottom: 10px;
-            color: #333;
-        }
+{% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-        label {
-            font-size: 16px;
-            color: #555;
-        }
+        <div class="panel">
+            <h1 class="panel__title">Add Product</h1>
 
-        input[type="number"],
-        input[type="text"],
-        input[type="email"],
-        input[type="file"] {
-            width: 100%;
-            padding: 8px 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-            outline: none;
-        }
+            <form action="" method="POST" enctype="multipart/form-data" class="form-body" novalidate>
+                {% csrf_token %}
 
-        input[type="number"]:focus,
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="file"]:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
-        }
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="product-id">Product ID</label>
+                        <input type="number" name="product-id" id="product-id" required placeholder="107">
+                    </div>
+                    <div class="field">
+                        <label for="product-price">Price (&#8377;)</label>
+                        <input type="number" name="product-price" id="product-price" required
+                               step="0.01" min="0" placeholder="1299">
+                    </div>
+                    <div class="field field--full">
+                        <label for="product-name">Product Name</label>
+                        <input type="text" name="product-name" id="product-name" required
+                               maxlength="255" placeholder="Empire Training Tee">
+                    </div>
+                    <div class="field field--full">
+                        <label for="product-description">Description</label>
+                        <textarea name="product-description" id="product-description" required
+                                  placeholder="What it is, what it is made of, who it suits."></textarea>
+                    </div>
+                    <div class="field field--full">
+                        <label for="product-image">Product Image</label>
+                        <input type="file" name="product-image" id="product-image" accept="image/*">
+                    </div>
+                </div>
 
-        td {
-            vertical-align: top;
-        }
+                <div class="cluster" style="margin-top:var(--sp-5);">
+                    <button type="submit" class="btn">Save Product</button>
+                    <a href="{% url 'showdetails' %}" class="btn btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
 
-        form {
-            width: 100%;
-        }
-
-        .btn-container {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-    </style>
-
-<form action="" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <tr>
-        <td><label for="product-id">Enter Product ID:</label></td>
-        <td><input type="number" name="product-id" placeholder="Product ID" required></td>
-    </tr>
-    <tr>
-        <td><label for="product-name">Enter Product Name:</label></td>
-        <td><input type="text" name="product-name" placeholder="Product Name" required></td>
-    </tr>
-    <tr>
-        <td><label for="product-price">Enter Product Price:</label></td>
-        <td><input type="number" name="product-price" placeholder="Product Price" required></td>
-    </tr>
-    <tr>
-        <td><label for="product-description">Enter Product Description:</label></td>
-        <td><input type="text" name="product-description" placeholder="Product Description" required></td>
-    </tr>
-    <tr>
-        <td><label for="product-image">Upload Product Image:</label></td>
-        <td><input type="file" name="product-image" accept="image/*" required></td>
-    </tr>
-    <tr>
-        <td colspan="2" class="btn-container">
-            <button type="submit">Submit</button>
-        </td>
-    </tr>
-</form>
+    </div>
+</section>
+{% endblock 'main' %}

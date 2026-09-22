@@ -1,351 +1,205 @@
-<style>
-    /* General Styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    
-}
-
-/* Hero Section */
-.hero-section {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-    padding-top: 100px; /* Space for navbar */
-    overflow: hidden;
-}
-
-.hero-section video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    aspect-ratio: 16/9;
-    z-index: -1;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-    padding: 20px;
-}
-
-.hero-content .tagline {
-    font-size: 3rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-.hero-content .membership {
-    font-size: 1.2rem;
-    font-weight: 300;
-    margin-bottom: 10px;
-}
-
-.hero-content .price {
-    font-size: 3.5rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.hero-content .bi-weekly {
-    font-size: 1rem;
-    font-weight: 300;
-    margin-bottom: 30px;
-}
-
-.hero-content .cta-button {
-    background-color: #fff;
-    color: #000;
-    text-decoration: none;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    border-radius: 5px;
-    display: inline-block;
-}
-
-.hero-content .cta-button:hover {
-    background-color: #f2f2f2;
-}
-
-/* Features Section */
-.features-section {
-    text-align: center;
-    padding: 50px 20px;
-}
-
-.features-section h2 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 30px;
-}
-
-.features-grid {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 50px;
-    flex-wrap: wrap;
-}
-
-.feature {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    max-width: 150px;
-}
-
-.feature img {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 15px;
-}
-
-.feature p {
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-/* Header Section */
-.header {
-    background-color: white;
-    color: black;
-    text-align: center;
-    padding: 20px;
-}
-
-.banner h1 {
-    border: 2px solid black;
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 20px 0;
-    font-size: 2rem;
-}
-
-.description {
-    font-size: 1rem;
-    margin: 10px 0;
-}
-
-.learn-more {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: black;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 20px;
-}
-
-.learn-more:hover {
-    background-color: #006666;
-}
-
-/* Sections (Cards) */
-.sections {
-    display: flex;
-    justify-content: center;
-    background-color: #222;
-    padding: 20px;
-    flex-wrap: wrap;
-}
-
-.card {
-    margin: 10px;
-    padding: 10px;
-    color: white;
-    text-align: center;
-    flex: 1 1 300px;
-    max-width: 350px;
-}
-
-.card img {
-    width: 100%;
-    max-width: 300px;
-    border-radius: 5px;
-}
-
-.card h2 {
-    font-weight: bold;
-    color: #000;
-    margin-top: 10px;
-    font-size: 1.2rem;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .hero-section {
-        height: 80vh;
-    }
-
-    .hero-content .tagline {
-        font-size: 2.5rem;
-    }
-
-    .hero-content .price {
-        font-size: 3rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-section {
-        height: 70vh;
-    }
-
-    .hero-content .tagline {
-        font-size: 2rem;
-    }
-
-    .hero-content .price {
-        font-size: 2.5rem;
-    }
-
-    .features-grid {
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .sections {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-section {
-        height: 60vh;
-        padding-top: 50px;
-    }
-
-    .hero-content .tagline {
-        font-size: 1.8rem;
-    }
-
-    .hero-content .price {
-        font-size: 2rem;
-    }
-
-    .banner h1 {
-        font-size: 1.5rem;
-    }
-
-    .description {
-        font-size: 0.9rem;
-    }
-
-    .learn-more {
-        font-size: 1rem;
-        padding: 8px 15px;
-    }
-}
-
-</style>
 {% extends 'base.html' %}
 {% load static %}
 
+{% block page_title %}Fitness Empire - Gym Memberships, Classes &amp; Nutrition{% endblock %}
+{% block page_id %}home{% endblock %}
+
 {% block 'main' %}
-<div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img src="{% static 'images/Banner4.jpg' %}" class="d-block w-100" alt="Banner 2">
+
+<section class="hero" data-slides>
+    <div class="slides">
+        <div class="slides__item is-active">
+            <img src="{% static 'img/banner4.webp' %}" alt="Members training on the gym floor"
+                 width="1500" height="500" fetchpriority="high">
         </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banner5.webp' %}" class="d-block w-100" alt="Carousel Image 1">
+        <div class="slides__item">
+            <img src="{% static 'img/banner5.webp' %}" alt="Group fitness class in session"
+                 width="1500" height="500" loading="lazy">
         </div>
-        <div class="carousel-item">
-            <img src="{% static 'images/banner6.webp' %}" class="d-block w-100" alt="Banner 3">
+        <div class="slides__item">
+            <img src="{% static 'img/banner6.webp' %}" alt="Strength training area"
+                 width="1500" height="500" loading="lazy">
         </div>
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
-</div>
-    <!-- <main class="hero-section">
-         Video Background 
-        <video autoplay muted loop>
-            <source src="{% static 'images/Black and White Modern Fitness YouTube Intro Video.mp4' %}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="hero-content">
-            <p class="tagline">BE LIMITLESS</p>
-            <p class="membership">GYM MEMBERSHIPS FROM</p>
-            <p class="price">1100.00 RS</p>
-            <p class="bi-weekly">Monthly</p>
-            <a href="{% url 'membershipmonthly' %}" class="cta-button">>> GET STARTED >></a>
-        </div>
-    </main> -->
+    <button type="button" class="slides__nav slides__nav--prev" aria-label="Previous slide">&#8249;</button>
+    <button type="button" class="slides__nav slides__nav--next" aria-label="Next slide">&#8250;</button>
+    <div class="slides__dots" aria-hidden="true"></div>
+</section>
 
-    <section class="header">
-        <div class="banner">
-            <h1 class="banners">7 DAY FREE TRIAL</h1>
-        </div>
-        <p class="description">
-            WANT TO CHECK US OUT? SAY LESS, WE GOT YOU.<br>
-            Work out for seven consecutive days at any.
-        </p>
-        <a href="{% url 'aboutus' %}" class="learn-more">LEARN MORE</a>
-    </section>
-
-    <section class="sections">
-        <div class="card">
-            <a href="{% url 'membershipannual' %}">
-            <img src="{% static 'images/membership.jpg' %}" alt="Membership">
-            </a>
-            <h2>MEMBERSHIPS</h2>
-        </div>
-        <div class="card">
-            <a href="{% url 'all_classes' %}">
-            <img src="{% static 'images/diet.jpg' %}" alt="Locations">
-            </a>
-            <h2>CLASSES</h2>
-        </div>
-        <div class="card">
-            <a href="{% url 'training' %}">
-            <img src="{% static 'images/trainer.jpg' %}" alt="Training">
-            </a>
-            <h2>TRAINING</h2>
-        </div>
-    </section>
-
-
-    <div style="margin-top: 50px;">
-        <section class="features-section">
-            <h2>WHY JOIN FITNESS EMPIRE?</h2>
-            <div class="features-grid">
-                <div class="feature">
-                    <img src="{% static 'images/price_icon.webp' %}" alt="Price Icon">
-                    <p>FROM 1100 Monthly</p>
-                </div>
-                <div class="feature">
-                    <img src="{% static 'images/contracts_icon.webp' %}" alt="Contracts Icon">
-                    <p>FLEXIBLE PAYMENT</p>
-                </div>
-                <div class="feature">
-                    <img src="{% static 'images/womens_only_icon.webp' %}" alt="Women's Gym Icon">
-                    <p>UNI SEX GYMS</p>
-                </div>
-                <div class="feature">
-                    <img src="{% static 'images/community_icon.webp' %}" alt="Community Icon">
-                    <p>AWESOME COMMUNITY</p>
-                </div>
-                <div class="feature">
-                    <img src="{% static 'images/co-ed_icon.webp' %}" alt="Co-ed Gyms Icon">
-                    <p>CO-ED GYMS</p>
-                </div>
+<section class="section section--dark">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">7 Day Free Trial</span>
+            <h2>Want to check us out? Say less.</h2>
+            <p>Train for seven consecutive days at any Fitness Empire club. No card, no contract, no catch.</p>
+            <div class="cluster" style="justify-content:center; margin-top: var(--sp-5);">
+                <a href="{% url 'membershipannual' %}" class="btn btn--light">See Memberships</a>
+                <a href="{% url 'aboutus' %}" class="btn btn--outline-light">Learn More</a>
             </div>
-        </section>
+        </div>
+
+        <div class="stat-row">
+            <div>
+                <div class="stat__value">{{ class_count }}</div>
+                <div class="stat__label">Weekly Classes</div>
+            </div>
+            <div>
+                <div class="stat__value">{{ trainer_count }}</div>
+                <div class="stat__label">Expert Trainers</div>
+            </div>
+            <div>
+                <div class="stat__value">{{ program_count }}</div>
+                <div class="stat__label">Coached Programs</div>
+            </div>
+            <div>
+                <div class="stat__value">24/7</div>
+                <div class="stat__label">Club Access</div>
+            </div>
+        </div>
     </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Explore</span>
+            <h2>Find your starting point</h2>
+        </div>
+
+        <div class="grid grid--3">
+            <a href="{% url 'membershipannual' %}" class="media-card">
+                <img src="{% static 'img/membership.webp' %}" alt="Gym memberships" loading="lazy" width="400" height="300">
+                <span class="media-card__label">Memberships</span>
+            </a>
+            <a href="{% url 'all_classes' %}" class="media-card">
+                <img src="{% static 'img/diet.webp' %}" alt="Group fitness classes" loading="lazy" width="400" height="300">
+                <span class="media-card__label">Classes</span>
+            </a>
+            <a href="{% url 'training' %}" class="media-card">
+                <img src="{% static 'img/trainer.webp' %}" alt="Personal training" loading="lazy" width="400" height="300">
+                <span class="media-card__label">Training</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+{% if featured %}
+<section class="section section--surface">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Nutrition Store</span>
+            <h2>Fuel the work</h2>
+            <p>Tested supplements and kit, shipped from our own warehouse.</p>
+        </div>
+
+        <div class="prod-grid">
+            {% for item in featured %}
+            <article class="prod">
+                <a href="{% url 'cards' item.id %}" class="prod__media">
+                    {% if item.supplementImage %}
+                        <img src="{{ item.supplementImage.url }}" alt="{{ item.supplementName }}" loading="lazy" width="300" height="300">
+                    {% else %}
+                        <img src="{% static 'images/default-product.png' %}" alt="" loading="lazy" width="300" height="300">
+                    {% endif %}
+                    <span class="rating prod__rating">{{ item.supplementRating|default:"4.5" }} <span class="star">&#9733;</span></span>
+                </a>
+                <div class="prod__body">
+                    <span class="prod__cat">{{ item.supplementCategory.categoryName }}</span>
+                    <h3 class="prod__title"><a href="{% url 'cards' item.id %}">{{ item.supplementName }}</a></h3>
+                    <div class="prod__foot">
+                        <span class="price">&#8377;{{ item.supplementPrice|floatformat:0 }}</span>
+                        <a href="{% url 'cards' item.id %}" class="btn btn--sm">View</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <p class="text-center" style="margin-top: var(--sp-6);">
+            <a href="{% url 'protien' %}" class="btn btn--ghost">Shop all products</a>
+        </p>
+    </div>
+</section>
+{% endif %}
+
+{% if classes %}
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Group Fitness</span>
+            <h2>Classes that keep you coming back</h2>
+        </div>
+
+        <div class="class-grid">
+            {% for item in classes %}
+            <a href="{% url 'all_classes' %}" class="class-tile">
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" width="220" height="220">
+                <h3>{{ item.name }}</h3>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="section section--muted">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Why Fitness Empire</span>
+            <h2>Built for people who show up</h2>
+        </div>
+
+        <div class="grid grid--4">
+            <div class="feature">
+                <img src="{% static 'img/price_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+                <p>From &#8377;2,400 Monthly</p>
+            </div>
+            <div class="feature">
+                <img src="{% static 'img/contracts_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+                <p>Flexible Payment</p>
+            </div>
+            <div class="feature">
+                <img src="{% static 'img/womens_only_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+                <p>Unisex Gyms</p>
+            </div>
+            <div class="feature">
+                <img src="{% static 'img/community_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+                <p>Awesome Community</p>
+            </div>
+            <div class="feature">
+                <img src="{% static 'img/co-ed_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+                <p>Co-Ed Gyms</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if memberships %}
+<section class="section section--surface">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Membership</span>
+            <h2>Pick your plan</h2>
+            <p>Every plan includes the gym floor, locker rooms and the Fitness Empire app.</p>
+        </div>
+
+        <div class="plans">
+            {% for plan in memberships %}
+            <div class="plan {% if forloop.counter == 2 %}plan--featured{% endif %}">
+                {% if forloop.counter == 2 %}<span class="badge badge--brand plan__flag">Most Popular</span>{% endif %}
+                <h3 class="plan__name">{{ plan.name }}</h3>
+                <div class="plan__price">&#8377;{{ plan.price|floatformat:0 }}<small>per year + tax</small></div>
+                <p class="plan__desc">{{ plan.description }}</p>
+                <a href="{% url 'membership_list' plan.id %}" class="btn btn--block">Buy Now</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <p class="text-center" style="margin-top: var(--sp-6);">
+            <a href="{% url 'membershipmonthly' %}" class="link-quiet">Prefer to pay monthly? See monthly plans &rarr;</a>
+        </p>
+    </div>
+</section>
+{% endif %}
+
 {% endblock 'main' %}

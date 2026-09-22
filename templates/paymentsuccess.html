@@ -1,184 +1,62 @@
-<style>
-    /* Product Grid Layout */
-    .product-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-        padding: 20px;
-        background-color: white;
-    }
-
-    /* Order Rectangle Styling */
-    .product-rectangle {
-        display: flex;
-        align-items: center;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        width: 900px;
-        height: 300px;
-        color: black;
-        transition: transform 0.3s;
-    }
-    /* Product Image */
-    .product-image {
-        width: 250px;
-        height: 250px;
-        object-fit: cover;
-        border-radius: 10px;
-        margin-right: 20px;
-    }
-
-    /* Product Details */
-    .product-details {
-        flex: 1;
-    }
-
-    .product-title {
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .product-description {
-        font-size: 16px;
-        margin-bottom: 5px;
-    }
-
-    .product-price {
-        font-size: 20px;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    /* Rating Badge */
-    .rating-badge {
-        display: inline-flex;
-        align-items: center;
-        background: black;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 16px;
-        color: white;
-    }
-
-    .star {
-        color: gold;
-        margin-left: 5px;
-    }
-
-    /* View Button */
-    .view-button {
-        display: inline-block;
-        background: crimson;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        font-weight: bold;
-        text-decoration: none;
-        transition: background 0.3s;
-    }
-
-    .view-button:hover {
-        background: black;
-        color: white;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-        .product-rectangle {
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            height: auto;
-            text-align: center;
-        }
-
-        .product-image {
-            width: 100%;
-            height: 80%;
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-    }
-    .myorder {
-    font-size: 35px;
-    font-weight: bold;
-    color: #2c3e50;  /* Dark blue-gray */
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: white;
-    position: relative; /* Allows positioning the border separately */
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
-.myorder::after {
-    content: "";  /* Creates a separate border */
-    display: block;
-    width: 200px; /* Sets the border width */
-    height: 2px; /* Sets the border thickness */
-    background-color: crimson; /* Sets the border color */
-    margin: 5px auto 0; /* Centers the border below the text */
-}
-
-
-.divider {
-    width: 150px;
-    height: 4px;
-    background: #d32f2f;
-    margin: 10px auto;
-}
-
-.order-status {
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap; /* Allows wrapping on small screens */
-    gap: 5px; /* Adds spacing between items */
-}
-
-/* Apply vertical stacking for screens smaller than 600px */
-@media (max-width: 600px) {
-    .order-status {
-        flex-direction: column; /* Stack items vertically */
-    }
-}
-
-</style>
-
 {% extends "base.html" %}
 {% load static %}
 
-{% block 'main' %}
+{% block page_title %}Order Confirmed - Fitness Empire{% endblock %}
+{% block page_id %}result{% endblock %}
 
-<h1 class="myorder" > Payment Successful </h1>
-<div class="product-grid">
-        {% for i in orders %}
-          <div class="product-rectangle">
-              <img src="{{ i.supplement.supplementImage.url }}" alt="{{ i.supplement.supplementName }}" class="product-image">
-    
-              <div class="product-details">
-                  <h5 class="product-title">{{ i.supplement.supplementName|default:"Unnamed Product" }}</h5>
-                  <p class="product-description">Order Date: {{ i.order_date }}</p>
-                  <p class="product-description">Quantity: {{ i.quantity }}</p>
-                  <h5 class="product-price">Rs {{ i.total_price }}/-</h5>
-    
-                  <div class="rating-badge">
-                      <span class="rating">{% if i.supplementRating %}{{ i.supplementRating }}{% else %}4.8{% endif %}</span>
-                      <span class="star">★</span>
-                  </div>
-                  
-                  <a href="{% url 'cards' i.id %}" class="view-button">{{ i.status }}</a>
-                  <a href="{% url 'orders' %}" class="view-button">Track Order</a>
-                
-              </div>
-          </div>
-        {% endfor %}
+{% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
+
+        <div class="panel text-center">
+            <div class="avatar" style="background:var(--success); font-size:var(--fs-3xl);">&#10003;</div>
+            <h1>Payment Successful</h1>
+            <p class="muted">Thank you. Your order is confirmed and on its way.</p>
+        </div>
+
+        {% if orders %}
+        <h2 style="margin-top:var(--sp-6);">What you ordered</h2>
+        <div class="card">
+            {% for i in orders %}
+            <div class="cart-line">
+                {% if i.supplement.supplementImage %}
+                    <img src="{{ i.supplement.supplementImage.url }}" alt="{{ i.supplement.supplementName }}"
+                         class="cart-line__img" loading="lazy" width="88" height="88">
+                {% else %}
+                    <img src="{% static 'images/default-product.png' %}" alt=""
+                         class="cart-line__img" loading="lazy" width="88" height="88">
+                {% endif %}
+
+                <div>
+                    <p class="cart-line__title">
+                        <a href="{% url 'cards' i.supplement.id %}">{{ i.supplement.supplementName }}</a>
+                    </p>
+                    <p class="muted" style="font-size:var(--fs-sm); margin:0;">
+                        Order #{{ i.id }} &middot; Quantity {{ i.quantity }}
+                    </p>
+                </div>
+
+                <div class="cart-line__side">
+                    <span class="cart-line__price">&#8377;{{ i.total_price|floatformat:0 }}</span>
+                    <span class="badge badge--warning">{{ i.get_status_display|default:i.status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="panel" style="margin-top:var(--sp-4);">
+            <div class="summary__total">
+                <span>Order total</span>
+                <span>&#8377;{{ grand_total|floatformat:0 }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="cluster" style="justify-content:center; margin-top:var(--sp-6);">
+            <a href="{% url 'orders' %}" class="btn">Track My Orders</a>
+            <a href="{% url 'protien' %}" class="btn btn--ghost">Continue Shopping</a>
+        </div>
+
     </div>
+</section>
 {% endblock 'main' %}

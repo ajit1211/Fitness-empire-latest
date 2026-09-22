@@ -1,148 +1,59 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}My Profile - Fitness Empire{% endblock %}
+{% block page_id %}account{% endblock %}
+
 {% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-<style>
-    body {
-        background-color: white !important;
-        font-family: Arial, sans-serif;
-    }
+        <ul class="tabs">
+            <li><a href="{% url 'my_profile' %}" aria-current="page">My Profile</a></li>
+            <li><a href="{% url 'myorders' %}">My Orders</a></li>
+            <li><a href="{% url 'my_addresses' %}">My Addresses</a></li>
+        </ul>
 
-    /* Profile Container */
-    .profile-container {
-        width: 60%;
-        margin: 40px auto;
-        padding: 20px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Tabs Navigation */
-    .profile-tabs {
-        display: flex;
-        justify-content: center;
-        list-style: none;
-        padding: 0;
-        margin-bottom: 30px;
-        border-bottom: 2px solid #ddd;
-    }
-
-    .profile-tab-item {
-        margin: 0 15px;
-    }
-
-    .profile-tab-link {
-        text-decoration: none;
-        color: #333;
-        padding: 12px 20px;
-        display: inline-block;
-        font-weight: bold;
-        border-radius: 8px 8px 0 0;
-        transition: 0.3s;
-    }
-
-    .profile-tab-link.active {
-        background: crimson;
-        color: white;
-        border-bottom: 2px solid crimson;
-    }
-
-    .profile-tab-link:hover {
-        color: crimson;
-        color: black;
-
-    }
-
-    /* Profile Card */
-    .profile-card {
-        background: #f9f9f9;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .profile-card h2 {
-        color: #222;
-        margin-bottom: 20px;
-        font-size: 24px;
-    }
-
-    /* Profile Details */
-    .profile-row {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-
-    .profile-col {
-        width: 48%;
-        text-align: left;
-    }
-
-    .profile-col p {
-        background: #fff;
-        padding: 12px;
-        border-radius: 6px;
-        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.08);
-        margin-bottom: 12px;
-        font-size: 16px;
-        color: #222;
-    }
-
-    /* Edit Button */
-    .profile-btn-edit {
-        display: inline-block;
-        padding: 12px 25px;
-        background: crimson;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: bold;
-        transition: 0.3s;
-    }
-
-    .profile-btn-edit:hover {
-        background: darkred;
-    }
-
-</style>
-
-<div class="profile-container">
-    <!-- Profile Navigation Tabs -->
-    <ul class="profile-tabs">
-        <li class="profile-tab-item">
-            <a class="profile-tab-link active" href="#">My Profile</a>
-        </li>
-        <li class="profile-tab-item">
-            <a class="profile-tab-link" href="{% url 'myorders' %}">My Orders</a>
-        </li>
-        <li class="profile-tab-item">
-            <a class="profile-tab-link" href="{% url 'my_addresses' %}">My Addresses</a>
-        </li>
-    </ul>
-
-    <!-- Profile Details -->
-    <div class="profile-card">
-        {% if user_profile %}
-            <h2>Hi, {{ user_profile.full_name }}</h2>
-            <div class="profile-row">
-                <div class="profile-col">
-                    <p><strong>Full Name:</strong><br> {{ user_profile.full_name }}</p>
-                    <p><strong>Gender:</strong><br> {{ user_profile.gender }}</p>
+        <div class="panel">
+            {% if user_profile %}
+                <div class="text-center" style="margin-bottom:var(--sp-5);">
+                    <div class="avatar">{{ user_profile.full_name|first|upper|default:"U" }}</div>
+                    <h1 style="font-size:var(--fs-2xl); margin-bottom:var(--sp-1);">{{ user_profile.full_name|default:user.username }}</h1>
+                    <p class="muted">Member since {{ user.date_joined|date:"F Y" }}</p>
                 </div>
-                <div class="profile-col">
-                    <p><strong>Phone No:</strong><br> {{ user_profile.phone }}</p>
-                    <p><strong>Email:</strong><br> {{ user_profile.email }}</p>
+
+                <div class="detail-grid">
+                    <dl class="detail">
+                        <dt>Full Name</dt>
+                        <dd>{{ user_profile.full_name|default:"Not set" }}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Gender</dt>
+                        <dd>{{ user_profile.gender|default:"Not set" }}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Phone Number</dt>
+                        <dd>{{ user_profile.phone|default:"Not set" }}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Email</dt>
+                        <dd>{{ user_profile.email|default:user.email|default:"Not set" }}</dd>
+                    </dl>
                 </div>
-            </div>
-            <a href="{% url 'edit_profile' user_profile.user.id %}" class="profile-btn-edit">Edit Profile</a>
-        {% else %}
-            <p style="color: crimson;">Profile not found.</p>
-            <a href="{% url 'edit_profile' request.user.id %}" class="profile-btn-edit">Add Profile</a>
-        {% endif %}
+
+                <div class="cluster" style="justify-content:center; margin-top:var(--sp-5);">
+                    <a href="{% url 'edit_profile' user.id %}" class="btn">Edit Profile</a>
+                    <a href="{% url 'profile' %}" class="btn btn--ghost">View Membership</a>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>Profile not set up yet</h3>
+                    <p>Add your details so we can personalise your orders and membership.</p>
+                    <a href="{% url 'edit_profile' user.id %}" class="btn">Add Profile</a>
+                </div>
+            {% endif %}
+        </div>
+
     </div>
-</div>
-
+</section>
 {% endblock 'main' %}

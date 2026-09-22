@@ -71,8 +71,23 @@ class Supplement(models.Model):
     supplementImage = models.ImageField(upload_to='images/', null=True, blank=True)
     supplementRating = models.DecimalField(max_digits=2,decimal_places=1,null=True,blank=True)
     supplementCategory = models.ForeignKey(SupplementCategory, on_delete=models.CASCADE)
+    stock = models.PositiveIntegerField(default=25)
     is_deleted=models.BooleanField(default=False)
     delete_details=models.DateTimeField(null=True,blank=True)
+
+    class Meta:
+        ordering = ['supplementName']
+
+    def __str__(self):
+        return self.supplementName
+
+    @property
+    def in_stock(self):
+        return self.stock > 0
+
+    @property
+    def low_stock(self):
+        return 0 < self.stock <= 5
     
 
 class cart(models.Model):
@@ -97,15 +112,9 @@ class FitnessClass(models.Model):
         return self.name
 
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 
-from django.db import models
-from django.contrib.auth.models import User
-from datetime import datetime, timedelta
-
-from django.db import models
-from django.contrib.auth.models import User
-from datetime import datetime, timedelta
+from django.utils import timezone
 
 class Membership(models.Model):
     choice = models.CharField(max_length=50, null=True, blank=True)
@@ -139,12 +148,25 @@ class membershipprocessedtocheck(models.Model):
     plan_expiry = models.DateTimeField(null=True, blank=True)  # ✅ Plan expiry date
 
     def save(self, *args, **kwargs):
+        # timezone.now() rather than datetime.now(): USE_TZ is on, so a naive
+        # datetime was being stored as if it were UTC and the expiry date came
+        # out shifted by the local UTC offset.
         if not self.plan_expiry:
             if self.membership_yearly:
-                self.plan_expiry = datetime.now() + timedelta(days=365)  # Expiry in 1 year
+                self.plan_expiry = timezone.now() + timedelta(days=365)
             elif self.membership_monthly:
-                self.plan_expiry = datetime.now() + timedelta(days=30)  # Expiry in 1 month
+                self.plan_expiry = timezone.now() + timedelta(days=30)
         super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        return bool(self.plan_expiry and self.plan_expiry < timezone.now())
+
+    @property
+    def days_remaining(self):
+        if not self.plan_expiry:
+            return None
+        return max((self.plan_expiry - timezone.now()).days, 0)
 
     def __str__(self):
         return self.full_name

@@ -1,224 +1,91 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Checkout
-{% endblock title %}
+{% block page_title %}Confirm &amp; Pay - Fitness Empire{% endblock %}
+{% block page_id %}pay{% endblock %}
 
 {% block 'main' %}
+<section class="section">
+    <div class="container">
+        <h1>Confirm &amp; Pay</h1>
+        <p class="muted" style="margin-bottom:var(--sp-5);">
+            Step 2 of 2 &mdash; review {{ totalCount }} item{{ totalCount|pluralize }} before paying.
+        </p>
 
-<style>
-    body {
-        color: white;
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: white;
-    }
+        <div class="checkout-layout">
 
-    .container {
-        width: 90%;
-        margin: auto;
-        padding: 20px;
-    }
-
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: space-between;
-    }
-
-    /* Left Column: Products */
-    .left-column {
-        width: 60%;
-    }
-
-    .product-card {
-        background-color: #222;
-        padding: 15px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .product-card img {
-        width: 120px;
-        height: 120px;
-        border-radius: 10px;
-        margin-right: 15px;
-        border: solid 2px crimson;
-    }
-
-    .product-details {
-        flex-grow: 1;
-    }
-
-    .product-details h5 {
-        margin: 5px 0;
-        color: white;
-    }
-
-    /* Right Column: Address & Payment */
-    .right-column {
-        width: 35%;
-    }
-
-    .customer-info {
-        background-color: #222;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        position: relative;
-    }
-
-    .customer-info h6 {
-        margin: 5px 0;
-        color: white;
-    }
-
-    /* Edit Address Button */
-    .edit-address {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: white;
-        color: crimson;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        text-decoration: none;
-    }
-
-    .edit-address:hover {
-        background-color: crimson;
-        color: white;
-    }
-
-    /* Total Amount */
-    .total-amount {
-        background-color: crimson;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-top: 15px;
-    }
-
-    /* Pay Button */
-    .pay-button {
-        display: block;
-        width: 100%;
-        background-color: white;
-        color: crimson;
-        text-align: center;
-        padding: 10px;
-        margin-top: 10px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        border: 1px solid crimson;
-    }
-
-    .pay-button:hover {
-        background-color: crimson;
-        color: white;
-    }
-
-    /* PayPal Button Styling */
-    .paypal-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 15px;
-    }
-
-    .paypal-button {
-        width: 100%;
-        background-color: white;
-        color: crimson;
-        text-align: center;
-        padding: 12px;
-        font-size: 1rem;
-        font-weight: bold;
-        border: 2px solid crimson;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .paypal-button:hover {
-        background-color: crimson;
-        color: white;
-    }
-
-     /* Responsive Design */
-     @media (max-width: 1024px) {
-        .left-column, .right-column {
-            width: 100%;
-        }
-
-        .product-card {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .product-card img {
-            width: 80px;
-        }
-    }
-</style>
-
-<div class="container">
-    <h3>You Purchased {{ totalCount }} Products:</h3>
-
-    <div class="row">
-        <!-- Left Side: Product List -->
-        <div class="left-column">
-            {% for prod in products %}
-            <div class="product-card">
-                <img src="{{ prod.productid.supplementImage.url }}" alt="Product Image">
-                <div class="product-details">
-                    <h5>{{ prod.productid.supplementName | upper }}</h5>
-                    <h5>Rs. {{ prod.productid.supplementPrice }}/-</h5>
-                    <h5>Qty: {{ prod.quantity }}</h5>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Right Side: Address & Payment -->
-        <div class="right-column">
-            {% if custformdetail %}
-                {% with cust=custformdetail.0 %}
-                <div class="customer-info">
-                    <a href="{% url 'edit_address' cust.id %}" class="edit-address">Edit</a>  <!-- Edit Address Button -->
-                    <h6><strong>Shipping Address</strong></h6>
-                    <h6>{{ cust.full_name }}</h6>
-                    <h6>{{ cust.address }}, {{ cust.city }}, {{ cust.pin_code }}</h6>
-                    <h6>{{ cust.country }}</h6>
-                    <h6>Email: {{ cust.email }}</h6>
-                    <h6>Phone No: {{ cust.phone_number }}</h6>
-                    {% if cust.additional_notes %}
-                    <h6>Note: {{ cust.additional_notes }}</h6>
+            <div class="card">
+                {% for prod in products %}
+                <div class="cart-line">
+                    {% if prod.productid.supplementImage %}
+                        <img src="{{ prod.productid.supplementImage.url }}" alt="{{ prod.productid.supplementName }}"
+                             class="cart-line__img" loading="lazy" width="88" height="88">
+                    {% else %}
+                        <img src="{% static 'images/default-product.png' %}" alt=""
+                             class="cart-line__img" loading="lazy" width="88" height="88">
                     {% endif %}
+
+                    <div>
+                        <p class="cart-line__title">{{ prod.productid.supplementName }}</p>
+                        <p class="muted" style="font-size:var(--fs-sm); margin:0;">
+                            Quantity: {{ prod.quantity }}
+                        </p>
+                    </div>
+
+                    <div class="cart-line__side">
+                        <span class="cart-line__price">
+                            &#8377;{{ prod.productid.supplementPrice|floatformat:0 }}
+                        </span>
+                    </div>
                 </div>
-                {% endwith %}
-            {% endif %}
-
-            <div class="total-amount">
-                Total Amount: Rs. {{ grand_total }}
+                {% endfor %}
             </div>
 
-            <div class="paypal-container">
-                <button class="paypal-button">{{ paypalpayment.render }}</button>
-            </div>
+            <aside class="summary">
+                {% if address %}
+                <div class="panel" style="margin-bottom:var(--sp-4);">
+                    <h2 class="panel__title">Shipping To</h2>
+                    <div class="address-card">
+                        <a href="{% url 'edit_address' address.id %}" class="btn btn--ghost btn--sm address-card__edit">Edit</a>
+                        <strong>{{ address.full_name }}</strong>
+                        {{ address.address }}<br>
+                        {{ address.city }} {{ address.pin_code }}<br>
+                        {{ address.country }}<br>
+                        {{ address.email }}<br>
+                        {{ address.phone_number }}
+                        {% if address.additional_notes %}
+                            <br><em class="muted">{{ address.additional_notes }}</em>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="panel">
+                    <h2 class="panel__title">Order Total</h2>
+
+                    <div class="summary__row">
+                        <span>Subtotal</span>
+                        <span>&#8377;{{ total|floatformat:0 }}</span>
+                    </div>
+                    <div class="summary__row">
+                        <span>Delivery</span>
+                        <span>{% if delivery_charge == 0 %}Free{% else %}&#8377;{{ delivery_charge|floatformat:0 }}{% endif %}</span>
+                    </div>
+
+                    <div class="summary__total">
+                        <span>Total</span>
+                        <span>&#8377;{{ grand_total|floatformat:0 }}</span>
+                    </div>
+
+                    <div class="paypal-slot">
+                        {{ paypalpayment.render }}
+                    </div>
+
+                    <p class="summary__note">Payments are processed by PayPal in the sandbox environment.</p>
+                </div>
+            </aside>
+
         </div>
     </div>
-</div>
-
+</section>
 {% endblock 'main' %}

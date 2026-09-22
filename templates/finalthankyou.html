@@ -1,116 +1,50 @@
-<style>
-    .container-confirmation-container {
-        font-family: Arial, sans-serif;
-        background-color: #fff;
-        margin: 0;
-        padding: 0;
-    }
-
-    .confirmation-container {
-        margin-top: 50px;
-        padding: 0 15px;
-    }
-
-    .content-wrapper {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 30px;
-    }
-
-    .text-content {
-        flex: 1;
-        text-align: left;
-    }
-
-    .text-content h1 {
-        font-size: 2.5rem;
-        color: #000;
-        margin-bottom: 20px;
-    }
-
-    .text-content p {
-        font-size: 1.6rem;
-        color: black;
-        line-height: 1.5;
-    }
-
-    .img-fluid {
-        flex: 1;
-        height: 400px;  /* Set the height of the image */
-        object-fit: cover; /* Ensure the image maintains aspect ratio and fills the space */
-        width: 100%;  /* Make sure the width is 100% */
-        border-radius: 10px; /* Optional: adding rounded corners */
-    }
-
-    @media (max-width: 1024px) {
-        .content-wrapper {
-            flex-direction: column;  /* Stacks the columns on smaller screens */
-            align-items: center;
-        }
-
-        .text-content {
-            text-align: center;
-            padding: 0 20px; /* Optional: add padding for mobile screens */
-        }
-
-        .img-fluid {
-            height: 400px;  /* Adjust image height for tablets */
-        }
-    }
-
-    @media (max-width: 768px) {
-        .text-content h1 {
-            font-size: 2rem; /* Smaller font size on mobile */
-        }
-
-        .text-content p {
-            font-size: 1.4rem;  /* Adjust paragraph size for mobile */
-        }
-
-        .img-fluid {
-            height: 300px;  /* Further adjust image height for mobile */
-        }
-    }
-      .bton {
-        background-color: black;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        display: inline-block;
-        transition: background 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .bton:hover {
-        background-color: #1a1a1a;
-        box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
-    }
-</style>
-
 {% extends 'base.html' %}
 {% load static %}
 
+{% block page_title %}Membership Activated - Fitness Empire{% endblock %}
+{% block page_id %}result{% endblock %}
+
 {% block 'main' %}
-<body>
+<section class="section">
+    <div class="container container--narrow">
 
-<div class="container-confirmation-container">
-    <div class="content-wrapper">
-        <div>
-            <img src="{% static 'images/thank.png' %}" alt="Fitness Image" class="img-fluid">
-        </div>
-        <div class="text-content">
-            <h1 class="fw-bold">You're all set!</h1>
-            <p>Yaaas! You’ve just taken the first step towards your fitness journey for better health, and we’re here for it.</p>
-            <p><strong>Check your email for a temporary membership card.</strong></p>
-            <a href="{% url 'profile' %}" class="bton">View Membership Plan</a>
+        <div class="panel text-center">
+            <div class="avatar" style="background:var(--success); font-size:var(--fs-3xl);">&#10003;</div>
+            <h1>You&rsquo;re In</h1>
+            <p class="muted">
+                Your payment went through and your membership is now active.
+                We have emailed your receipt.
+            </p>
 
+            {% if membership %}
+                {% with plan=membership.membership_yearly|default:membership.membership_monthly %}
+                <div class="detail-grid" style="margin-top:var(--sp-5); text-align:left;">
+                    <dl class="detail">
+                        <dt>Plan</dt>
+                        <dd>{{ plan.name }}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Billing</dt>
+                        <dd>{% if membership.membership_yearly %}Annual{% else %}Monthly{% endif %}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Member</dt>
+                        <dd style="font-size:var(--fs-base);">{{ membership.full_name }}</dd>
+                    </dl>
+                    <dl class="detail">
+                        <dt>Valid Until</dt>
+                        <dd style="font-size:var(--fs-base);">{{ membership.plan_expiry|date:"j M Y" }}</dd>
+                    </dl>
+                </div>
+                {% endwith %}
+            {% endif %}
+
+            <div class="cluster" style="justify-content:center; margin-top:var(--sp-6);">
+                <a href="{% url 'profile' %}" class="btn">View My Membership</a>
+                <a href="{% url 'all_classes' %}" class="btn btn--ghost">Browse Classes</a>
+            </div>
         </div>
-        
+
     </div>
-</div>
-
+</section>
 {% endblock 'main' %}

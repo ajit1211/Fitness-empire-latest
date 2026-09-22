@@ -1,354 +1,109 @@
-<style>
-    /* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-/* Hero Section */
-.about-hero-section {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: white;
-  height: 500px;
-  overflow: hidden;
-}
-
-.about-hero-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  border-radius: 2%;
-}
-
-.about-hero-content {
-  z-index: 1;
-  padding: 20px;
-}
-
-.about-hero-content h1 {
-  font-size: 4vw;
-  font-weight: bold;
-}
-
-.about-hero-content p {
-  font-size: 1.8vw;
-  width: 60%;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-
-/* Mission & Vision Section */
-.about-mission-vision {
-  background-color: #f4f4f4;
-  text-align: center;
-  padding: 50px 0;
-}
-
-.about-section-header h2 {
-  font-size: 3vw;
-  color: #007582;
-}
-
-.about-content {
-  display: flex;
-  justify-content: space-around;
-  gap: 20px;
-  margin-top: 30px;
-  flex-wrap: wrap;
-}
-
-.about-mission, .about-vision {
-  background-color: black;
-  color: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 45%;
-  min-width: 300px;
-  text-align: center;
-}
-
-/* Team Section */
-.about-team {
-  background-color: black;
-  text-align: center;
-  padding: 50px 0;
-  color: white;
-}
-
-.about-team-members {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-
-.about-team-member {
-  width: 250px;
-  padding: 20px;
-  background-color: rgb(107, 89, 89);
-  border-radius: 10px;
-  text-align: center;
-  color: white;
-}
-
-.about-team-member img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* History Section */
-.about-history {
-  background-color: #f4f4f4;
-  text-align: center;
-  padding: 50px 0;
-}
-
-.about-history-timeline {
-  display: flex;
-  justify-content: space-around;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.about-timeline-item {
-  background-color: black;
-  padding: 20px;
-  border-radius: 15px;
-  color: white;
-  width: 25%;
-  min-width: 250px;
-  text-align: center;
-  transition: transform 0.3s;
-}
-
-.about-timeline-item:hover {
-  transform: translateY(-10px);
-}
-
-/* Contact Section */
-.about-contact {
-  background-color: #000;
-  color: white;
-  text-align: center;
-  padding: 50px 0;
-}
-
-.about-contact-form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 20px;
-}
-
-.about-contact-form form {
-  background-color: white;
-  padding: 30px;
-  border-radius: 10px;
-  width: 50%;
-  min-width: 300px;
-}
-
-.about-contact-form input, .about-contact-form textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.about-contact-form button {
-  background-color: #007582;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-}
-
-.about-contact-form button:hover {
-  background-color: #005960;
-}
-
-/* Responsive Styles */
-@media (max-width: 1024px) {
-  .about-hero-content h1 {
-    font-size: 5vw;
-  }
-  .about-hero-content p {
-    font-size: 2vw;
-    width: 80%;
-  }
-
-  .about-mission, .about-vision {
-    width: 80%;
-  }
-  .about-team-member img {
-    height: 220px;
-    width: 220px;
-  }
-}
-
-@media (max-width: 768px) {
-  .about-content, .about-history-timeline, .about-team-members {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .about-hero-section {
-    height: 350px;
-  }
-
-  .about-hero-content h1 {
-    font-size: 32px;
-  }
-
-  .about-hero-content p {
-    font-size: 16px;
-    width: 90%;
-  }
-
-  .about-team-member {
-    width: 80%;
-  }
-
-  .about-timeline-item {
-    width: 90%;
-  }
-
-  .about-contact-form form {
-    width: 90%;
-  }
-}
-
-@media (max-width: 480px) {
-  .about-hero-section {
-    height: 300px;
-  }
-
-  .about-hero-content h1 {
-    font-size: 28px;
-  }
-
-  .about-hero-content p {
-    font-size: 14px;
-  }
-
-  .about-team-member img {
-    height: 120px;
-    width: 120px;
-  }
-}
-
-</style>
-
 {% extends "base.html" %}
 {% load static %}
 
+{% block page_title %}About Us - Fitness Empire{% endblock %}
+{% block page_id %}about{% endblock %}
+
 {% block 'main' %}
 
-<!-- Hero Section -->
-<section class="about-hero-section">
-    <img src="{% static 'images/dietplan.png' %}" alt="Diet Plan" class="about-hero-image">
-    <div class="about-hero-content">
-        <h1>About Us</h1>
-        <p>Welcome to our fitness community. Discover who we are, our mission, and how we’re dedicated to helping you achieve your goals.</p>
+<section class="hero-banner">
+    <img src="{% static 'img/banner1.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
+    <div class="hero-banner__inner">
+        <span class="eyebrow" style="color:var(--brand);">About Us</span>
+        <h1>More than a gym</h1>
+        <p>We build training spaces where beginners and competitors both feel like they belong.</p>
     </div>
 </section>
 
-
-<!-- Mission & Vision Section -->
-<section class="about-mission-vision">
-    <div class="about-section-header">
-        <h2>Our Mission & Vision</h2>
-        <p>We aim to create a healthier world by providing expert fitness programs, support, and education for all.</p>
-    </div>
-    <div class="about-content">
-        <div class="about-mission">
-            <h3>Our Mission</h3>
-            <p>We’re committed to providing innovative fitness solutions to inspire and motivate individuals worldwide.</p>
-        </div>
-        <div class="about-vision">
-            <h3>Our Vision</h3>
-            <p>To become the global leader in fitness, bringing positive change to individuals and communities through wellness and fitness education.</p>
-        </div>
-    </div>
-</section>
-
-<!-- Team Section -->
-<section class="about-team">
-    <div class="about-section-header">
-        <h2>Meet Our Team</h2>
-        <p>Our team consists of passionate professionals dedicated to helping you reach your goals.</p>
-    </div>
-    <div class="about-team-members">
-        <div class="about-team-member">
-            <img src="{% static 'images/member.jpeg' %}" alt="Our Members">
-            <h3>Community Members</h3>
-            <p>Our Fitness Enthusiasts</p>
-        </div>
-        <div class="about-team-member">
-            <img src="{% static 'images/trainner.jpeg' %}" alt="Head Trainer Yogesh Shinde">
-            <h3>Yogesh Shinde</h3>
-            <p>Head Trainer</p>
-        </div>
-        <div class="about-team-member">
-            <img src="{% static 'images/nutrition-expert-testing-food-products-lab-nutrition-expert-testing-food-products-lab-195648945.webp' %}" alt="Nutrition Expert Dr. Sanjay Roy">
-            <h3>Dr. Sanjay Roy</h3>
-            <p>Nutrition Expert</p>
+<section class="section">
+    <div class="container">
+        <div class="split">
+            <div>
+                <h2>Our story</h2>
+                <p>
+                    Fitness Empire started with a single room, a squat rack and a belief that good
+                    coaching should not be a luxury. Today we run full-service clubs with group
+                    fitness studios, recovery suites and our own nutrition range.
+                </p>
+                <p>
+                    What has not changed is the approach. Every member gets a proper induction, a plan
+                    that fits their life, and a coach who knows their name.
+                </p>
+                <a href="{% url 'careers' %}" class="btn btn--ghost">Work With Us</a>
+            </div>
+            <div class="split__media">
+                <img src="{% static 'img/heyyou.webp' %}" alt="Members training together"
+                     loading="lazy" width="380" height="380">
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Company History Section -->
-<section class="about-history">
-    <div class="about-section-header">
-        <h2>Our Journey</h2>
-        <p>Learn about how we started and where we’re headed.</p>
-    </div>
-    <div class="about-history-timeline">
-        <div class="about-timeline-item">
-            <h3>2010</h3>
-            <p>Founded by fitness enthusiasts with a goal of making fitness accessible to all.</p>
+<section class="section section--muted">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">What we stand for</span>
+            <h2>Four things we get right</h2>
         </div>
-        <div class="about-timeline-item">
-            <h3>2015</h3>
-            <p>Opened our first fitness center, growing our community of health-conscious individuals.</p>
-        </div>
-        <div class="about-timeline-item">
-            <h3>2020</h3>
-            <p>Expanded our services with personalized online training programs.</p>
+
+        <div class="grid grid--2">
+            <div class="info-card">
+                <div class="info-card__icon">&#9733;</div>
+                <h3>Coaching first</h3>
+                <p>Certified trainers on the floor during every staffed hour, not just for paid sessions.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">&#9889;</div>
+                <h3>Equipment that works</h3>
+                <p>Serviced monthly and replaced on a fixed cycle. If it is broken, it gets fixed that week.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">&#128101;</div>
+                <h3>Everyone belongs</h3>
+                <p>Unisex floors, women-only zones and staff trained to make first-timers comfortable.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card__icon">&#128176;</div>
+                <h3>Honest pricing</h3>
+                <p>No joining fee, no hidden annual charge, and monthly plans you can actually cancel.</p>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Contact Section -->
-<section class="about-contact">
-    <div class="about-section-header">
-        <h2>Get In Touch</h2>
-        <p>We would love to hear from you! Feel free to reach out for any inquiries or to learn more about our services.</p>
-    </div>
-    <div class="about-contact-form">
-        <form action="" method="POST">
-            {% csrf_token %}
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="email" name="email" placeholder="Your Email" required>
-            <textarea name="message" placeholder="Your Message" required></textarea>
-            <button type="submit">Submit</button>
-        </form>
+<section class="section">
+    <div class="container container--narrow">
+        <div class="panel">
+            <h2 class="panel__title">Get in touch</h2>
+            <p class="muted">Questions about membership, classes or an order? Send us a note.</p>
+
+            {% if success_message %}
+                <div class="alert alert--success"><span>{{ success_message }}</span></div>
+            {% endif %}
+
+            <form action="" method="POST" class="form-body" novalidate>
+                {% csrf_token %}
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="name">Your Name</label>
+                        <input type="text" name="name" id="name" required maxlength="50" placeholder="Jane Doe">
+                    </div>
+                    <div class="field">
+                        <label for="email">Email Address</label>
+                        <input type="email" name="email" id="email" required placeholder="you@example.com">
+                    </div>
+                    <div class="field field--full">
+                        <label for="message">Message</label>
+                        <textarea name="message" id="message" required maxlength="255"
+                                  placeholder="How can we help?"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn--lg" style="margin-top:var(--sp-3);">Send Message</button>
+            </form>
+        </div>
     </div>
 </section>
-
 
 {% endblock 'main' %}

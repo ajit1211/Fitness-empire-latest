@@ -1,301 +1,84 @@
-<style>
-    /* Product Grid Layout */
-    .product-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-        padding: 20px;
-        background-color: white;
-    }
-
-    /* Order Rectangle Styling */
-    .product-rectangle {
-        display: flex;
-        align-items: center;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        width: 900px;
-        height: 300px;
-        color: black;
-        transition: transform 0.3s;
-    }
-    /* Product Image */
-    .product-image {
-        width: 250px;
-        height: 250px;
-        object-fit: cover;
-        border-radius: 10px;
-        margin-right: 20px;
-    }
-
-    /* Product Details */
-    .product-details {
-        flex: 1;
-    }
-
-    .product-title {
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .product-description {
-        font-size: 16px;
-        margin-bottom: 5px;
-    }
-
-    .product-price {
-        font-size: 20px;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    /* Rating Badge */
-    .rating-badge {
-        display: inline-flex;
-        align-items: center;
-        background: black;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 16px;
-        color: white;
-    }
-
-    .star {
-        color: gold;
-        margin-left: 5px;
-    }
-
-    /* View Button */
-    .view-button {
-        display: inline-block;
-        background: crimson;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        font-weight: bold;
-        text-decoration: none;
-        transition: background 0.3s;
-    }
-
-    .view-button:hover {
-        background: black;
-        color: white;
-    }
-
-    .myorder {
-    font-size: 35px;
-    font-weight: bold;
-    color: #2c3e50;  /* Dark blue-gray */
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: white;
-    position: relative; /* Allows positioning the border separately */
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
-.myorder::after {
-    content: "";  /* Creates a separate border */
-    display: block;
-    width: 200px; /* Sets the border width */
-    height: 2px; /* Sets the border thickness */
-    background-color: crimson; /* Sets the border color */
-    margin: 5px auto 0; /* Centers the border below the text */
-}
-
-
-.divider {
-    width: 150px;
-    height: 4px;
-    background: #d32f2f;
-    margin: 10px auto;
-}
-
-.order-status {
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap; /* Allows wrapping on small screens */
-    gap: 5px; /* Adds spacing between items */
-}
-
-/* Apply vertical stacking for screens smaller than 600px */
-@media (max-width: 600px) {
-    .order-status {
-        flex-direction: column; /* Stack items vertically */
-    }
-}
-
-
-/* Responsive Styles */
-@media (max-width: 1024px) {
-    .product-rectangle {
-        width: 90%;
-        height: auto;
-        flex-direction: column;
-        text-align: center;
-        padding: 15px;
-    }
-
-    .product-image {
-        width: 80%;
-        height: auto;
-        margin-bottom: 10px;
-    }
-
-    .product-title {
-        font-size: 20px;
-    }
-
-    .product-description {
-        font-size: 14px;
-    }
-
-    .product-price {
-        font-size: 18px;
-    }
-
-    .view-button {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-}
-
-/* For Mobile Screens */
-@media (max-width: 600px) {
-    .product-rectangle {
-        width: 100%;
-        height: auto;
-        flex-direction: column;
-        padding: 10px;
-        text-align: center;
-    }
-
-    .product-image {
-        width: 30%;
-        height: auto;
-        margin-bottom: 10px;
-    }
-
-    .product-title {
-        font-size: 18px;
-    }
-
-    .product-description {
-        font-size: 14px;
-    }
-
-    .product-price {
-        font-size: 16px;
-    }
-
-    .view-button {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
-    .remove-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 14px;
-    }
-
-    .order-status {
-        flex-direction: column;
-        align-items: center;
-        font-size: 14px;
-    }
-}
-.remove-button {
-    color: crimson;
-    font-weight: bold;
-    text-decoration: none;
-    display: block;
-    text-align: right;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    text-decoration: underline;
-}
-.shop-now-button{
-    text-align: center;
-    margin-top: 20px;
-    margin-left: 90px;
-    padding: 15px 20px;
-    background: #d9534f; /* Red button */
-    color: #fff; /* White text */
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    text-align: center;
-    transition: background 0.3s ease;
-}
-/* Ensure the product-rectangle allows positioning */
-.product-rectangle {
-    position: relative;  /* Needed for absolute positioning inside */
-}
-</style>
-
 {% extends "base.html" %}
 {% load static %}
 
-{% block 'main' %}
+{% block page_title %}My Orders - Fitness Empire{% endblock %}
+{% block page_id %}orders{% endblock %}
 
-<h1 class="myorder" >My Orders</h1>
-<div class="product-grid">
-    {% if orders %}
-        {% for i in orders %}
-          <div class="product-rectangle">
-              <img src="{{ i.supplement.supplementImage.url }}" alt="{{ i.supplement.supplementName }}" class="product-image">
-    
-              <div class="product-details">
-                <a href="{% url 'remove_order' i.id %}" class="remove-button" style="color: crimson;margin-left: 500px;">Remove</a>
-                  <h5 class="product-title">{{ i.supplement.supplementName|default:"Unnamed Product" }}</h5>
-                  <p class="product-description">Order Date: {{ i.order_date }}</p>
-                  <p class="product-description">Quantity: {{ i.quantity }}</p>
-                  <h5 class="product-price">Rs {{ i.total_price }}/-</h5>
-    
-                  <div class="rating-badge">
-                      <span class="rating">{% if i.supplementRating %}{{ i.supplementRating }}{% else %}4.8{% endif %}</span>
-                      <span class="star">★</span>
-                  </div>
-                  
-                  <a href="#" class="view-button">{{ i.status }}</a>
-                  <a href="{% url 'cancel_order' i.id %}" class="view-button">Cancel Order</a>
-                  <p class="order-status">
-                    {% if i.status|lower == "pending" %}
-                        🟢 Ordered —— ⚪ Processing —— ⚪ Shipped —— ⚪ Delivered
-                    {% elif i.status|lower == "processing" %}
-                        🟢 Ordered —— 🟢 Processing —— ⚪ Shipped —— ⚪ Delivered
-                    {% elif i.status|lower == "shipped" %}
-                        🟢 Ordered —— 🟢 Processing —— 🟢 Shipped —— ⚪ Delivered
-                    {% elif i.status|lower == "delivered" %}
-                        🟢 Ordered —— 🟢 Processing —— 🟢 Shipped —— 🟢 Delivered
-                    {% elif i.status|lower == "cancelled" %}
-                        ❌ Order Cancelled
-                    {% else %}
-                        ❓ Unknown Status
-                    {% endif %}
-                </p>
-                
-              </div>
-          </div>
-        {% endfor %}
-    {% else %}
-        <div class="no-orders">
-            <img src="{% static 'images/noorders.svg' %}" alt="">
-            <h3 style="color: black;text-align: center;">No orders found</h3>
-            <p style="color: black;text-align: center;">Looks like you haven't placed any orders yet.</p>
-            <a href="{% url 'protien' %}" class="shop-now-button">Shop Now</a>
-        </div>
-    {% endif %}
-</div>
+{% block 'main' %}
+<section class="section">
+    <div class="container">
+        <h1>My Orders</h1>
+        <p class="muted" style="margin-bottom:var(--sp-5);">Track, cancel or remove any order you have placed.</p>
+
+        {% if orders %}
+            {% for i in orders %}
+            <article class="order-card">
+                {% if i.supplement.supplementImage %}
+                    <img src="{{ i.supplement.supplementImage.url }}" alt="{{ i.supplement.supplementName }}"
+                         class="order-card__img" loading="lazy" width="150" height="150">
+                {% else %}
+                    <img src="{% static 'images/default-product.png' %}" alt=""
+                         class="order-card__img" loading="lazy" width="150" height="150">
+                {% endif %}
+
+                <div>
+                    <div class="order-card__head">
+                        <h2 style="font-size:var(--fs-xl); margin:0;">
+                            <a href="{% url 'cards' i.supplement.id %}">{{ i.supplement.supplementName }}</a>
+                        </h2>
+                        {% with s=i.status|upper %}
+                            <span class="badge {% if s == 'DELIVERED' %}badge--success{% elif s == 'CANCELLED' %}badge--danger{% elif s == 'SHIPPED' %}badge--info{% else %}badge--warning{% endif %}">
+                                {{ i.get_status_display|default:i.status }}
+                            </span>
+                        {% endwith %}
+                    </div>
+
+                    <div class="order-card__meta">
+                        <span>Order #{{ i.id }}</span>
+                        <span>Placed {{ i.order_date|date:"j M Y" }}</span>
+                        <span>Quantity {{ i.quantity }}</span>
+                        <span class="rating">{{ i.supplement.supplementRating|default:"4.5" }} <span class="star">&#9733;</span></span>
+                    </div>
+
+                    <div class="price">&#8377;{{ i.total_price|floatformat:0 }}</div>
+
+                    {% with s=i.status|upper %}
+                        {% if s == 'CANCELLED' %}
+                            <ul class="track track--cancelled">
+                                <li class="is-done">Cancelled</li>
+                            </ul>
+                        {% else %}
+                            <ul class="track">
+                                <li class="is-done">Ordered</li>
+                                <li class="{% if s == 'PROCESSING' or s == 'SHIPPED' or s == 'DELIVERED' %}is-done{% endif %}">Processing</li>
+                                <li class="{% if s == 'SHIPPED' or s == 'DELIVERED' %}is-done{% endif %}">Shipped</li>
+                                <li class="{% if s == 'DELIVERED' %}is-done{% endif %}">Delivered</li>
+                            </ul>
+                        {% endif %}
+
+                        <div class="order-card__actions">
+                            {% if s != 'CANCELLED' and s != 'SHIPPED' and s != 'DELIVERED' %}
+                                <a href="{% url 'cancel_order' i.id %}" class="btn btn--ghost btn--sm"
+                                   data-confirm="Cancel this order?">Cancel Order</a>
+                            {% endif %}
+                            {% if s != 'DELIVERED' %}
+                                <a href="{% url 'remove_order' i.id %}" class="btn btn--ghost btn--sm"
+                                   data-confirm="Remove this order from your history?">Remove</a>
+                            {% endif %}
+                            <a href="{% url 'cards' i.supplement.id %}" class="btn btn--sm">Buy Again</a>
+                        </div>
+                    {% endwith %}
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <img src="{% static 'images/noorders.svg' %}" alt="" width="180" height="180">
+                <h3>No orders found</h3>
+                <p>Looks like you have not placed any orders yet.</p>
+                <a href="{% url 'protien' %}" class="btn">Shop Now</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock 'main' %}

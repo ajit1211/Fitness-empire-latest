@@ -1,432 +1,88 @@
-<style>
-    /* Reset margins and paddings */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    background-color: #fff;
-}
-
-/* Main content container */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-    background-color: #fff;
-}
-
-/* Shopping cart layout */
-.shopping-cart {
-    width: 100%;
-    max-width: 1200px;
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.shopping-cart h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #000;
-}
-
-/* Product list */
-.product-list {
-    width: 100%;
-    margin-top: 20px;
-}
-
-.product-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.product-image {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
-}
-
-.product-details {
-    flex-grow: 1;
-    padding-left: 15px;
-}
-
-.product-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #000;
-}
-
-.product-price {
-    font-size: 16px;
-    font-weight: bold;
-    color: crimson;
-}
-
-.low-stock {
-    color: crimson;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-/* Quantity controls */
-.quantity-controls {
-    display: flex;
-    align-items: center;
-}
-
-.quantity-controls button {
-    background: crimson;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 0 5px;
-}
-
-.quantity-input {
-    width: 40px;
-    text-align: center;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-/* Remove button */
-.remove-button {
-    color: crimson;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.remove-button:hover {
-    text-decoration: underline;
-}
-
-.order-summary {
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.order-summary h3 {
-    font-size: 22px;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 10px;
-}
-
-.order-summary p {
-    font-size: 18px;
-    color: #333;
-    margin: 5px 0;
-}
-
-.total-payment {
-    font-size: 22px;
-    font-weight: bold;
-    color: crimson;
-    margin-top: 10px;
-}
-
-.proceed-button {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 12px 20px;
-    background: crimson;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 18px;
-    transition: background 0.3s ease;
-    cursor: pointer;
-}
-
-.proceed-button:hover {
-    background: darkred;
-}
-
-/* Main container for two-column layout */
-.cart-container {
-    display: flex;
-    justify-content: space-between; /* Push items to both sides */
-    align-items: flex-start; /* Align items at the top */
-    width: 100%;
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-}
-
-/* Shopping cart section */
-.shopping-cart {
-    width: 68%;
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.order-summary {
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-left: 30px;
-}
-
-.order-summary h3 {
-    font-size: 22px;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.order-summary p {
-    font-size: 18px;
-    color: #333;
-    margin: 5px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-.total-payment {
-    font-size: 22px;
-    font-weight: bold;
-    color: crimson;
-    margin-top: 10px;
-}
-
-.proceed-button {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 12px 20px;
-    background: crimson;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 18px;
-    transition: background 0.3s ease;
-    cursor: pointer;
-    text-align: center;
-    width: 100%;
-}
-
-.proceed-button:hover {
-    background: darkred;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .cart-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .shopping-cart, .order-summary {
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    .order-summary {
-        margin-top: 20px;
-    }
-
-    .product-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .product-image {
-        width: 100%;
-        height: auto;
-    }
-
-    .quantity-controls {
-        justify-content: flex-start;
-    }
-
-    .remove-button {
-        margin-top: 10px;
-    }
-}
-
-@media (max-width: 900px) {
-    .cart-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .shopping-cart, .order-summary {
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    .product-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .product-image {
-        width: 100%;
-        height: auto;
-    }
-
-    .quantity-controls {
-        justify-content: flex-start;
-    }
-
-    .remove-button {
-        margin-top: 10px;
-    }
-
-    .order-summary {
-        width: 100%;
-    }
-}
-
-@media (max-width: 600px) {
-    .shopping-cart h2 {
-        font-size: 20px;
-    }
-
-    .product-title {
-        font-size: 16px;
-    }
-
-    .product-price {
-        font-size: 14px;
-    }
-
-    .product-list {
-        padding-left: 0;
-    }
-
-    .quantity-controls button {
-        padding: 5px 8px;
-        font-size: 14px;
-    }
-
-    .quantity-input {
-        font-size: 14px;
-    }
-
-    .order-summary h3 {
-        font-size: 20px;
-    }
-
-    .order-summary p {
-        font-size: 16px;
-    }
-
-    .total-payment {
-        font-size: 18px;
-    }
-
-    .proceed-button {
-        font-size: 16px;
-        padding: 10px 15px;
-    }
-}
-
-</style>
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Shopping Cart{% endblock title %}
-{% block 'main' %}
-<div class="main-content">
-    {% if products|length == 0 %}
-        <p style="color: #000; text-align: center; font-size: 18px; font-weight: bold; padding: 20px;">
-            Your cart is empty!!!  
-            <br>
-            <img src="{% static 'images/emptyCart.svg' %}" alt="" style="width: 200px; height: auto; margin: 10px 0;">
-            <br>
-            <a href="{% url 'protien' %}" class="shop-now-button" 
-               style="display: inline-block; background-color: #ff4500; color: white; 
-                      padding: 10px 20px; text-decoration: none; border-radius: 5px; 
-                      font-size: 16px; margin-top: 10px;">
-                Shop Now
-            </a>
-        </p>
-    {% else %}
-        <div class="cart-container">
-            <!-- Left Side: Product List -->
-            <div class="shopping-cart">
-                <h2>Shopping Cart ({{ products|length }})</h2>
-                <div class="product-list">
-                    {% if messages %}
-            {% for message in messages %}
-                <p style="color: crimson; text-align: center; font-weight: bold;">{{ message }}</p>
-            {% endfor %}
-            {% endif %}
-                    {% for i in products %}
-                        <div class="product-card">
-                            <input type="checkbox" checked>
-                            <img src="{{ i.productid.supplementImage.url }}" alt="{{ i.productid.supplementName }}" class="product-image">
-                            
-                            <div class="product-details">
-                                <p class="product-title">{{ i.productid.supplementName }}</p>
-                                <p class="product-price">₹{{ i.productid.supplementPrice }}</p>
-                                {% if i.productid.stock <= 5 %}
-                                    <small class="low-stock">Low stock!</small>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="quantity-controls">
-                                <a href="/updateqty/0/{{ i.id }}">
-                                    <button>-</button>
-                                </a>
-                                <input type="number" class="quantity-input" value="{{ i.quantity }}" readonly>
-                                <a href="/updateqty/1/{{ i.id }}">
-                                    <button>+</button>
-                                </a>
-                            </div>
-                            
-                            <a href="/remove/{{ i.id }}" class="remove-button">Remove</a>
-                        </div>
-                    {% endfor %}
-               
-                </div>
-            </div>
+{% block page_title %}Shopping Cart - Fitness Empire{% endblock %}
+{% block page_id %}cart{% endblock %}
 
-            <!-- Right Side: Order Summary -->
-            <div class="order-summary">
-                <h3>Order Summary</h3>
-                <p><span>Subtotal:</span> <span>₹{{ total }}</span></p>
-                <p><span>Delivery Charges:</span> <span style="color: crimson; font-weight: bold;">
-                    {% if delivery_charge == 0 %}Free{% else %}₹{{ delivery_charge }}{% endif %}
-                </span></p>
-                <p class="total-payment"><span>Total:</span> <span>₹{{ grand_total }}</span></p>
-                
-                <a href="{% url 'checkout' %}" class="proceed-button">Proceed to Checkout</a>
+{% block 'main' %}
+<section class="section">
+    <div class="container">
+
+        {% if not products %}
+            <div class="empty-state">
+                <img src="{% static 'images/emptyCart.svg' %}" alt="" width="200" height="200">
+                <h3>Your cart is empty</h3>
+                <p>Once you add something, it will show up here and stay put until you check out.</p>
+                <a href="{% url 'protien' %}" class="btn">Start Shopping</a>
             </div>
-        </div>
-    {% endif %}
-</div>
+        {% else %}
+            <h1>Shopping Cart</h1>
+            <p class="muted" style="margin-bottom:var(--sp-5);">
+                {{ totalCount }} item{{ totalCount|pluralize }} in your cart
+            </p>
+
+            <div class="checkout-layout">
+
+                <div class="card">
+                    {% for i in products %}
+                    <div class="cart-line">
+                        {% if i.productid.supplementImage %}
+                            <img src="{{ i.productid.supplementImage.url }}" alt="{{ i.productid.supplementName }}"
+                                 class="cart-line__img" loading="lazy" width="88" height="88">
+                        {% else %}
+                            <img src="{% static 'images/default-product.png' %}" alt=""
+                                 class="cart-line__img" loading="lazy" width="88" height="88">
+                        {% endif %}
+
+                        <div>
+                            <p class="cart-line__title">
+                                <a href="{% url 'cards' i.productid.id %}">{{ i.productid.supplementName }}</a>
+                            </p>
+                            <p class="cart-line__price">&#8377;{{ i.productid.supplementPrice|floatformat:0 }}</p>
+                            {% if i.productid.low_stock %}
+                                <span class="badge badge--warning">Only {{ i.productid.stock }} left</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="cart-line__side">
+                            <div class="qty">
+                                <a href="/updateqty/0/{{ i.id }}/" aria-label="Decrease quantity">&minus;</a>
+                                <span class="qty__value">{{ i.quantity }}</span>
+                                <a href="/updateqty/1/{{ i.id }}/" aria-label="Increase quantity">&plus;</a>
+                            </div>
+                            <a href="{% url 'remove' i.id %}" class="link-danger"
+                               data-confirm="Remove {{ i.productid.supplementName }} from your cart?">Remove</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <aside class="panel summary">
+                    <h2 class="panel__title">Order Summary</h2>
+
+                    <div class="summary__row">
+                        <span>Subtotal ({{ totalCount }} item{{ totalCount|pluralize }})</span>
+                        <span>&#8377;{{ total|floatformat:0 }}</span>
+                    </div>
+                    <div class="summary__row">
+                        <span>Delivery</span>
+                        <span>{% if delivery_charge == 0 %}Free{% else %}&#8377;{{ delivery_charge|floatformat:0 }}{% endif %}</span>
+                    </div>
+
+                    <div class="summary__total">
+                        <span>Total</span>
+                        <span>&#8377;{{ grand_total|floatformat:0 }}</span>
+                    </div>
+
+                    <a href="{% url 'checkout' %}" class="btn btn--block btn--lg">Proceed to Checkout</a>
+                    <a href="{% url 'protien' %}" class="btn btn--ghost btn--block" style="margin-top:var(--sp-2);">Continue Shopping</a>
+
+                    <p class="summary__note">Free delivery on orders above &#8377;5,000.</p>
+                </aside>
+
+            </div>
+        {% endif %}
+
+    </div>
+</section>
 {% endblock 'main' %}

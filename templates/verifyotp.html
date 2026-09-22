@@ -1,91 +1,37 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block "title" %}
-    OTP Verification
-{% endblock "title" %}
+{% block page_title %}Verify Code - Fitness Empire{% endblock %}
+{% block page_id %}auth{% endblock %}
 
 {% block 'main' %}
-<style>
-    .verify-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 50vh;
-        background-color: #f4f4f4;
-    }
-    .verify-box {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        width: 350px;
-        text-align: center;
-    }
-    .verify-box h2 {
-        font-size: 22px;
-        color: #333;
-        margin-bottom: 15px;
-    }
-    .verify-box label {
-        display: block;
-        font-weight: 500;
-        text-align: left;
-        margin-bottom: 5px;
-        color: #555;
-    }
-    .verify-input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 16px;
-        outline: none;
-        transition: border 0.3s ease-in-out;
-    }
-    .verify-input:focus {
-        border-color: #007bff;
-    }
-    .verify-button {
-        width: 100%;
-        background: black;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background 0.3s ease-in-out;
-    }
-    .verify-button:hover {
-        background: #333;
-    }
-    .verify-message {
-        color: red;
-        font-size: 14px;
-        margin-top: 10px;
-    }
-</style>
+<div class="container">
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-card__head">
+                <h1>Enter Your Code</h1>
+                <p>We sent a six-digit code to your email. It expires in 10 minutes.</p>
+            </div>
 
-<div class="verify-container">
-    <div class="verify-box">
-        <h2>Verify OTP</h2>
-        
-        <form method="POST">
-            {% csrf_token %}
-            
-            <label>Enter OTP:</label>
-            <input type="text" name="otp" required class="verify-input">
-            
-            <button type="submit" class="verify-button">Submit</button>
-        </form>
+            <form action="" method="POST" class="form-body" novalidate>
+                {% csrf_token %}
 
-        {% if messages %}
-            {% for message in messages %}
-                <p class="verify-message">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
+                <div class="field">
+                    <label for="otp">One-Time Password</label>
+                    <input type="text" name="otp" id="otp" required inputmode="numeric"
+                           pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+                           placeholder="123456"
+                           style="text-align:center; letter-spacing:0.5em; font-size:var(--fs-xl); font-weight:600;">
+                </div>
+
+                <button type="submit" class="btn btn--block btn--lg" style="margin-top:var(--sp-4);">Verify Code</button>
+            </form>
+
+            <div class="auth-foot">
+                Did not get it?
+                <a href="{% url 'forgetpassword' %}">Send a new code</a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock 'main' %}

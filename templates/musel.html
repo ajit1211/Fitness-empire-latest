@@ -1,103 +1,76 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block page_title %}Muscle Gain Diet Plan - Fitness Empire{% endblock %}
+{% block page_id %}diet{% endblock %}
+
 {% block 'main' %}
-<style>
-        .musclebuilding-body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            color: #000;
-            line-height: 1.6;
-        }
-        .musclebuilding-header {
-            background-color: white;
-            color: crimson;
-            padding: 40px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        .musclebuilding-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 60px 10%;
-            border-bottom: 2px solid #ddd;
-        }
-        .musclebuilding-section:nth-child(even) {
-            flex-direction: row-reverse;
-        }
-        .musclebuilding-image {
-            width: 45%;
-            border-radius: 12px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        .musclebuilding-content {
-            width: 50%;
-            padding: 20px;
-        }
-        .musclebuilding-heading {
-            color: #000;
-            font-size: 26px;
-        }
-        .musclebuilding-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .musclebuilding-item {
-            padding: 12px;
-            font-size: 18px;
-            border-left: 4px solid #000;
-            padding-left: 10px;
-            margin-bottom: 10px;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-    </style>
-<body class="musclebuilding-body">
-    <header class="musclebuilding-header">
-        Muscle Building Plan
-    </header>
-    <section class="musclebuilding-section">
-        <img class="musclebuilding-image" src="{% static 'images/muscle1.jpeg' %}" alt="Workout Plan">
-        <div class="musclebuilding-content">
-            <h2 class="musclebuilding-heading">7-Day Muscle Building Plan</h2>
-            <ul class="musclebuilding-list">
-                <li class="musclebuilding-item">Day 1: Upper Body Strength Training</li>
-                <li class="musclebuilding-item">Day 2: Leg Day Workout</li>
-                <li class="musclebuilding-item">Day 3: Rest and Recovery</li>
-                <li class="musclebuilding-item">Day 4: Core and Abs Focus</li>
-                <li class="musclebuilding-item">Day 5: Full-Body Strength Routine</li>
-                <li class="musclebuilding-item">Day 6: Cardio and Endurance Training</li>
-                <li class="musclebuilding-item">Day 7: Active Recovery and Stretching</li>
-            </ul>
+
+<section class="hero-banner">
+    <img src="{% static 'img/muscelsbuild.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
+    <div class="hero-banner__inner">
+        <span class="eyebrow" style="color:var(--brand);">Diet Plan</span>
+        <h1>Muscle Gain</h1>
+        <p>A controlled surplus that adds size without adding much fat.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="stat-row">
+            <div>
+                <div class="stat__value">2,900</div>
+                <div class="stat__label">Calories Per Day</div>
+            </div>
+            <div>
+                <div class="stat__value">170g</div>
+                <div class="stat__label">Protein</div>
+            </div>
+            <div>
+                <div class="stat__value">340g</div>
+                <div class="stat__label">Carbohydrates</div>
+            </div>
+            <div>
+                <div class="stat__value">85g</div>
+                <div class="stat__label">Fat</div>
+            </div>
         </div>
-    </section>
-    <section class="musclebuilding-section">
-        <img class="musclebuilding-image" src="{% static 'images/muscle2.jpeg' %}" alt="Benefits">
-        <div class="musclebuilding-content">
-            <h2 class="musclebuilding-heading">Benefits of Muscle Building</h2>
-            <ul class="musclebuilding-list">
-                <li class="musclebuilding-item">Increases strength and endurance</li>
-                <li class="musclebuilding-item">Boosts metabolism</li>
-                <li class="musclebuilding-item">Improves overall body composition</li>
-                <li class="musclebuilding-item">Enhances athletic performance</li>
-            </ul>
+    </div>
+</section>
+
+<section class="section section--surface">
+    <div class="container container--narrow">
+        <h2>A day on this plan</h2>
+        <div class="table-wrap" style="margin-top:var(--sp-4);">
+            <table class="table meal-table">
+                <thead>
+                    <tr><th>Meal</th><th>What to eat</th><th class="num">kcal</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Breakfast</td><td>4 egg omelette, 3 slices brown bread, peanut butter, full-fat milk</td><td class="num">680</td></tr>
+                    <tr><td>Mid-morning</td><td>Mass gainer shake with banana and oats</td><td class="num">520</td></tr>
+                    <tr><td>Lunch</td><td>3 phulka, 200g chicken or rajma, rice, curd, salad</td><td class="num">760</td></tr>
+                    <tr><td>Pre-workout</td><td>Black coffee, dates and a handful of nuts</td><td class="num">220</td></tr>
+                    <tr><td>Post-workout</td><td>1 scoop whey with milk and 5g creatine</td><td class="num">280</td></tr>
+                    <tr><td>Dinner</td><td>200g paneer or fish, sweet potato, sauteed greens</td><td class="num">440</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
-    <section class="musclebuilding-section">
-        <img class="musclebuilding-image" src="{% static 'images/muscle3.jpeg' %}" alt="Nutrition">
-        <div class="musclebuilding-content">
-            <h2 class="musclebuilding-heading">Muscle Gain Nutrition Tips</h2>
-            <ul class="musclebuilding-list">
-                <li class="musclebuilding-item">Eat protein-rich foods</li>
-                <li class="musclebuilding-item">Consume complex carbohydrates</li>
-                <li class="musclebuilding-item">Stay hydrated</li>
-                <li class="musclebuilding-item">Ensure adequate calorie intake</li>
-            </ul>
+
+        <h2 style="margin-top:var(--sp-7);">How to run it</h2>
+        <ul class="prose">
+            <li>Aim for 0.25 to 0.5kg of gain a month. Faster is mostly fat.</li>
+            <li>Hit 1.6 to 2.2g of protein per kilogram of bodyweight, spread across four meals.</li>
+            <li>Add load to the bar every week before you add food to the plate.</li>
+            <li>Take 5g of creatine daily, timing does not matter, consistency does.</li>
+            <li>Sleep seven to nine hours. Growth happens when you are not in the gym.</li>
+        </ul>
+
+        <div class="cluster" style="margin-top:var(--sp-6);">
+            <a href="{% url 'protien' %}" class="btn">Shop Mass Gainers</a>
+            <a href="{% url 'dietplan' %}" class="btn btn--ghost">All Diet Plans</a>
         </div>
-    </section>
-</body>
+    </div>
+</section>
+
 {% endblock 'main' %}

@@ -1,6 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block page_title %}Payment Failed - Fitness Empire{% endblock %}
+{% block page_id %}result{% endblock %}
+
 {% block 'main' %}
-<h1>payment failed </h1>
+<section class="section">
+    <div class="container container--tight">
+
+        <div class="panel text-center">
+            <div class="avatar" style="background:var(--danger); font-size:var(--fs-3xl);">&#33;</div>
+            <h1>Payment Not Completed</h1>
+            <p class="muted">
+                Your payment was cancelled or declined, so nothing has been charged.
+                Your cart is still exactly where you left it.
+            </p>
+
+            <div class="cluster" style="justify-content:center; margin-top:var(--sp-5);">
+                <a href="{% url 'viewcart' %}" class="btn">Back to Cart</a>
+                <a href="{% url 'protien' %}" class="btn btn--ghost">Keep Shopping</a>
+            </div>
+        </div>
+
+    </div>
+</section>
 {% endblock 'main' %}

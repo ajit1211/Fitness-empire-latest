@@ -1,149 +1,65 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %} Edit Address {% endblock title %}
+{% block page_title %}Edit Address - Fitness Empire{% endblock %}
+{% block page_id %}account{% endblock %}
 
 {% block 'main' %}
+<section class="section">
+    <div class="container container--narrow">
 
-<style>
-    /* Global Styles */
-    body {
-        background-color: white;
-        color: black;
-        font-family: Arial, sans-serif;
-    }
+        <div class="panel">
+            <div class="auth-card__head">
+                <h1>Edit Delivery Address</h1>
+                <p>Changes apply to the order you are about to pay for.</p>
+            </div>
 
-    /* Main Container */
-    .edit-container {
-        width: 60%;
-        margin: auto;
-        padding: 25px;
-        background-color: white;
-        border-radius: 10px;
-        margin-top: 50px;
-        border: 2px solid #DC143C; /* Crimson Border */
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Soft Shadow */
-    }
+            <form action="" method="POST" class="form-body" novalidate>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
 
-    /* Heading */
-    .edit-heading {
-        text-align: center;
-        font-size: 22px;
-        font-weight: bold;
-        color: #DC143C; /* Crimson Title */
-        margin-bottom: 15px;
-    }
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                        {{ form.full_name.errors }}{{ form.full_name }}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.email.id_for_label }}">Email Address</label>
+                        {{ form.email.errors }}{{ form.email }}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                        {{ form.phone_number.errors }}{{ form.phone_number }}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.city.id_for_label }}">City</label>
+                        {{ form.city.errors }}{{ form.city }}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.pin_code.id_for_label }}">PIN Code</label>
+                        {{ form.pin_code.errors }}{{ form.pin_code }}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.country.id_for_label }}">Country</label>
+                        {{ form.country.errors }}{{ form.country }}
+                    </div>
+                    <div class="field field--full">
+                        <label for="{{ form.address.id_for_label }}">Street Address</label>
+                        {{ form.address.errors }}{{ form.address }}
+                    </div>
+                    <div class="field field--full">
+                        <label for="{{ form.additional_notes.id_for_label }}">Delivery Notes <span class="muted">(optional)</span></label>
+                        {{ form.additional_notes.errors }}{{ form.additional_notes }}
+                    </div>
+                </div>
 
-    /* Form */
-    .edit-form {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
+                <div class="cluster" style="margin-top:var(--sp-5);">
+                    <button type="submit" class="btn">Save Address</button>
+                    <a href="{% url 'makepayment' %}" class="btn btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
 
-    .edit-label {
-        font-weight: bold;
-        font-size: 14px;
-        color: black;
-    }
-
-    .edit-input, .edit-textarea, .edit-select {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid black;
-        background-color: #f8f8f8;
-        font-size: 14px;
-        transition: 0.3s ease-in-out;
-    }
-
-    .edit-input:focus, .edit-textarea:focus, .edit-select:focus {
-        border-color: #DC143C;
-        outline: none;
-        background-color: white;
-    }
-
-    /* Buttons */
-    .edit-btn {
-        background-color: #DC143C;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        transition: 0.3s ease-in-out;
-    }
-
-    .edit-btn:hover {
-        background-color: black;
-        color: white;
-        border: 2px solid #DC143C;
-    }
-
-    .edit-cancel {
-        display: block;
-        text-align: center;
-        padding: 12px;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        background-color: white;
-        color: #DC143C;
-        text-decoration: none;
-        border: 2px solid #DC143C;
-        transition: 0.3s ease-in-out;
-        margin-top: 10px;
-    }
-
-    .edit-cancel:hover {
-        background-color: #DC143C;
-        color: white;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .edit-container {
-            width: 90%;
-            padding: 20px;
-        }
-    }
-</style>
-
-<div class="edit-container">
-    <h3 class="edit-heading">Edit Your Address</h3>
-    
-    <form method="POST" class="edit-form">
-        {% csrf_token %}
-        
-        <label class="edit-label">Full Name:</label>
-        {{ form.full_name }}
-
-        <label class="edit-label">Email:</label>
-        {{ form.email }}
-
-        <label class="edit-label">Phone Number:</label>
-        {{ form.phone_number }}
-
-        <label class="edit-label">Address:</label>
-        {{ form.address }}
-
-        <label class="edit-label">City:</label>
-        {{ form.city }}
-
-        <label class="edit-label">Pin Code:</label>
-        {{ form.pin_code }}
-
-        <label class="edit-label">Country:</label>
-        {{ form.country }}
-
-        <label class="edit-label">Additional Notes:</label>
-        {{ form.additional_notes }}
-
-        <button type="submit" class="edit-btn">Save Changes</button>
-    </form>
-
-    <a href="{% url 'makepayment' %}" class="edit-cancel">Cancel</a>
-</div>
-
+    </div>
+</section>
 {% endblock 'main' %}
