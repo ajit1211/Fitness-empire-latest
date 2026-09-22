@@ -181,3 +181,120 @@ class DemoModeTests(SimpleTestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("context_processors.demo_notice", settings_source)
         del pathlib
+
+
+class BlankEnvironmentVariableTests(SimpleTestCase):
+    """A dashboard entry left empty must behave as if it were never created.
+
+    Hosting dashboards store a variable with an empty value box as "", not as
+    absent, so `os.environ.get(name, default)` returns the empty string and the
+    default is silently lost. A blank DJANGO_HSTS_SECONDS reached `int("")` and
+    took the deployed site down with a 500 on every request.
+    """
+
+    BLANK = {
+        "DJANGO_SECRET_KEY": "",
+        "DATABASE_URL": "",
+        "DJANGO_HSTS_SECONDS": "",
+        "DJANGO_DEBUG": "",
+        "DJANGO_ALLOWED_HOSTS": "",
+        "DJANGO_CSRF_TRUSTED_ORIGINS": "",
+        "DJANGO_LOG_LEVEL": "",
+        "EMAIL_HOST": "",
+        "EMAIL_PORT": "",
+        "EMAIL_HOST_USER": "",
+        "EMAIL_HOST_PASSWORD": "",
+        "DEFAULT_FROM_EMAIL": "",
+        "EMAIL_BACKEND": "",
+        "PAYPAL_RECEIVER_EMAIL": "",
+        "PAYPAL_TEST": "",
+        "INR_TO_USD_RATE": "",
+        "SERVE_MEDIA_FILES": "",
+    }
+
+    def load(self, **overrides):
+        import importlib
+        import os
+        from unittest import mock
+
+        environ = dict(self.BLANK)
+        environ["VERCEL"] = "1"
+        environ.update(overrides)
+
+        with mock.patch.dict(os.environ, environ, clear=True):
+            return importlib.reload(importlib.import_module("FitnessEmpire.settings"))
+
+    def tearDown(self):
+        import importlib
+
+        importlib.reload(importlib.import_module("FitnessEmpire.settings"))
+
+    def test_the_settings_module_loads_with_every_variable_blank(self):
+        conf = self.load()
+        self.assertFalse(conf.DEBUG)
+        self.assertTrue(conf.DEMO_MODE)
+
+    def test_blank_numbers_fall_back_instead_of_raising(self):
+        conf = self.load()
+        self.assertEqual(conf.SECURE_HSTS_SECONDS, 0)
+        self.assertEqual(conf.EMAIL_PORT, 587)
+
+    def test_blank_strings_fall_back_to_their_defaults(self):
+        conf = self.load()
+        self.assertEqual(conf.EMAIL_HOST, "smtp.gmail.com")
+        self.assertEqual(conf.INR_TO_USD_RATE, "0.012")
+        self.assertEqual(conf.LOGGING["root"]["level"], "INFO")
+        self.assertTrue(conf.PAYPAL_RECEIVER_EMAIL)
+
+    def test_a_blank_flag_keeps_its_default_rather_than_turning_off(self):
+        # SERVE_MEDIA_FILES defaults to on. A blank box must not switch it off,
+        # which would break every product image.
+        conf = self.load()
+        self.assertTrue(conf.SERVE_MEDIA_FILES)
+        self.assertTrue(conf.PAYPAL_TEST)
+
+    def test_whitespace_counts_as_blank(self):
+        conf = self.load(DJANGO_HSTS_SECONDS="   ", EMAIL_PORT="\t")
+        self.assertEqual(conf.SECURE_HSTS_SECONDS, 0)
+        self.assertEqual(conf.EMAIL_PORT, 587)
+
+    def test_values_are_stripped_of_stray_whitespace(self):
+        # Pasting into a dashboard field often carries a trailing space.
+        conf = self.load(DJANGO_HSTS_SECONDS=" 3600 ", EMAIL_HOST=" smtp.example.com ")
+        self.assertEqual(conf.SECURE_HSTS_SECONDS, 3600)
+        self.assertEqual(conf.EMAIL_HOST, "smtp.example.com")
+
+    def test_a_real_value_is_still_honoured(self):
+        conf = self.load(DJANGO_HSTS_SECONDS="31536000", EMAIL_PORT="2525")
+        self.assertEqual(conf.SECURE_HSTS_SECONDS, 31536000)
+        self.assertEqual(conf.EMAIL_PORT, 2525)
+
+    def test_a_non_numeric_value_is_reported_rather_than_ignored(self):
+        from django.core.exceptions import ImproperlyConfigured
+
+        with self.assertRaises(ImproperlyConfigured) as caught:
+            self.load(DJANGO_HSTS_SECONDS="thirty days")
+        self.assertIn("DJANGO_HSTS_SECONDS", str(caught.exception))
+        self.assertIn("whole number", str(caught.exception))
+
+    def test_a_bad_exchange_rate_fails_the_deploy_not_the_checkout(self):
+        from django.core.exceptions import ImproperlyConfigured
+
+        with self.assertRaises(ImproperlyConfigured):
+            self.load(INR_TO_USD_RATE="abc")
+        with self.assertRaises(ImproperlyConfigured):
+            self.load(INR_TO_USD_RATE="-1")
+
+    def test_no_setting_reads_the_environment_without_the_helpers(self):
+        # Every read has to go through env/env_int/env_flag/env_list, or the
+        # blank-value bug comes straight back the next time one is added.
+        source = (REPO_ROOT / "FitnessEmpire" / "settings.py").read_text(
+            encoding="utf-8"
+        )
+        body = source.split("def env_list", 1)[1]
+        offenders = [
+            line.strip()
+            for line in body.splitlines()
+            if "os.environ" in line and not line.strip().startswith("#")
+        ]
+        self.assertEqual(offenders, [], f"read the environment directly: {offenders}")

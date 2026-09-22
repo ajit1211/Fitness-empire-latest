@@ -192,6 +192,12 @@ app on Vercel.
 running without a database. Set `DATABASE_URL` and `DJANGO_SECRET_KEY` in step
 3 and it disappears.
 
+**A 500 naming a variable, such as ValueError on DJANGO_HSTS_SECONDS**: that
+variable exists in the dashboard with an empty value box. A blank box is stored
+as an empty string, not as unset. The settings now treat blank as unset, so on
+a current build this cannot happen; on an older one, delete the empty entry.
+Only create variables you are giving a value to.
+
 **"Could not find a top-level app" at build time**: `api/index.py` binds `app`
 somewhere Vercel's static scan cannot see it, such as inside a `try` block. It
 must be a plain top-level assignment. A test guards this.

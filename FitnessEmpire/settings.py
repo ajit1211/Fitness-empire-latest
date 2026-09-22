@@ -14,22 +14,58 @@ See DEPLOY.md for the variables to set and why each one matters.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Vercel sets this on every build and every request.
-IS_VERCEL = bool(os.environ.get("VERCEL"))
+
+def env(name, default=None):
+    """A setting from the environment, treating blank as not set.
+
+    Hosting dashboards let you create a variable and leave the value box empty.
+    That is stored as an empty string, not as an absent key, so a plain
+    os.environ.get(name, default) silently returns "" and the default is lost.
+    Every read below goes through here so a blank box behaves like no box.
+    """
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip()
 
 
 def env_flag(name, default=False):
-    """Read a boolean from the environment, accepting 1/true/yes/on."""
-    raw = os.environ.get(name)
+    """A boolean from the environment, accepting 1/true/yes/on."""
+    raw = env(name)
     if raw is None:
         return default
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
+    return raw.lower() in {"1", "true", "yes", "on"}
+
+
+def env_int(name, default):
+    """A whole number from the environment.
+
+    A value that is present but not a number is a typo worth surfacing, so it
+    raises rather than quietly falling back and leaving the wrong behaviour in
+    place. A blank or missing value takes the default.
+    """
+    raw = env(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        raise ImproperlyConfigured(
+            f"{name} must be a whole number, or left unset. Got {raw!r}."
+        ) from None
 
 
 def env_list(name):
-    return [item.strip() for item in os.environ.get(name, "").split(",") if item.strip()]
+    return [item.strip() for item in (env(name) or "").split(",") if item.strip()]
+
+
+# Vercel sets this on every build and every request. Defined after the helpers
+# because it uses one.
+IS_VERCEL = bool(env("VERCEL"))
 
 
 # ---------------------------------------------------------------------------
@@ -38,7 +74,7 @@ def env_list(name):
 # The old hardcoded key is gone. It sat in the repo and in the public git
 # history, so anything signed with it (sessions, password-reset tokens) has to
 # be considered compromised; generate a new one for the deployed site.
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # Deployed with no key set is a hard error rather than a silent weak default.
 DEBUG = env_flag("DJANGO_DEBUG", default=not IS_VERCEL)
@@ -80,7 +116,7 @@ if IS_VERCEL:
     ALLOWED_HOSTS += [".vercel.app"]
     CSRF_TRUSTED_ORIGINS += ["https://*.vercel.app"]
 
-    deployment_url = os.environ.get("VERCEL_URL")
+    deployment_url = env("VERCEL_URL")
     if deployment_url:
         ALLOWED_HOSTS.append(deployment_url)
         CSRF_TRUSTED_ORIGINS.append(f"https://{deployment_url}")
@@ -150,7 +186,7 @@ WSGI_APPLICATION = 'FitnessEmpire.wsgi.application'
 # SQLite file, and every page carries a banner saying nothing is saved. See
 # DEMO_REASONS above.
 # ---------------------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = env("DATABASE_URL")
 
 if DATABASE_URL:
     import dj_database_url
@@ -266,7 +302,7 @@ if not DEBUG:
     # Vercel already redirects to HTTPS at the edge, so leave Django's own
     # redirect off to avoid a second hop.
     SECURE_SSL_REDIRECT = False
-    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "0"))
+    SECURE_HSTS_SECONDS = env_int("DJANGO_HSTS_SECONDS", 0)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = bool(SECURE_HSTS_SECONDS)
     SECURE_HSTS_PRELOAD = bool(SECURE_HSTS_SECONDS)
 
@@ -274,7 +310,7 @@ if not DEBUG:
 # ---------------------------------------------------------------------------
 # PayPal
 # ---------------------------------------------------------------------------
-PAYPAL_RECEIVER_EMAIL = os.environ.get(
+PAYPAL_RECEIVER_EMAIL = env(
     'PAYPAL_RECEIVER_EMAIL', 'sb-owhlw37372559@business.example.com'
 )
 PAYPAL_TEST = env_flag('PAYPAL_TEST', default=True)
@@ -282,7 +318,20 @@ PAYPAL_TEST = env_flag('PAYPAL_TEST', default=True)
 # Prices are quoted in rupees but the PayPal button is submitted in USD (the
 # sandbox business account cannot settle INR). Totals are converted with this
 # rate before the amount is handed to PayPal.
-INR_TO_USD_RATE = os.environ.get('INR_TO_USD_RATE', '0.012')
+INR_TO_USD_RATE = env('INR_TO_USD_RATE', '0.012')
+
+# Checked here rather than at checkout: a typo in this box should fail the
+# deploy, not the first person trying to pay.
+try:
+    from decimal import Decimal as _Decimal
+
+    if _Decimal(INR_TO_USD_RATE) <= 0:
+        raise ValueError
+except Exception:
+    raise ImproperlyConfigured(
+        f"INR_TO_USD_RATE must be a positive number, or left unset. "
+        f"Got {INR_TO_USD_RATE!r}."
+    ) from None
 
 
 # ---------------------------------------------------------------------------
@@ -301,15 +350,15 @@ LOGOUT_REDIRECT_URL = 'home'
 # the OTP is printed to the log instead of sent, which keeps the flow testable
 # without silently failing.
 # ---------------------------------------------------------------------------
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_HOST = env('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = env_int('EMAIL_PORT', 587)
 EMAIL_USE_TLS = env_flag('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'no-reply@fitnessempire.local'
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'no-reply@fitnessempire.local'
 EMAIL_TIMEOUT = 10
 
-EMAIL_BACKEND = os.environ.get(
+EMAIL_BACKEND = env(
     'EMAIL_BACKEND',
     'django.core.mail.backends.smtp.EmailBackend'
     if EMAIL_HOST_PASSWORD
@@ -358,6 +407,6 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+        'level': env('DJANGO_LOG_LEVEL', 'INFO'),
     },
 }
