@@ -1,12 +1,17 @@
 """Vercel entry point.
 
 Vercel turns each file under `api/` into a serverless function and looks for a
-module-level WSGI callable named `app`. Everything else, including the URL
-routing, is the ordinary Django application.
+WSGI callable named `app`. It finds it by parsing this file and reading the
+module body, so the assignment has to be a plain top-level statement. An
+assignment nested inside a `try` block is invisible to that scan and the build
+fails with "Could not find a top-level app" before anything ever runs, which is
+why the work below is done in a function and assigned once at the end.
 
-The project root is put on the import path because the function is imported
-from inside `api/`, so `FitnessEmpire` and `FitnessGYM` are not importable
-without it.
+Everything else, including the URL routing, is the ordinary Django application.
+
+The project root is put on the import path because this module is imported from
+inside `api/`, so `FitnessEmpire` and `FitnessGYM` are not importable without
+it.
 """
 
 import html
@@ -33,7 +38,7 @@ def configuration_required(message):
     and the difference tells a monitor not to treat it as a crash loop.
     """
 
-    def app(environ, start_response):
+    def serve(environ, start_response):
         body = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,21 +80,28 @@ def configuration_required(message):
         )
         return [payload]
 
-    return app
+    return serve
 
 
-try:
-    from FitnessEmpire.wsgi import application
+def build_application():
+    """The Django app, or the page explaining why it will not start."""
+    try:
+        from FitnessEmpire.wsgi import application
 
-    app = application
-except Exception as exc:  # noqa: BLE001
-    from django.core.exceptions import ImproperlyConfigured
+        return application
+    except Exception as exc:  # noqa: BLE001
+        from django.core.exceptions import ImproperlyConfigured
 
-    # Only a missing-configuration error is turned into a page. Anything else
-    # is a genuine fault and should keep crashing loudly, with its traceback in
-    # the platform log where it belongs.
-    if not isinstance(exc, ImproperlyConfigured):
-        raise
+        # Only a missing-configuration error is turned into a page. Anything
+        # else is a genuine fault and should keep crashing loudly, with its
+        # traceback in the platform log where it belongs.
+        if not isinstance(exc, ImproperlyConfigured):
+            raise
 
-    print(f"Refusing to start: {exc}", file=sys.stderr)
-    app = configuration_required(str(exc))
+        print(f"Refusing to start: {exc}", file=sys.stderr)
+        return configuration_required(str(exc))
+
+
+# Top-level and unconditional, so Vercel's entrypoint scan can see it.
+app = build_application()
+application = app
