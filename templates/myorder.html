@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load static %}
+{% block 'main' %}
+
+<style>
+    body {
+        background-color: white !important;
+        font-family: Arial, sans-serif;
+    }
+
+    .order-container {
+        width: 70%;
+        margin: 40px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-tabs {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .profile-tab-item {
+        margin: 0 15px;
+    }
+
+    .profile-tab-link {
+        text-decoration: none;
+        color: #333;
+        padding: 12px 20px;
+        display: inline-block;
+        font-weight: bold;
+        border-radius: 8px 8px 0 0;
+        transition: 0.3s;
+    }
+
+    .profile-tab-link.active {
+        background: crimson;
+        color: white;
+        border-bottom: 2px solid crimson;
+    }
+
+    .profile-tab-link:hover {
+        color: black;
+
+    }
+
+    .product-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        background-color: white;
+    }
+
+    .product-rectangle {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        width: 900px;
+        height: 300px;
+        color: black;
+        transition: transform 0.3s;
+        position: relative;
+    }
+
+    .product-image {
+        width: 250px;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 20px;
+    }
+
+    .product-details {
+        flex: 1;
+    }
+
+    .product-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .product-description {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+
+    .product-price {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        background: black;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 16px;
+        color: white;
+    }
+
+    .star {
+        color: gold;
+        margin-left: 5px;
+    }
+
+    .view-button {
+        display: inline-block;
+        background: crimson;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .view-button:hover {
+        background: black;
+    }
+
+    .order-status {
+        font-size: 16px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .remove-button {
+        color: crimson;
+        font-weight: bold;
+        text-decoration: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        text-decoration: underline;
+    }
+
+    .shop-now-button {
+        display: block;
+        text-align: center;
+        margin: 20px auto;
+        padding: 15px 20px;
+        background: #d9534f;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 1.2em;
+        transition: background 0.3s;
+    }
+
+    .shop-now-button:hover {
+        background: darkred;
+    }
+    .order-status {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allows wrapping on small screens */
+    gap: 5px; /* Adds spacing between items */
+}
+</style>
+
+<div class="order-container">
+    <ul class="profile-tabs">
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'my_profile' %}">My Profile</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link active" href="#">My Orders</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'my_addresses' %}">My Addresses</a>
+        </li>
+    </ul>
+
+    <div class="product-grid">
+        {% if orders %}
+            {% for i in orders %}
+                <div class="product-rectangle">
+                    <img src="{{ i.supplement.supplementImage.url }}" alt="{{ i.supplement.supplementName }}" class="product-image">
+                    <div class="product-details">
+                        <!-- <a href="{% url 'remove_order' i.id %}" class="remove-button">Remove</a> -->
+                        <h5 class="product-title">{{ i.supplement.supplementName|default:"Unnamed Product" }}</h5>
+                        <p class="product-description">Order Date: {{ i.order_date }}</p>
+                        <p class="product-description">Quantity: {{ i.quantity }}</p>
+                        <h5 class="product-price">Rs {{ i.total_price }}/-</h5>
+                        <div class="rating-badge">
+                            <span class="rating">{{ i.supplementRating|default:"4.8" }}</span>
+                            <span class="star">★</span>
+                        </div>
+                        <p class="order-status">
+                            {% if i.status|lower == "pending" %}
+                                🟢 Ordered —— ⚪ Processing —— ⚪ Shipped —— ⚪ Delivered
+                            {% elif i.status|lower == "processing" %}
+                                🟢 Ordered —— 🟢 Processing —— ⚪ Shipped —— ⚪ Delivered
+                            {% elif i.status|lower == "shipped" %}
+                                🟢 Ordered —— 🟢 Processing —— 🟢 Shipped —— ⚪ Delivered
+                            {% elif i.status|lower == "delivered" %}
+                                🟢 Ordered —— 🟢 Processing —— 🟢 Shipped —— 🟢 Delivered
+                            {% elif i.status|lower == "cancelled" %}
+                                ❌ Order Cancelled
+                            {% else %}
+                                ❓ Unknown Status
+                            {% endif %}
+                        </p>
+                        <a href="#" class="view-button">{{ i.status }}</a>
+                        <!-- <a href="{% url 'cancel_order' i.id %}" class="view-button">Cancel Order</a> -->
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-orders">
+                <img src="{% static 'images/noorders.svg' %}" alt="">
+                <h3>No orders found</h3>
+                <p>Looks like you haven't placed any orders yet.</p>
+                <a href="{% url 'protien' %}" class="shop-now-button">Shop Now</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock 'main' %}

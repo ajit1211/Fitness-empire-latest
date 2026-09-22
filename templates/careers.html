@@ -1,0 +1,427 @@
+<style>
+    /* Careers Section Styles */
+.careers-section {
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  background-color: #fff;
+}
+
+.careers-header {
+  text-align: center;
+  background-color: #fff;
+  color: #000;
+  padding: 50px 20px;
+  border-bottom: 2px solid #ddd;
+}
+.underline {
+    width: 100px;
+    border-bottom: 2px solid black; /* Creates a solid black underline */
+    margin: 0 auto; /* Optional: centers the underline element */
+    margin-top: -12px;
+    margin-bottom: 10px;
+}
+
+
+.careers-header h1 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.careers-header p {
+  font-size: 16px;
+  max-width: 800px;
+  margin: 10px auto;
+  line-height: 1.8;
+}
+
+.apply-today {
+  text-align: center;
+  background-color: black;
+  color: white;
+  padding: 40px 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.apply-today h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.apply-today .roles {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.apply-today .roles span {
+  background-color: #e0e0e0;
+  color: #000;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.apply-today .roles span:hover {
+  background-color: #007582;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.perks-benefits {
+  background-color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.perks-benefits h2 {
+  text-align: center;
+  font-size: 30px;
+  margin-bottom: 30px;
+  color: #000;
+}
+
+.perk {
+
+  margin-bottom: 30px;
+  text-align: center;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.perk h3 {
+  font-size: 22px;
+  color: #007582;
+  margin-bottom: 10px;
+}
+
+.perk p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.perk ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.perk ul li {
+  font-size: 16px;
+  color: #555;
+  position: relative;
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.perk ul li:before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: #007582;
+}
+
+.get-paid {
+  text-align: center;
+  background-color: #f9f9f9;
+  color: #000;
+  padding: 50px 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.get-paid h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.get-paid p {
+  font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+
+.get-paid button {
+  background-color: #007582;
+  color: #fff;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.get-paid button:hover {
+  background-color: #005f63;
+  transform: scale(1.1);
+}
+.carousel-section {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.carousel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Careers Section */
+.careers-section {
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #fff;
+}
+
+.careers-header {
+  padding: 30px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.careers-header h3 {
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #007582; /* Accent color */
+}
+
+.careers-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.careers-header h2 {
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.careers-header p {
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0 auto;
+  max-width: 700px;
+  color: #333;
+}
+
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .careers-header h1 {
+    font-size: 28px;
+  }
+
+  .careers-header p,
+  .perk p,
+  .get-paid p {
+    font-size: 14px;
+  }
+
+  .apply-today {
+    padding: 30px 15px;
+  }
+
+  .apply-today .roles span {
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+
+  .perk h3 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .careers-header {
+    padding: 20px 10px;
+  }
+
+  .careers-header h1 {
+    font-size: 24px;
+  }
+
+  .careers-header p {
+    font-size: 14px;
+  }
+
+  .apply-today h2 {
+    font-size: 22px;
+  }
+
+  .apply-today .roles {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .apply-today .roles span {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .perk h3 {
+    font-size: 18px;
+  }
+
+  .get-paid button {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+}
+/* Careers Section Styles */
+.careers-section {
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  background-color: #fff !important ;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* Carousel Section */
+.carousel-section {
+    background-color: white;
+  width: 100%;
+  height: 500px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.carousel img {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .carousel-section {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-section {
+    height: 200px;
+    width: 100%;
+    max-width: 600px;
+  }
+}
+
+</style>
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block 'main' %}
+
+    <section class="carousel-section">
+        <div class="carousel">
+          <img src="{% static 'images/Black Modern Gym Center Banner Landscape.png' %}" alt="Fitness Image"> <!-- Replace 'your-image-path.jpg' with your actual image -->
+        </div>
+      </section>
+    
+      <!-- Careers Section -->
+      <section class="careers-section">
+        <div class="careers-header">
+          <h3>CAREERS</h3>
+          <div class="underline"></div>
+          <h1>OBSESSED WITH HEALTH AND FITNESS?</h1>
+          <h2>So are we — welcome to the club.</h2>
+          <p>
+            Work with a team of movers and shakers that promote a healthy and well-balanced lifestyle. 
+            Motivate others and surround yourself with people who will push you to be your best every day. 
+            GYMVMT and HER Fitness Empire clubs are always hiring for various positions that may be your next calling.
+          </p>
+        </div>
+      </section>
+            <!-- Apply Section -->
+            <div class="apply-today">
+              <h2>APPLY TODAY</h2>
+              <div class="roles">
+                <span>Assistant Managers</span>
+                <span>Fitness Consultants</span>
+                <span>Studio Managers</span>
+                <span>Receptionists</span>
+                <span>Front Desk Associates</span>
+                <span>Lifeguards/Attendants</span>
+                <span>Personal Trainers</span>
+              </div>
+            </div>
+          
+            <!-- Perks Section -->
+            <section class="perks-benefits">
+              <h2>PERKS + BENEFITS FOR JOINING OUR TEAM</h2>
+          
+              <div class="perk">
+                <h3>COMMUNITY INVOLVEMENT</h3>
+                <p>
+                  Get involved and inspire change. We’re invested in the wellness and progress of the community of health and fitness lovers. With club
+                  membership discounts and group engagement opportunities, we work to make fitness more inclusive for groups who share the same love
+                  for wellness that we do.
+                </p>
+              </div>
+              <div class="perk">
+                <h3>TRAINING & DEVELOPMENT</h3>
+                <p>
+                  Being part of a continually growing industry will prep you for the next level. The best thing about being part of our team is being able to
+                  take advantage of on-the-job programs to boost your skills.
+                </p>
+                <ul>
+                  <li>Workshops and training development</li>
+                  <li>Career advancement opportunities for team members and leaders-in-training</li>
+                  <li>Education grants to support career growth</li>
+                </ul>
+              </div>
+              <div class="perk">
+                <h3>COMPENSATION & BENEFITS</h3>
+                <p>
+                  We value the efforts that our team members put in. Being part of our squad means you get access to industry and community engagement
+                  benefits.
+                </p>
+                <ul>
+                  <li>Competitive salary and incentive programs</li>
+                  <li>Employee club membership for team members and their family members or friends</li>
+                  <li>Extended health coverage, including vision and dental</li>
+                  <li>Discounts on fitness training and wellness programs</li>
+                </ul>
+              </div>
+            </section>
+          
+            <!-- Get Paid Section -->
+            <div class="get-paid">
+              <h2>GET PAID TO BECOME A TRAINER</h2>
+              <p>
+                Get on-the-job training, industry certifications, and fitness perks to help you shape your future and the people around you. Earn while
+                you help others achieve their goals and grow yourself.
+              </p>
+              <button>LET'S DO THIS</button>
+            </div>
+          </section>
+
+{% endblock 'main' %}

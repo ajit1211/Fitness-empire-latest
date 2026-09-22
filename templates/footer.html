@@ -1,0 +1,138 @@
+<style>
+    
+    @media (max-width: 768px) {
+    .footer-top {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        padding: 15px;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .footer-links ul {
+        padding: 0;
+    }
+
+    .footer-links li {
+        margin: 5px 0;
+    }
+
+    .footer-membership {
+        margin-top: 15px;
+    }
+
+    .membership-link {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .footer-bottom {
+        padding: 8px 0;
+    }
+
+    .social-links {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .footer-social {
+        margin-top: 15px;
+        gap: 10px;
+    }
+
+    .footer-social a img {
+        width: 25px;
+        height: 25px;
+    }
+
+    .footer-logo img {
+        height: 60px;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 15px 0;
+    }
+
+    .footer-top {
+        padding: 10px;
+    }
+
+    .footer-logo img {
+        height: 50px;
+    }
+
+    .membership-link {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .footer-bottom p {
+        font-size: 10px;
+    }
+
+    .footer-links a {
+        font-size: 12px;
+    }
+
+    .footer-social a img {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+</style>
+{% load static %}
+
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-logo">
+            <p>FITNESS EMPIRE</p>
+            <a href="#">
+                <img src="{% static 'images/Logo_Fitness_empire-removebg-preview.png' %}" alt="Fitness Empire Logo">
+            </a>
+        </div>
+        <div class="footer-links">
+            <ul>
+                <li><a href="#">FITNESS EMPIRE</a></li>
+                <li><a href="#">CONNECT US</a></li>
+                <li><a href="#">CLASSES</a></li>
+                <li><a href="#">MEMBERSHIPS</a></li>
+                <li><a href="#">WORKSHOPS</a></li>
+                <li><a href="#">TRAINING</a></li>
+                <li><a href="#">LITTLE MVRS (CHILD MINDING)</a></li>
+            </ul>
+            <ul>
+                <li><a href="#">CONTACT FITNESS EMPIRE</a></li>
+                <li><a href="#">ABOUT US</a></li>
+                <li><a href="#">REVIEWS</a></li>
+                <li><a href="#">GYMVMT FAQ</a></li>
+                <li><a href="#">CAREERS</a></li>
+                <li><a href="#">NEWS</a></li>
+            </ul>
+        </div>
+        <div class="footer-membership">
+            <p>CLICK HERE FOR</p>
+            <a href="{% url 'membershipannual' %}" class="membership-link">
+                FITNESS EMPIRE <br> MEMBERSHIPS
+            </a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2024 Fitness Empire | <a href="#">PRIVACY POLICY</a> | <a href="#">TERMS & CONDITIONS</a></p>
+        <div class="footer-social">
+            <a href="#"><img src="{% static 'images/facebook-logo.png' %}" alt="Facebook"></a>
+            <a href="#"><img src="{% static 'images/Twitter-Symbol.png' %}" alt="Twitter"></a>
+            <a href="#"><img src="{% static 'images/linkedin.jpeg' %}" alt="LinkedIn"></a>
+            <a href="#"><img src="{% static 'images/insta logo.jpeg' %}" alt="Instagram"></a>
+        </div>
+    </div>
+</footer>

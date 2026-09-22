@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block 'main' %}
+
+<style>
+    /* General Page Styling */
+    body {
+        background-color: #f5f5f5;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Profile Container */
+    .profile-container {
+        width: 60%;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Profile Tabs */
+    .profile-tabs {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+        border-bottom: 2px solid black;
+    }
+
+    .profile-tab-item {
+        margin: 0 15px;
+    }
+
+    .profile-tab-link {
+        text-decoration: none;
+        color: black;
+        padding: 12px 20px;
+        display: inline-block;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .profile-tab-link.active {
+        color: white;
+        background: crimson;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .profile-tab-link:hover {
+        color: crimson;
+        color: black;
+    }
+
+    /* Address Cards */
+    .profile-card {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        border-left: 5px solid #007bff; /* Blue Left Border */
+    }
+
+    .profile-card p {
+        font-size: 16px;
+        color: #333;
+        background: white;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Edit Button */
+    .profile-btn-edit {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 20px;
+        background: crimson;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .profile-btn-edit:hover {
+        background: darkred;
+    }
+
+    /* No Address Message */
+    .no-address {
+        text-align: center;
+        font-size: 18px;
+        color: crimson;
+        margin-top: 20px;
+    }
+
+</style>
+
+<div class="profile-container">
+    <!-- Profile Navigation Tabs -->
+    <ul class="profile-tabs">
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'my_profile' %}">My Profile</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'myorders' %}">My Orders</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link active" href="{% url 'my_addresses' %}">My Addresses</a>
+        </li>
+    </ul>
+
+    <!-- Address List -->
+    <h2 style="text-align: center; color: black; margin-bottom: 20px;">Hi, {{ user_profile.full_name }}</h2>
+
+    {% if addresses %}
+        {% for address in addresses %}
+            <div class="profile-card">
+                <!-- <p><strong>Full Name:</strong><br> {{ address.full_name }}</p>
+                <p><strong>Email:</strong><br> {{ address.email }}</p> -->
+                <!-- <p><strong>Phone Number:</strong><br> {{ address.phone_number }}</p> -->
+                <p><strong>Address:</strong><br> {{ address.address }}</p>
+                <p><strong>City:</strong><br> {{ address.city }}</p>
+                <p><strong>Pin Code:</strong><br> {{ address.pin_code }}</p>
+                <p><strong>Country:</strong><br> {{ address.country }}</p>
+                {% if address.additional_notes %}
+                    <p><strong>Additional Notes:</strong><br> {{ address.additional_notes }}</p>
+                {% endif %}
+                <a href="{% url 'edit_address' address.id %}" class="profile-btn-edit">Edit</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-address">No addresses found.</p>
+        <a href="" class="profile-btn-edit" style="display: block; text-align: center; margin-top: 20px;">Add New Address</a>
+    {% endif %}
+</div>
+
+{% endblock 'main' %}

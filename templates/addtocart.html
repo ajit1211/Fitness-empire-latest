@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Products
+{% endblock title %}
+
+{% block 'main' %}
+<style>
+    /* Reset margins and paddings */
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        background-color: #000; /* Black background */
+    }
+
+    .main-content {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: #000;
+    }
+
+    .cart-title {
+        font-size: 2em;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #d9534f;
+        font-weight: bold;
+    }
+
+    .cart-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .cart-card {
+        background: #fff;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .cart-image {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 5px;
+    }
+
+    .cart-details {
+        flex-grow: 1;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #000;
+    }
+
+    .cart-product-title {
+        font-size: 1.2em;
+        color: #d9534f;
+        font-weight: bold;
+    }
+
+    .cart-product-price {
+        font-size: 1em;
+        font-weight: bold;
+        color: #d9534f;
+    }
+
+    .cart-product-quantity {
+        font-size: 0.9em;
+        color: #333;
+    }
+
+    .total-section {
+        text-align: right;
+        font-size: 1.2em;
+        color: #d9534f;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .checkout-button {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        text-align: center;
+        background: #d9534f;
+        color: #fff;
+        font-size: 1.2em;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    .checkout-button:hover {
+        background: #a94442;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .cart-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .cart-image {
+            width: 100px;
+            height: 100px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cart-title {
+            font-size: 1.5em;
+        }
+
+        .cart-product-title {
+            font-size: 1em;
+        }
+
+        .cart-product-price {
+            font-size: 0.9em;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <h1 class="cart-title">Your Shopping Cart</h1>
+
+    {% if addtocartproduct %}
+    <div class="cart-grid">
+        {% for item in addtocartproduct %}
+        <div class="cart-card">
+            <!-- Product Image -->
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-image">
+            
+            <!-- Product Details -->
+            <div class="cart-details">
+                <h5 class="cart-product-title">{{ item.product.name }}</h5>
+                <h5 class="cart-product-price">Rs {{ item.product.price }}</h5>
+                <p class="cart-product-quantity">Quantity: {{ item.quantity }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Total -->
+    <div class="total-section">
+        Total: Rs {{ total }}
+    </div>
+    {% else %}
+    <p class="cart-title">Your cart is empty. Start shopping!</p>
+    {% endif %}
+</div>
+{% endblock 'main' %}

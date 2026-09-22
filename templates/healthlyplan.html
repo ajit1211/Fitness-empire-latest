@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% block 'main' %}
+<style>
+        .healthylifestyle-body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #000;
+            line-height: 1.6;
+        }
+        .healthylifestyle-header {
+            background: linear-gradient(to right, white);
+            color: black;
+            padding: 40px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: underline 3;
+        }
+        .healthylifestyle-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 60px 10%;
+            border-bottom: 2px solid #ddd;
+        }
+        .healthylifestyle-section:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        .healthylifestyle-image {
+            width: 45%;
+            border-radius: 12px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .healthylifestyle-content {
+            width: 50%;
+            padding: 20px;
+        }
+        .healthylifestyle-heading {
+            color: #000;
+            font-size: 26px;
+        }
+        .healthylifestyle-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .healthylifestyle-item {
+            padding: 12px;
+            font-size: 18px;
+            border-left: 4px solid #000;
+            padding-left: 10px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+    </style>
+<body class="healthylifestyle-body">
+    <header class="healthylifestyle-header">
+        Healthy Lifestyle Plan
+    </header>
+    <section class="healthylifestyle-section">
+        <img class="healthylifestyle-image" src="{% static 'images/healthy1.jpeg' %}" alt="Healthy Eating">
+        <div class="healthylifestyle-content">
+            <h2 class="healthylifestyle-heading">Balanced Diet</h2>
+            <ul class="healthylifestyle-list">
+                <li class="healthylifestyle-item">Eat a variety of foods</li>
+                <li class="healthylifestyle-item">Reduce sugar and salt intake</li>
+                <li class="healthylifestyle-item">Choose whole grains over refined grains</li>
+                <li class="healthylifestyle-item">Increase fruit and vegetable consumption</li>
+            </ul>
+        </div>
+    </section>
+    <section class="healthylifestyle-section">
+        <img class="healthylifestyle-image" src="{% static 'images/healthy2.jpeg' %}" alt="Exercise">
+        <div class="healthylifestyle-content">
+            <h2 class="healthylifestyle-heading">Regular Physical Activity</h2>
+            <ul class="healthylifestyle-list">
+                <li class="healthylifestyle-item">Engage in daily exercise</li>
+                <li class="healthylifestyle-item">Include strength training and cardio</li>
+                <li class="healthylifestyle-item">Take breaks from prolonged sitting</li>
+                <li class="healthylifestyle-item">Stretch regularly to stay flexible</li>
+            </ul>
+        </div>
+    </section>
+    <section class="healthylifestyle-section">
+        <img class="healthylifestyle-image" src="{% static 'images/healthy3.jpeg' %}" alt="Mental Well-being">
+        <div class="healthylifestyle-content">
+            <h2 class="healthylifestyle-heading">Mental Well-being</h2>
+            <ul class="healthylifestyle-list">
+                <li class="healthylifestyle-item">Practice mindfulness and meditation</li>
+                <li class="healthylifestyle-item">Get enough sleep every night</li>
+                <li class="healthylifestyle-item">Reduce stress through hobbies</li>
+                <li class="healthylifestyle-item">Stay socially connected</li>
+            </ul>
+        </div>
+    </section>
+    <section class="healthylifestyle-section">
+        <img class="healthylifestyle-image" src="{% static 'images/healthy4.jpeg' %}" alt="Hydration">
+        <div class="healthylifestyle-content">
+            <h2 class="healthylifestyle-heading">Proper Hydration</h2>
+            <ul class="healthylifestyle-list">
+                <li class="healthylifestyle-item">Drink at least 8 glasses of water daily</li>
+                <li class="healthylifestyle-item">Avoid sugary drinks</li>
+                <li class="healthylifestyle-item">Consume herbal teas for benefits</li>
+                <li class="healthylifestyle-item">Eat water-rich foods like cucumbers and melons</li>
+            </ul>
+        </div>
+    </section>
+</body>
+{% endblock 'main' %}

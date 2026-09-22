@@ -1,0 +1,493 @@
+
+<style>
+section.personal-training {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #ffffff;
+        }
+
+        section.personal-training h3 {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            position: relative;
+            display: inline-block;
+            color: black;
+        }
+
+        section.personal-training h3::after {
+            content: "";
+            display: block;
+            width: 250px;
+            height: 2px;
+            background-color: black;
+            margin: 5px auto 0;
+        }
+
+        section.personal-training h1 {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        section.personal-training p {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+
+        section.personal-training hr {
+            margin: 40px auto;
+            width: 90%;
+            border: none;
+            border-top: 2px solid black;
+        }
+        .trainer-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #fff;
+    color: #333;
+}
+.content-container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    align-items: center;
+}
+.text-content {
+    flex: 1 1 50%;
+    padding: 1rem;
+}
+.text-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.text-content p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+.features {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+.feature {
+    text-align: center;
+    flex: 1;
+}
+.feature span {
+    font-size: 2rem;
+    color: #00bcd4;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.feature p {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+.cta-button {
+    background-color: #005f67;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+.cta-button:hover {
+    background-color: #003d44;
+}
+.image-container {
+    flex: 1 1 50%;
+    text-align: center;
+}
+.image-container img {
+    max-width: 100%;
+    height: 400px;
+}
+
+.cta-section {
+    background: linear-gradient(to bottom, #003f5c, #2a5470);
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.cta-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: #007b8f;
+    color: #fff;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #005f6d;
+}
+
+/* Section 2: Testimonials */
+.testimonials-section {
+    background-color: #121212;
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.testimonials-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+}
+
+.testimonial {
+    max-width: 800px;
+    margin: 0 auto;
+    color: #ddd;
+}
+
+.trainer-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 20px 0;
+    border: 3px solid #007b8f;
+}
+
+.testimonial-text {
+    font-size: 1rem;
+    margin: 20px 0;
+    text-align: justify;
+}
+
+.trainer-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.trainer-title {
+    font-size: 0.9rem;
+    color: #bbb;
+    margin-top: 5px;
+}
+
+/* GymVMT Section Styles */
+.gymvmt-section {
+  background-color: #000;
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.gymvmt-header {
+    text-align: center;
+  background-color: #007582;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.gymvmt-header h2 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.gymvmt-header p {
+  font-size: 16px;
+  margin: 10px auto 0; /* Auto margin centers it horizontally */
+  line-height: 1.6;
+  max-width: 700px; /* Controls the width of the text */
+  text-align: center; /* Centers the text content */
+}
+
+
+.gymvmt-menu {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.menu-item {
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.menu-item img {
+  width: 240px;
+  height: 220px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.menu-item h3 {
+  font-size: 18px;
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+
+.menu-item:hover {
+  transform: scale(1.2);
+}
+
+.gymvmt-main-content {
+  text-align: center;
+}
+
+.gymvmt-main-content h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gymvmt-main-content p {
+  font-size: 16px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.icons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #222;
+  padding: 20px;
+  border-radius: 10px;
+  width: 150px;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+  height: 130px;
+  width: 130px;
+}
+
+.icon-item img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+}
+
+.icon-item p {
+  font-size: 14px;
+  margin: 0;
+  color: #ccc;
+}
+
+.icon-item:hover {
+  transform: scale(1.2);
+  background-color: #333;
+}
+
+/* Mobile View (iPhone & Samsung) */
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .text-content, .image-container {
+        flex: 1 1 100%;
+    }
+
+    .text-content h1 {
+        font-size: 2rem;
+    }
+
+    .text-content p {
+        font-size: 1rem;
+    }
+
+    .cta-section h2, .testimonials-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .testimonial-text {
+        font-size: 0.9rem;
+    }
+
+    .gymvmt-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .gymvmt-header p {
+        font-size: 14px;
+    }
+
+    .menu-item img {
+        width: 100%;
+        height: auto;
+    }
+
+    .icon-item {
+        width: 120px;
+    }
+
+    .cta-button {
+        padding: 12px 24px;
+    }
+}
+
+/* Additional Styles for Smaller Mobile Screens (like iPhone SE or older models) */
+@media (max-width: 480px) {
+    .cta-button {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+    }
+
+    .gymvmt-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .menu-item img {
+        width: 80%;
+        height: auto;
+    }
+
+    .menu-item h3 {
+        font-size: 16px;
+    }
+
+    .icon-item {
+        width: 100px;
+    }
+}
+</style>
+{% extends 'base.html' %}
+{% load static %}
+{% block 'main' %}
+
+    <section class="personal-training">
+        <h3>PERSONAL TRAINING</h3>
+        <h1>POWER UP WITH A PRO</h1>
+        <p>
+            Kick your workouts into high gear with a Personal Trainer and focus on results to blast through your fitness plateau. 
+            Learn the ropes to the perfect form, realistic goals, renewed confidence, and expert advice.
+        </p>
+        <hr>
+    </section>
+    <section class="trainer-section">
+        <div class="content-container">
+            <div class="image-container">
+                <img src="{% static 'images/become_a_trainer.jpg' %}" alt="Trainer Running">
+            </div>
+            <div class="text-content">
+                <h1>GET PAID TO BECOME A TRAINER.</h1>
+                <p>
+                    Got what it takes to be a top-notch Personal Trainer? We want to hear from you. 
+                    Meet our qualifications and we’ll pay for your training and 
+                    <strong>CanFit Pro</strong> certification so you can start a rewarding career in fitness.
+                </p>
+                <div class="features">
+                    <div class="feature">
+                        <span>&#10003;</span>
+                        <p>CLIENT ACQUISITION OPPORTUNITIES</p>
+                    </div>
+                    <div class="feature">
+                        <span>&#10003;</span>
+                        <p>COMPREHENSIVE MARKETING PROGRAMS</p>
+                    </div>
+                    <div class="feature">
+                        <span>&#10003;</span>
+                        <p>ON-GOING CAREER DEVELOPMENT</p>
+                    </div>
+                </div>
+                <button class="cta-button">LET’S DO THIS</button>
+            </div>
+        </div>
+    </section>
+    <section class="cta-section">
+        <h2>NOT SURE IF TRAINING IS RIGHT FOR YOU?</h2>
+        <a href="#" class="cta-button">CLICK HERE TO REQUEST A FREE DEMO WITH A TRAINER</a>
+    </section>
+
+    <!-- Section 2: Testimonials -->
+    <section class="testimonials-section">
+        <h2>SEE WHAT OUR TRAINERS HAVE TO SAY</h2>
+        <div class="testimonial">
+            <img src="{% static 'images/trainerdorababu.jpg' %}" alt="Trainer Image" class="trainer-image">
+            <p class="testimonial-text">
+                Throughout my time here, I’ve had multiple opportunities to advance my career and knowledge. With my continuing education and efforts, I was able to transition from an Associate level Trainer to a Pro Elite level Trainer. The company has allowed me to branch out into Group Fitness where I’ve been able to lead up to 37 members! My coworkers consist of strong women who support one another. We work together as a team to give our members a positive experience with their health and fitness. I’ve gotten to work with a variety of women at this gym. Although these women come from different fitness backgrounds, they share the common goal of bettering themselves!
+            </p>
+            <p class="trainer-name">DORABABU NEREIDU</p>
+            <p class="trainer-title">Pro Elite Trainer</p>
+        </div>
+    </section>
+    <section class="gymvmt-section">
+        <header class="gymvmt-header">
+          <h2>WHY TRAIN AT FITNESS EMPIRE ?</h2>
+          <p>
+            We're invested in your success. We've created innovative ways to meet our clients where they are 
+            in their fitness journey by introducing specialized programs and workshops in addition to training. 
+            With <b>FITNESS EMPIRE</b>, you can now customize how you want to train.
+          </p>
+        </header>
+        
+        <div class="gymvmt-menu">
+          <div class="menu-item">
+            <img src="{% static 'images/strength_hiit_icon.jpg' %}" alt="Programs">
+            <h3>PROGRAMS</h3>
+          </div>
+          <div class="menu-item">
+            <img src="{% static 'images/circuit.jpg' %}" alt="Memberships">
+            <h3>MEMBERSHIPS</h3>
+          </div>
+          <div class="menu-item">
+            <img src="{% static 'images/master_mobility_icon.jpg' %}" alt="Workshops">
+            <h3>WORKSHOPS</h3>
+          </div>
+        </div>
+      
+        <div class="gymvmt-main-content">
+          <h3>SMASH YOUR TARGETS, DISOBEY FEAR.</h3>
+          <p>You're here because you want more. Get more with our pros in your corner.</p>
+          <div class="icons">
+            <div class="icon-item">
+              <img src="{% static 'images/total_body_transformation.webp' %}" alt="Total Body Transformation">
+              <p>Total Body Transformation</p>
+            </div>
+            <div class="icon-item">
+              <img src="{% static 'images/nutritional_guidance.png' %}" alt="Nutritional Guidance">
+              <p>Nutritional Guidance</p>
+            </div>
+            <div class="icon-item">
+              <img src="{% static 'images/realistic_goals.webp' %}" alt="Realistic Goals">
+              <p>Realistic Goals</p>
+            </div>
+            <div class="icon-item">
+              <img src="{% static 'images/curated_programs.webp' %}" alt="Curated Programs">
+              <p>Curated Programs</p>
+            </div>
+            <div class="icon-item">
+              <img src="{% static 'images/improvement_rehab.webp' %}" alt="Improvement & Rehabilitation">
+              <p>Improvement Rehabilitation</p>
+            </div>
+            <div class="icon-item">
+              <img src="{% static 'images/max_performance.webp' %}" alt="Maximum Performance">
+              <p>Maximum Performance</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+{% endblock 'main' %}

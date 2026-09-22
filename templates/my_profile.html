@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block 'main' %}
+
+<style>
+    body {
+        background-color: white !important;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Profile Container */
+    .profile-container {
+        width: 60%;
+        margin: 40px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabs Navigation */
+    .profile-tabs {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .profile-tab-item {
+        margin: 0 15px;
+    }
+
+    .profile-tab-link {
+        text-decoration: none;
+        color: #333;
+        padding: 12px 20px;
+        display: inline-block;
+        font-weight: bold;
+        border-radius: 8px 8px 0 0;
+        transition: 0.3s;
+    }
+
+    .profile-tab-link.active {
+        background: crimson;
+        color: white;
+        border-bottom: 2px solid crimson;
+    }
+
+    .profile-tab-link:hover {
+        color: crimson;
+        color: black;
+
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: #f9f9f9;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .profile-card h2 {
+        color: #222;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    /* Profile Details */
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .profile-col {
+        width: 48%;
+        text-align: left;
+    }
+
+    .profile-col p {
+        background: #fff;
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 12px;
+        font-size: 16px;
+        color: #222;
+    }
+
+    /* Edit Button */
+    .profile-btn-edit {
+        display: inline-block;
+        padding: 12px 25px;
+        background: crimson;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .profile-btn-edit:hover {
+        background: darkred;
+    }
+
+</style>
+
+<div class="profile-container">
+    <!-- Profile Navigation Tabs -->
+    <ul class="profile-tabs">
+        <li class="profile-tab-item">
+            <a class="profile-tab-link active" href="#">My Profile</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'myorders' %}">My Orders</a>
+        </li>
+        <li class="profile-tab-item">
+            <a class="profile-tab-link" href="{% url 'my_addresses' %}">My Addresses</a>
+        </li>
+    </ul>
+
+    <!-- Profile Details -->
+    <div class="profile-card">
+        {% if user_profile %}
+            <h2>Hi, {{ user_profile.full_name }}</h2>
+            <div class="profile-row">
+                <div class="profile-col">
+                    <p><strong>Full Name:</strong><br> {{ user_profile.full_name }}</p>
+                    <p><strong>Gender:</strong><br> {{ user_profile.gender }}</p>
+                </div>
+                <div class="profile-col">
+                    <p><strong>Phone No:</strong><br> {{ user_profile.phone }}</p>
+                    <p><strong>Email:</strong><br> {{ user_profile.email }}</p>
+                </div>
+            </div>
+            <a href="{% url 'edit_profile' user_profile.user.id %}" class="profile-btn-edit">Edit Profile</a>
+        {% else %}
+            <p style="color: crimson;">Profile not found.</p>
+            <a href="{% url 'edit_profile' request.user.id %}" class="profile-btn-edit">Add Profile</a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock 'main' %}

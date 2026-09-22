@@ -1,0 +1,183 @@
+<style>
+    /* Main Wrapper */
+    .main-viewport {
+        font-family: Arial, sans-serif;
+        background-color: black;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    /* Container for Form & Payment Section */
+    .checkout-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 1200px;
+    }
+    
+    /* Left Side: Form Section */
+    .customer-form {
+        flex: 1;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .customer-heading {
+        font-size: 22px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 15px;
+        border-bottom: 3px solid #d32f2f;
+        padding-bottom: 5px;
+    }
+    
+    /* Form Styling */
+    .form-section input, .form-section select, .form-section textarea {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #bbb;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+    
+    /* Submit Button */
+    .btn-submit {
+        background: #d32f2f;
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+        width: 100%;
+    }
+    .btn-submit:hover {
+        background: #b71c1c;
+    }
+    
+    /* Right Side: Summary & Payment Section */
+    .payment-summary {
+        flex: 1;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: left;
+    }
+    .payment-summary h3  {
+        font-size: 20px;
+        font-weight: bold;
+        background: #000;
+        color: white;
+        padding: 12px;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .payment-summary p{
+        color: #000;
+        font-weight: bold;
+    }
+    .total-payment {
+        font-size: 20px;
+        font-weight: bold;
+        color: #d32f2f;
+    }
+    .btn-payment {
+        display: block;
+        text-align: center;
+        background: #000;
+        color: white;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.3s;
+        width: 100%;
+    }
+    .btn-payment:hover {
+        background: #333;
+    }
+    .form-group{
+        color: #000;
+        font-weight: bold;
+    }
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .checkout-container {
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            padding: 20px;
+        }
+    }
+    @media (max-width: 768px) {
+        .checkout-container {
+            width: 100%;
+            padding: 15px;
+        }
+        .customer-form, .payment-summary {
+            width: 100%;
+        }
+    }
+</style>
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'main' %}
+<div class="main-viewport">
+    <div class="checkout-container">
+        <!-- Left Side: Form Section -->
+        <div class="customer-form">
+            <h2 class="customer-heading">Customer Details</h2>
+            <form action="" method="POST" class="form-section">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_full_name">Full Name</label>
+                    {{ form.full_name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_email">Email Address</label>
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    <label for="id_phone_number">Phone Number</label>
+                    {{ form.phone_number }}
+                </div>
+                <div class="form-group">
+                    <label for="id_address">Address</label>
+                    {{ form.address }}
+                </div>
+                <div class="form-group">
+                    <label for="id_city">City</label>
+                    {{ form.city }}
+                </div>
+                <div class="form-group">
+                    <label for="id_pin_code">PIN Code</label>
+                    {{ form.pin_code }}
+                </div>
+                <div class="form-group">
+                    <label for="id_country">Country</label>
+                    {{ form.country }}
+                </div>
+                <input type="submit" value="Submit" class="btn-submit">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock 'main' %}

@@ -1,0 +1,429 @@
+
+<style>
+/* General styles for all screen sizes */
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  overflow: hidden;
+  height: 500px;
+  
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  background-color: black;
+  border-radius: 2%;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 0 0 20px;
+}
+
+.hero-content p {
+  font-size: 18px;
+  width: 60%;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Diet Plans Section */
+.diet-plans {
+  padding: 50px 20px;
+  background-color: #f4f4f4;
+
+}
+
+.diet-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.diet-header h2 {
+  font-size: 32px;
+  color: #007582;
+  font-weight: bold;
+}
+
+.diet-header p {
+  font-size: 18px;
+  width: 60%;
+  margin: 0 auto;
+  line-height: 1.6;
+  color: #555;
+}
+
+.plan-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.plan-card {
+  background-color: #fff;
+  width: 300px;
+  height: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.plan-card:hover {
+  transform: translateY(-15px);
+}
+
+.plan-card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.plan-card h3 {
+  font-size: 22px;
+  font-weight: bold;
+  color: black;
+}
+
+.plan-card p {
+  font-size: 16px;
+  margin-bottom: 0%;
+  margin-bottom: -20px;  
+
+}
+
+.plan-card button {
+  background-color: #00c6b9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.plan-card button:hover {
+  background-color: crimson;
+}
+
+/* Diet Tips Section */
+.diet-tips {
+  padding: 50px 20px;
+  background-color: #fff;
+  text-align: center;
+}
+
+.diet-tips h2 {
+  font-size: 32px;
+  color: #007582;
+  margin-bottom: 30px;
+}
+
+.tip-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.tip-card {
+  background-color: #f4f4f4;
+  padding: 20px;
+  width: 250px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.tip-card:hover {
+  transform: translateY(-10px);
+}
+
+.tip-card h3 {
+  font-size: 20px;
+  color: #007582;
+  margin-bottom: 15px;
+}
+
+.tip-card p {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Testimonials Section */
+.testimonials {
+  padding: 50px 20px;
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+.testimonials h2 {
+  font-size: 32px;
+  color: #007582;
+  margin-bottom: 30px;
+}
+
+.testimonial-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.testimonial-card {
+  background-color: #fff;
+  width: 300px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.testimonial-card p {
+  font-size: 16px;
+  color: #555;
+}
+
+.testimonial-card h4 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #007582;
+  margin-top: 15px;
+}
+
+/* Call to Action Section */
+.cta-section {
+  background-color: white;
+  color: black;
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.cta-section p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.cta-section button {
+  background-color: #007582;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.cta-section button:hover {
+  background-color: crimson;
+  transform: translateY(-2px);
+}
+
+/* Media Queries for Responsiveness */
+
+/* For screens smaller than 768px (tablets and smaller) */
+@media only screen and (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 32px;
+  }
+
+  .hero-content p {
+    width: 80%;
+    font-size: 16px;
+  }
+
+  .diet-header p,
+  .diet-header h2 {
+    font-size: 24px;
+  }
+
+  .plan-card {
+    width: 250px;
+  }
+
+  .plan-card img {
+    height: 200px;
+  }
+
+  .tip-card {
+    width: 220px;
+  }
+
+  .testimonial-card {
+    width: 260px;
+  }
+
+  .cta-section h2 {
+    font-size: 28px;
+  }
+
+  .cta-section p {
+    font-size: 16px;
+  }
+
+  .cta-section button {
+    padding: 12px 24px;
+  }
+}
+
+/* For screens smaller than 480px (mobile devices) */
+@media only screen and (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    width: 90%;
+    font-size: 14px;
+  }
+
+  .plan-card {
+    width: 100%;
+  }
+
+  .plan-card img {
+    height: 180px;
+  }
+
+  .tip-card {
+    width: 200px;
+  }
+
+  .testimonial-card {
+    width: 100%;
+  }
+
+  .cta-section h2 {
+    font-size: 24px;
+  }
+
+  .cta-section p {
+    font-size: 14px;
+  }
+
+  .cta-section button {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+}
+
+</style>
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'main' %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <img src="{% static 'images/dietplan.png' %}" alt="Diet Plan" class="hero-image">
+    <div class="hero-content">
+      <h1>Your Perfect Diet Starts Here</h1>
+      <p>Fuel your body with the right nutrients and achieve your fitness goals. Explore personalized diet plans and tips for a healthy lifestyle.</p>
+    </div>
+  </section>
+  
+<!-- Diet Plans Section -->
+<section class="diet-plans">
+  <div class="diet-header">
+    <h2>Our Diet Plans</h2>
+    <p>Customized plans to help you achieve your fitness goals. Whether you're looking to build muscle, lose weight, or just eat healthier, we have a plan for you.</p>
+  </div>
+
+  <div class="plan-cards">
+    <div class="plan-card">
+      <img src="{% static 'images/weight loss plan.jpg' %}" alt="Healthy Meal">
+      <h3>Weight Loss Plan</h3>
+      <p>Lose weight and improve overall health with our balanced meal plans that keep you full and energized.</p>
+      <a href="{% url 'weightlossplan' %}">
+        <button>Get Started Now</button>
+    </a>
+      </div>
+    <div class="plan-card">
+      <img src="{% static 'images/muscelsbuild.jpg' %}" alt="Muscle Building Meal">
+      <h3>Muscle Building Plan</h3>
+      <p>Gain lean muscle with our high-protein diet plans designed to support your training and recovery.</p>
+      <a href="{% url 'muselloss' %}">
+        <button>Get Started Now</button>
+    </a>
+      </div>
+    <div class="plan-card">
+      <img src="{% static 'images/dietpla.webp' %}" alt="Healthy Lifestyle Meal">
+      <h3>Healthy Lifestyle Plan</h3>
+      <p>Eat clean, stay healthy, and feel great with a balanced approach to nutrition for everyday wellness.</p>
+      <a href="{% url 'healthlyplan' %}">
+        <button>Get Started Now</button>
+    </a>
+      </div>
+</section>
+
+<!-- Diet Tips Section -->
+<section class="diet-tips">
+  <h2>Diet Tips And Tricks</h2>
+  <div class="tip-cards">
+    <div class="tip-card">
+      <h3>Hydration is Key</h3>
+      <p>Drink plenty of water throughout the day to stay hydrated and aid digestion. Aim for at least 8 glasses a day.</p>
+    </div>
+    <div class="tip-card">
+      <h3>Eat More Whole Foods</h3>
+      <p>Opt for whole grains, lean proteins, and plenty of fruits and vegetables to get the best nutrients.</p>
+    </div>
+    <div class="tip-card">
+      <h3>Portion Control</h3>
+      <p>Keep your portions in check to avoid overeating and ensure you're fueling your body correctly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials">
+  <h2>What Our Clients Say</h2>
+  <div class="testimonial-cards">
+    <div class="testimonial-card">
+      <p>"The Weight Loss Plan helped me shed 10 pounds in just a month! I feel more energized and healthier than ever."</p>
+      <h4>Ashish</h4>
+    </div>
+    <div class="testimonial-card">
+      <p>"I gained 5kg of lean muscle following the Muscle Building Plan. The meals were easy to prepare and delicious!"</p>
+      <h4>Satyam</h4>
+    </div>
+    <div class="testimonial-card">
+      <p>"The Healthy Lifestyle Plan was exactly what I needed. It made me feel more balanced and focused every day."</p>
+      <h4>Vishal</h4>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section">
+  <h2>Start Your Journey Today</h2>
+  <p>Join us now and get access to exclusive diet plans, expert guidance, and personalized meal suggestions tailored just for you!</p>
+    <a href="{% url 'membershipannual' %}">
+        <button>Get Started Now</button>
+    </a>
+</section>
+
+{% endblock 'main' %}
