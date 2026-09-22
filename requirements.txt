@@ -1,15 +1,27 @@
-asgiref==3.8.1
-certifi==2025.1.31
-charset-normalizer==3.5.1
 Django==5.1.6
 django-paypal==2.1
 djangorestframework==3.15.2
-idna==3.10
-mysql==0.0.3
-mysqlclient==2.3.0
 pillow==12.3.0
+
+# Serves CSS, JS and images from the Python process. There is no web server in
+# front of Django on Vercel, so without this every asset 404s once DEBUG is off.
+whitenoise==6.8.2
+
+# Reads the managed-Postgres connection string out of DATABASE_URL.
+dj-database-url==2.3.0
+psycopg[binary]==3.2.3
+
+# Transitive, pinned so a build cannot drift.
+asgiref==3.8.1
+certifi==2025.1.31
+charset-normalizer==3.5.1
+idna==3.10
 pytz==2025.1
 requests==2.32.3
 sqlparse==0.5.3
 tzdata==2025.1
 urllib3==2.3.0
+
+# mysql / mysqlclient were dropped. mysqlclient is a C extension that needs
+# MySQL client headers at build time, which the Vercel image does not have, so
+# it failed the install; nothing in the project imports it any more either.

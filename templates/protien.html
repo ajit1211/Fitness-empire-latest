@@ -83,8 +83,11 @@
                                 <span class="badge badge--warning">Only {{ i.stock }} left</span>
                             {% endif %}
 
-                            {# The image and the title already open the product, so the card
-                               spends its buttons on the two actions that actually sell. #}
+                            {% comment %}
+                            The image and the title already open the product, so
+                            the card spends its buttons on the two actions that
+                            actually sell.
+                            {% endcomment %}
                             <div class="prod__foot">
                                 <span class="price">&#8377;{{ i.supplementPrice|floatformat:0 }}</span>
                                 {% if i.stock == 0 %}

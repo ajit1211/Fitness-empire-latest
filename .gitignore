@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtualenv
+venv/
+.venv/
+env/
+
+# Django
+# db.sqlite3 is deliberately NOT ignored. It is already tracked, it holds the
+# seeded catalogue, and ALLOW_EPHEMERAL_DB copies it to run a demo without a
+# real database. Note it also contains user rows: see DEPLOY.md.
+db.sqlite3-journal
+staticfiles/
+*.log
+
+# Secrets. Never commit these; set them in the Vercel dashboard instead.
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
