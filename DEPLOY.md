@@ -40,35 +40,33 @@ the deploy; both are yours to decide on.
   They are ignored from now on, but already-tracked files stay tracked. Drop
   them with `git rm -r --cached "**/__pycache__"` and commit.
 - **`db.sqlite3`.** It is committed on purpose: it carries the seeded catalogue
-  and is what `ALLOW_EPHEMERAL_DB` copies. It also contains real user rows with
-  hashed passwords. Django hashes are not trivially reversible, but if this
-  repository is public, tell those users to change their passwords.
+  and is what demo mode runs from. It also contains real user rows with hashed
+  passwords. Django hashes are not trivially reversible, but if this repository
+  is public, tell those users to change their passwords.
 
 ---
 
 ## 2. Create a database
 
-This is the part people skip, and it is the reason most Django-on-Vercel
-deployments quietly lose data.
+**The site deploys and runs with nothing set at all.** It comes up in demo
+mode: the catalogue, plans and classes are all there, but a wide orange banner
+on every page says that nothing anyone does is saved. That is deliberate. A
+site that silently discards orders is worse than one that admits it.
 
-Vercel runs the app as a serverless function. The filesystem is read-only apart
-from a temp directory, and the instance is destroyed between requests. A SQLite
-file cannot survive there: every sign-up, cart, order and membership would
-vanish without warning. The app now refuses to start in production without a
-real database rather than failing silently.
+Here is why it cannot save anything. Vercel runs the app as a serverless
+function. The filesystem is read-only apart from a temp directory, and the
+instance is destroyed between requests, so a SQLite file cannot survive: every
+sign-up, cart, order and membership goes with it.
 
-Create a free Postgres instance on [Neon](https://neon.tech),
-[Supabase](https://supabase.com) or Vercel Postgres, and copy the connection
-string. It looks like:
+To make it a real site, create a free Postgres instance on
+[Neon](https://neon.tech), [Supabase](https://supabase.com) or Vercel Postgres,
+and copy the connection string. It looks like:
 
 ```
 postgresql://user:password@host/dbname?sslmode=require
 ```
 
-**Just want a throwaway demo?** Set `ALLOW_EPHEMERAL_DB=1` instead of
-`DATABASE_URL`. The site will run off a copy of the committed SQLite file in the
-temp directory. Everything written to it disappears when the instance recycles.
-Never use this for anything real.
+Set that as `DATABASE_URL` and the database half of the banner goes away.
 
 ---
 
@@ -77,12 +75,17 @@ Never use this for anything real.
 In the Vercel dashboard, under **Settings → Environment Variables**. The full
 list with explanations is in `.env.example`.
 
-Required:
+Neither of these is required to get the site up, but the banner stays until
+both are set:
 
 ```
 DJANGO_SECRET_KEY    the key you generated in step 1
 DATABASE_URL         the connection string from step 2
 ```
+
+Without `DJANGO_SECRET_KEY` a fresh random key is generated each time a server
+instance starts. That is not insecure, but it signs out everyone whenever a new
+instance comes up, so logins appear to drop at random.
 
 Worth setting:
 
@@ -185,13 +188,13 @@ app on Vercel.
 
 ## If the deploy 500s
 
-**"Fitness Empire is not configured yet"** on a dark page, with a 503: the
-build is fine, the environment variables in step 3 are not set. Set them and
-redeploy. The page lists exactly which ones are missing.
+**An orange "Demo mode" banner across the top**: not an error. The site is
+running without a database. Set `DATABASE_URL` and `DJANGO_SECRET_KEY` in step
+3 and it disappears.
 
-**A blank 500 with `ImproperlyConfigured` in the Vercel log**: same cause, but
-from a build made before the configuration page existed. Pull the latest code
-and redeploy, or just set the variables.
+**"Could not find a top-level app" at build time**: `api/index.py` binds `app`
+somewhere Vercel's static scan cannot see it, such as inside a `try` block. It
+must be a plain top-level assignment. A test guards this.
 
 **Unstyled pages**: WhiteNoise is not running. Check it is still second in
 `MIDDLEWARE`, directly after `SecurityMiddleware`.

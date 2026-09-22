@@ -14,8 +14,6 @@ See DEPLOY.md for the variables to set and why each one matters.
 import os
 from pathlib import Path
 
-from django.core.exceptions import ImproperlyConfigured
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Vercel sets this on every build and every request.
@@ -45,23 +43,27 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 # Deployed with no key set is a hard error rather than a silent weak default.
 DEBUG = env_flag("DJANGO_DEBUG", default=not IS_VERCEL)
 
-# Missing production settings are gathered here and reported together at the
-# end of this section. Raising on the first one made a deploy take several
-# rounds to get right, one variable at a time.
-MISSING_CONFIG = []
+# A deployment that is missing production settings still runs, in a reduced
+# "demo mode", rather than refusing to start. Refusing was safe but useless:
+# the site was unreachable and the reason was buried in a platform log. Running
+# with a banner that states the limitation on every page is just as honest and
+# far easier to act on. Each shortcoming is recorded here and shown to visitors.
+DEMO_REASONS = []
 
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "django-insecure-local-development-only-do-not-deploy-this"
     else:
-        MISSING_CONFIG.append(
-            "DJANGO_SECRET_KEY - the key Django signs sessions and password "
-            "reset links with. Generate one with: "
-            "python -c \"import secrets; print(secrets.token_urlsafe(50))\""
+        import secrets
+
+        # Generated per process. It is a real random key, so nothing is
+        # insecure; it simply differs between instances, which logs people out
+        # whenever a new one starts. Set DJANGO_SECRET_KEY to make it stable.
+        SECRET_KEY = secrets.token_urlsafe(50)
+        DEMO_REASONS.append(
+            "DJANGO_SECRET_KEY is not set, so a new signing key is generated "
+            "each time the server starts and everyone is signed out."
         )
-        # Placeholder so the rest of this module can finish loading and report
-        # every problem at once. The refusal below stops it ever being used.
-        SECRET_KEY = "unconfigured"
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS") or [
     "localhost",
@@ -127,6 +129,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'FitnessGYM.context_processors.cart_summary',
+                'FitnessGYM.context_processors.demo_notice',
             ],
         },
     },
@@ -143,9 +146,9 @@ WSGI_APPLICATION = 'FitnessEmpire.wsgi.application'
 # would disappear. A managed Postgres (Neon, Supabase, Vercel Postgres) is
 # required, handed over as DATABASE_URL.
 #
-# ALLOW_EPHEMERAL_DB=1 exists only for throwaway demos. It copies the committed
-# SQLite file into /tmp so the site runs, and accepts that every write is lost
-# when the instance recycles.
+# With no DATABASE_URL the site still runs, from a temp copy of the committed
+# SQLite file, and every page carries a banner saying nothing is saved. See
+# DEMO_REASONS above.
 # ---------------------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -167,51 +170,34 @@ elif DEBUG:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-elif env_flag("ALLOW_EPHEMERAL_DB"):
+else:
     import shutil
     import tempfile
-    import warnings
 
-    # The system temp directory is the only writable path on a serverless host,
-    # and it is per-instance and short-lived. gettempdir() rather than a literal
-    # /tmp so this also runs on a Windows machine while testing.
+    # No database was configured. Rather than refuse to serve, run from a copy
+    # of the catalogue that ships with the repository, placed in the system
+    # temp directory because that is the only writable path on a serverless
+    # host. It is per-instance and short-lived, so writes do not survive.
     scratch_db = Path(tempfile.gettempdir()) / "fitnessempire-ephemeral.sqlite3"
     bundled_db = BASE_DIR / "db.sqlite3"
     if not scratch_db.exists() and bundled_db.exists():
         shutil.copy(bundled_db, scratch_db)
 
-    warnings.warn(
-        "ALLOW_EPHEMERAL_DB is on: the database lives in the temp directory and "
-        "every write is lost when the instance recycles. "
-        "Set DATABASE_URL for real use.",
-        stacklevel=1,
-    )
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': str(scratch_db),
         }
     }
-else:
-    MISSING_CONFIG.append(
-        "DATABASE_URL - a managed Postgres connection string. A deployed "
-        "instance has no durable filesystem, so SQLite would lose every write. "
-        "Free options: neon.tech, supabase.com, Vercel Postgres. To run a "
-        "throwaway demo whose data is not kept, set ALLOW_EPHEMERAL_DB=1 "
-        "instead."
+    DEMO_REASONS.append(
+        "DATABASE_URL is not set, so the site is running on a temporary copy "
+        "of the bundled catalogue. Accounts, carts and orders are discarded "
+        "when the server restarts."
     )
-    DATABASES = {}
 
-if MISSING_CONFIG:
-    raise ImproperlyConfigured(
-        "Fitness Empire is missing "
-        f"{len(MISSING_CONFIG)} required setting"
-        f"{'s' if len(MISSING_CONFIG) > 1 else ''}.\n\n"
-        + "\n\n".join(f"  * {item}" for item in MISSING_CONFIG)
-        + "\n\nSet these as environment variables where the site is hosted. "
-        "On Vercel that is Settings, then Environment Variables, then redeploy. "
-        "DEPLOY.md in the repository lists them all."
-    )
+# True whenever the deployment is running on fallbacks. Surfaced on every page
+# by FitnessGYM.context_processors.demo_notice so it cannot go unnoticed.
+DEMO_MODE = bool(DEMO_REASONS)
 
 
 AUTH_PASSWORD_VALIDATORS = [

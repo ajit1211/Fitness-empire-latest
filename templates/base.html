@@ -20,6 +20,23 @@
 </head>
 <body class="page-{% block page_id %}default{% endblock %}">
 
+    {% if demo_mode %}
+    <aside class="demo-bar" role="status">
+        <div class="demo-bar__inner">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M7.938 2.016a.13.13 0 0 1 .125 0l6.857 11.856c.05.087-.1.128-.11.128H1.19c-.1 0-.16-.04-.11-.128zm1.044-.598a1.13 1.13 0 0 0-1.96 0L.165 13.271C-.296 14.07.24 15 1.19 15h13.62c.95 0 1.485-.93 1.025-1.729z"/>
+                <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+            </svg>
+            <div>
+                <strong>Demo mode. Nothing you do here is saved.</strong>
+                <ul>
+                    {% for reason in demo_reasons %}<li>{{ reason }}</li>{% endfor %}
+                </ul>
+            </div>
+        </div>
+    </aside>
+    {% endif %}
+
     {% include "navbar.html" %}
 
     <main class="site-main" id="main">

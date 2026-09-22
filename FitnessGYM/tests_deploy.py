@@ -98,3 +98,86 @@ class SettingsSafetyTests(SimpleTestCase):
                     f"{name} still contains a credential that belongs in the "
                     "environment",
                 )
+
+
+class DemoModeTests(SimpleTestCase):
+    """A deployment with nothing configured must run, and must say so."""
+
+    def settings_with(self, **environ):
+        """Load the settings module fresh under a given environment."""
+        import importlib
+        import os
+        from unittest import mock
+
+        base = {k: v for k, v in os.environ.items()
+                if not k.startswith(("DJANGO_", "DATABASE_", "VERCEL", "ALLOW_"))}
+        base.update(environ)
+
+        with mock.patch.dict(os.environ, base, clear=True):
+            module = importlib.import_module("FitnessEmpire.settings")
+            return importlib.reload(module)
+
+    def tearDown(self):
+        # Leave the module matching the environment the rest of the suite runs
+        # under, or later imports of it see the last test's values.
+        import importlib
+
+        importlib.reload(importlib.import_module("FitnessEmpire.settings"))
+
+    def test_a_deployment_with_no_configuration_still_boots(self):
+        conf = self.settings_with(VERCEL="1")
+        self.assertFalse(conf.DEBUG)
+        self.assertTrue(conf.SECRET_KEY)
+        self.assertTrue(conf.DATABASES["default"]["NAME"])
+
+    def test_both_shortcomings_are_reported(self):
+        conf = self.settings_with(VERCEL="1")
+        self.assertTrue(conf.DEMO_MODE)
+        self.assertEqual(len(conf.DEMO_REASONS), 2)
+        joined = " ".join(conf.DEMO_REASONS)
+        self.assertIn("DJANGO_SECRET_KEY", joined)
+        self.assertIn("DATABASE_URL", joined)
+
+    def test_a_generated_key_is_actually_random(self):
+        first = self.settings_with(VERCEL="1").SECRET_KEY
+        second = self.settings_with(VERCEL="1").SECRET_KEY
+        self.assertNotEqual(first, second)
+        self.assertGreaterEqual(len(first), 50)
+
+    def test_setting_the_key_removes_only_that_warning(self):
+        conf = self.settings_with(VERCEL="1", DJANGO_SECRET_KEY="x" * 60)
+        self.assertTrue(conf.DEMO_MODE)
+        self.assertEqual(len(conf.DEMO_REASONS), 1)
+        self.assertIn("DATABASE_URL", conf.DEMO_REASONS[0])
+
+    def test_a_fully_configured_deployment_shows_no_banner(self):
+        conf = self.settings_with(
+            VERCEL="1",
+            DJANGO_SECRET_KEY="x" * 60,
+            DATABASE_URL="postgresql://u:p@host/db?sslmode=require",
+        )
+        self.assertFalse(conf.DEMO_MODE)
+        self.assertEqual(conf.DEMO_REASONS, [])
+        self.assertEqual(
+            conf.DATABASES["default"]["ENGINE"], "django.db.backends.postgresql"
+        )
+
+    def test_local_development_is_never_in_demo_mode(self):
+        conf = self.settings_with()
+        self.assertTrue(conf.DEBUG)
+        self.assertFalse(conf.DEMO_MODE)
+
+    def test_the_banner_is_wired_into_every_page(self):
+        import pathlib
+
+        base_template = (REPO_ROOT / "templates" / "base.html").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("demo_mode", base_template)
+        self.assertIn("demo-bar", base_template)
+
+        settings_source = (
+            REPO_ROOT / "FitnessEmpire" / "settings.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("context_processors.demo_notice", settings_source)
+        del pathlib
