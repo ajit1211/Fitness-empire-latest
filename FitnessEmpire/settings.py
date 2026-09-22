@@ -45,14 +45,23 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 # Deployed with no key set is a hard error rather than a silent weak default.
 DEBUG = env_flag("DJANGO_DEBUG", default=not IS_VERCEL)
 
+# Missing production settings are gathered here and reported together at the
+# end of this section. Raising on the first one made a deploy take several
+# rounds to get right, one variable at a time.
+MISSING_CONFIG = []
+
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "django-insecure-local-development-only-do-not-deploy-this"
     else:
-        raise ImproperlyConfigured(
-            "DJANGO_SECRET_KEY must be set when DEBUG is off. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(50))\""
+        MISSING_CONFIG.append(
+            "DJANGO_SECRET_KEY - the key Django signs sessions and password "
+            "reset links with. Generate one with: "
+            "python -c \"import secrets; print(secrets.token_urlsafe(50))\""
         )
+        # Placeholder so the rest of this module can finish loading and report
+        # every problem at once. The refusal below stops it ever being used.
+        SECRET_KEY = "unconfigured"
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS") or [
     "localhost",
@@ -184,11 +193,24 @@ elif env_flag("ALLOW_EPHEMERAL_DB"):
         }
     }
 else:
+    MISSING_CONFIG.append(
+        "DATABASE_URL - a managed Postgres connection string. A deployed "
+        "instance has no durable filesystem, so SQLite would lose every write. "
+        "Free options: neon.tech, supabase.com, Vercel Postgres. To run a "
+        "throwaway demo whose data is not kept, set ALLOW_EPHEMERAL_DB=1 "
+        "instead."
+    )
+    DATABASES = {}
+
+if MISSING_CONFIG:
     raise ImproperlyConfigured(
-        "DATABASE_URL is not set and DEBUG is off. A deployed instance has no "
-        "durable filesystem, so SQLite would lose every write. Point "
-        "DATABASE_URL at a managed Postgres, or set ALLOW_EPHEMERAL_DB=1 to "
-        "run a throwaway demo whose data is not kept."
+        "Fitness Empire is missing "
+        f"{len(MISSING_CONFIG)} required setting"
+        f"{'s' if len(MISSING_CONFIG) > 1 else ''}.\n\n"
+        + "\n\n".join(f"  * {item}" for item in MISSING_CONFIG)
+        + "\n\nSet these as environment variables where the site is hosted. "
+        "On Vercel that is Settings, then Environment Variables, then redeploy. "
+        "DEPLOY.md in the repository lists them all."
     )
 
 

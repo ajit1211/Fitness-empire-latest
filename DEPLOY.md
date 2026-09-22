@@ -183,6 +183,28 @@ app on Vercel.
 
 ---
 
+## If the deploy 500s
+
+**"Fitness Empire is not configured yet"** on a dark page, with a 503: the
+build is fine, the environment variables in step 3 are not set. Set them and
+redeploy. The page lists exactly which ones are missing.
+
+**A blank 500 with `ImproperlyConfigured` in the Vercel log**: same cause, but
+from a build made before the configuration page existed. Pull the latest code
+and redeploy, or just set the variables.
+
+**Unstyled pages**: WhiteNoise is not running. Check it is still second in
+`MIDDLEWARE`, directly after `SecurityMiddleware`.
+
+**`relation "..." does not exist`**: the database is reachable but empty. Run
+the migrations in step 5.
+
+**`DisallowedHost`**: you are using a custom domain that is not listed in
+`DJANGO_ALLOWED_HOSTS`. The `*.vercel.app` hostnames are handled for you; your
+own domain is not.
+
+---
+
 ## Checking it worked
 
 After the first deploy:
