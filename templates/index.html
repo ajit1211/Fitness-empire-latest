@@ -6,52 +6,103 @@
 
 {% block 'main' %}
 
-<section class="hero" data-slides>
-    <div class="slides">
-        <div class="slides__item is-active">
-            <img src="{% static 'img/banner4.webp' %}" alt="Members training on the gym floor"
-                 width="1500" height="500" fetchpriority="high">
+<!-- ============ HERO: full-bleed video ============ -->
+<section class="hero-video">
+    <picture>
+        <source media="(max-width: 700px)" srcset="{% static 'video/hero-poster-portrait.webp' %}"
+                width="900" height="1126">
+        <img src="{% static 'video/hero-poster.webp' %}" alt=""
+             class="hero-video__poster" width="1600" height="900" fetchpriority="high">
+    </picture>
+
+    <video class="hero-video__media" data-hero-video
+           poster="{% static 'video/hero-poster.webp' %}"
+           muted loop playsinline preload="none" aria-hidden="true">
+        <source data-src="{% static 'video/hero-1600.webm' %}" type="video/webm">
+        <source data-src="{% static 'video/hero-1600.mp4' %}" type="video/mp4">
+    </video>
+
+    <button type="button" class="hero-video__sound" data-video-sound hidden
+            aria-pressed="false" aria-label="Toggle video sound">
+        <svg data-icon-off viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06m6.938 1.6a.5.5 0 0 1 0 .707L12.207 7.5l1.448 1.646a.5.5 0 0 1-.707.708L11.5 8.35l-1.448 1.504a.5.5 0 1 1-.707-.708L10.793 7.5 9.345 5.854a.5.5 0 1 1 .707-.708L11.5 6.65l1.448-1.5a.5.5 0 0 1 .707 0"/>
+        </svg>
+        <svg data-icon-on viewBox="0 0 16 16" aria-hidden="true" hidden>
+            <path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.48 7.48 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303z"/>
+            <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.48 5.48 0 0 1 11.025 8a5.48 5.48 0 0 1-1.61 3.89z"/>
+            <path d="M8.707 11.182A4.5 4.5 0 0 0 10.025 8a4.5 4.5 0 0 0-1.318-3.182L8 5.525A3.5 3.5 0 0 1 9.025 8 3.5 3.5 0 0 1 8 10.475zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06"/>
+        </svg>
+    </button>
+
+    <div class="hero-video__inner">
+        <span class="eyebrow">Fitness Empire</span>
+        <h1>Be<br>Limitless</h1>
+        <p class="hero-video__sub">
+            Train in clubs built for every level, with coaching included from your very first session.
+        </p>
+
+        <div class="hero-video__price">
+            <b>&#8377;2,400</b>
+            <span>/ month</span>
         </div>
-        <div class="slides__item">
-            <img src="{% static 'img/banner5.webp' %}" alt="Group fitness class in session"
-                 width="1500" height="500" loading="lazy">
-        </div>
-        <div class="slides__item">
-            <img src="{% static 'img/banner6.webp' %}" alt="Strength training area"
-                 width="1500" height="500" loading="lazy">
+
+        <div class="cluster cluster--center hero-video__cta">
+            <a href="{% url 'membershipmonthly' %}" class="btn btn--lg">Get Started</a>
+            <a href="{% url 'all_classes' %}" class="btn btn--outline-light btn--lg">Explore Classes</a>
         </div>
     </div>
-    <button type="button" class="slides__nav slides__nav--prev" aria-label="Previous slide">&#8249;</button>
-    <button type="button" class="slides__nav slides__nav--next" aria-label="Next slide">&#8250;</button>
-    <div class="slides__dots" aria-hidden="true"></div>
+
+    <div class="hero-video__scroll" aria-hidden="true">
+        <i></i>
+        <span>Scroll</span>
+    </div>
 </section>
 
-<section class="section section--dark">
+<!-- ============ Ticker ============ -->
+<div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+        <span class="ticker__item">Strength</span>
+        <span class="ticker__item">Group Fitness</span>
+        <span class="ticker__item">Personal Training</span>
+        <span class="ticker__item">Nutrition</span>
+        <span class="ticker__item">Recovery</span>
+        <span class="ticker__item">Cycle Studio</span>
+        <span class="ticker__item">Strength</span>
+        <span class="ticker__item">Group Fitness</span>
+        <span class="ticker__item">Personal Training</span>
+        <span class="ticker__item">Nutrition</span>
+        <span class="ticker__item">Recovery</span>
+        <span class="ticker__item">Cycle Studio</span>
+    </div>
+</div>
+
+<!-- ============ Free trial + stats ============ -->
+<section class="section">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">7 Day Free Trial</span>
-            <h2>Want to check us out? Say less.</h2>
+            <h2>Want to check us out?<br><span class="grad-text">Say less.</span></h2>
             <p>Train for seven consecutive days at any Fitness Empire club. No card, no contract, no catch.</p>
-            <div class="cluster" style="justify-content:center; margin-top: var(--sp-5);">
-                <a href="{% url 'membershipannual' %}" class="btn btn--light">See Memberships</a>
-                <a href="{% url 'aboutus' %}" class="btn btn--outline-light">Learn More</a>
+            <div class="cluster cluster--center" style="margin-top: var(--sp-5);">
+                <a href="{% url 'membershipannual' %}" class="btn">See Memberships</a>
+                <a href="{% url 'aboutus' %}" class="btn btn--ghost">Learn More</a>
             </div>
         </div>
 
-        <div class="stat-row">
-            <div>
-                <div class="stat__value">{{ class_count }}</div>
+        <div class="stat-row" data-stagger="110">
+            <div data-reveal>
+                <div class="stat__value" data-count="{{ class_count }}" data-count-suffix="+">0</div>
                 <div class="stat__label">Weekly Classes</div>
             </div>
-            <div>
-                <div class="stat__value">{{ trainer_count }}</div>
+            <div data-reveal>
+                <div class="stat__value" data-count="{{ trainer_count }}">0</div>
                 <div class="stat__label">Expert Trainers</div>
             </div>
-            <div>
-                <div class="stat__value">{{ program_count }}</div>
+            <div data-reveal>
+                <div class="stat__value" data-count="{{ program_count }}">0</div>
                 <div class="stat__label">Coached Programs</div>
             </div>
-            <div>
+            <div data-reveal>
                 <div class="stat__value">24/7</div>
                 <div class="stat__label">Club Access</div>
             </div>
@@ -59,23 +110,24 @@
     </div>
 </section>
 
-<section class="section">
+<!-- ============ Explore ============ -->
+<section class="section section--muted">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">Explore</span>
             <h2>Find your starting point</h2>
         </div>
 
-        <div class="grid grid--3">
-            <a href="{% url 'membershipannual' %}" class="media-card">
+        <div class="grid grid--3" data-stagger="120">
+            <a href="{% url 'membershipannual' %}" class="media-card" data-reveal>
                 <img src="{% static 'img/membership.webp' %}" alt="Gym memberships" loading="lazy" width="400" height="300">
                 <span class="media-card__label">Memberships</span>
             </a>
-            <a href="{% url 'all_classes' %}" class="media-card">
+            <a href="{% url 'all_classes' %}" class="media-card" data-reveal>
                 <img src="{% static 'img/diet.webp' %}" alt="Group fitness classes" loading="lazy" width="400" height="300">
                 <span class="media-card__label">Classes</span>
             </a>
-            <a href="{% url 'training' %}" class="media-card">
+            <a href="{% url 'training' %}" class="media-card" data-reveal>
                 <img src="{% static 'img/trainer.webp' %}" alt="Personal training" loading="lazy" width="400" height="300">
                 <span class="media-card__label">Training</span>
             </a>
@@ -83,18 +135,19 @@
     </div>
 </section>
 
+<!-- ============ Featured products ============ -->
 {% if featured %}
-<section class="section section--surface">
+<section class="section">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">Nutrition Store</span>
             <h2>Fuel the work</h2>
             <p>Tested supplements and kit, shipped from our own warehouse.</p>
         </div>
 
-        <div class="prod-grid">
+        <div class="prod-grid" data-stagger="90">
             {% for item in featured %}
-            <article class="prod">
+            <article class="prod" data-reveal>
                 <a href="{% url 'cards' item.id %}" class="prod__media">
                     {% if item.supplementImage %}
                         <img src="{{ item.supplementImage.url }}" alt="{{ item.supplementName }}" loading="lazy" width="300" height="300">
@@ -115,25 +168,26 @@
             {% endfor %}
         </div>
 
-        <p class="text-center" style="margin-top: var(--sp-6);">
+        <p class="text-center" style="margin-top: var(--sp-6);" data-reveal>
             <a href="{% url 'protien' %}" class="btn btn--ghost">Shop all products</a>
         </p>
     </div>
 </section>
 {% endif %}
 
+<!-- ============ Classes ============ -->
 {% if classes %}
-<section class="section">
+<section class="section section--muted">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">Group Fitness</span>
             <h2>Classes that keep you coming back</h2>
         </div>
 
-        <div class="class-grid">
+        <div class="class-grid" data-stagger="70">
             {% for item in classes %}
-            <a href="{% url 'all_classes' %}" class="class-tile">
-                <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" width="220" height="220">
+            <a href="{% url 'all_classes' %}" class="class-tile" data-reveal="zoom">
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" width="230" height="230">
                 <h3>{{ item.name }}</h3>
             </a>
             {% endfor %}
@@ -142,50 +196,82 @@
 </section>
 {% endif %}
 
-<section class="section section--muted">
+<!-- ============ Why join ============ -->
+<section class="section">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">Why Fitness Empire</span>
             <h2>Built for people who show up</h2>
         </div>
 
-        <div class="grid grid--4">
-            <div class="feature">
-                <img src="{% static 'img/price_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+        <div class="grid grid--4" data-stagger="80">
+            <div class="feature" data-reveal>
+                <img src="{% static 'img/price_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>From &#8377;2,400 Monthly</p>
             </div>
-            <div class="feature">
-                <img src="{% static 'img/contracts_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+            <div class="feature" data-reveal>
+                <img src="{% static 'img/contracts_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Flexible Payment</p>
             </div>
-            <div class="feature">
-                <img src="{% static 'img/womens_only_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+            <div class="feature" data-reveal>
+                <img src="{% static 'img/womens_only_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Unisex Gyms</p>
             </div>
-            <div class="feature">
-                <img src="{% static 'img/community_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+            <div class="feature" data-reveal>
+                <img src="{% static 'img/community_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Awesome Community</p>
             </div>
-            <div class="feature">
-                <img src="{% static 'img/co-ed_icon.webp' %}" alt="" loading="lazy" width="56" height="56">
+            <div class="feature" data-reveal>
+                <img src="{% static 'img/co-ed_icon.webp' %}" alt="" loading="lazy" width="58" height="58">
                 <p>Co-Ed Gyms</p>
             </div>
         </div>
     </div>
 </section>
 
-{% if memberships %}
-<section class="section section--surface">
+<!-- ============ Kick starters ============ -->
+<section class="section section--dark">
     <div class="container">
-        <div class="section-head">
+        <div class="split">
+            <div data-reveal="left">
+                <span class="eyebrow">Included Free</span>
+                <h2>Five coached sessions<br>on the house</h2>
+                <p>
+                    Every new member gets Kick Starters: five complimentary sessions so you learn the
+                    ropes before you ever train alone.
+                </p>
+                <ul>
+                    <li>Three cardio and resistance sessions to gauge your level</li>
+                    <li>Two consultations to set goals you will actually hit</li>
+                    <li>A written plan built around the days you can train</li>
+                    <li>A four-week review to adjust as you progress</li>
+                </ul>
+                <div class="cluster">
+                    <a href="{% url 'training' %}" class="btn">Explore Training</a>
+                    <a href="{% url 'membershipannual' %}" class="link-arrow">Join now <span>&rarr;</span></a>
+                </div>
+            </div>
+            <div class="split__media" data-reveal="right">
+                <img src="{% static 'img/membership.webp' %}" alt="A coached training session"
+                     loading="lazy" width="420" height="420">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ Plans ============ -->
+{% if memberships %}
+<section class="section">
+    <div class="container">
+        <div class="section-head" data-reveal>
             <span class="eyebrow">Membership</span>
             <h2>Pick your plan</h2>
             <p>Every plan includes the gym floor, locker rooms and the Fitness Empire app.</p>
         </div>
 
-        <div class="plans">
+        <div class="plans" data-stagger="110">
             {% for plan in memberships %}
-            <div class="plan {% if forloop.counter == 2 %}plan--featured{% endif %}">
+            <div class="plan {% if forloop.counter == 2 %}plan--featured{% endif %}" data-reveal>
                 {% if forloop.counter == 2 %}<span class="badge badge--brand plan__flag">Most Popular</span>{% endif %}
                 <h3 class="plan__name">{{ plan.name }}</h3>
                 <div class="plan__price">&#8377;{{ plan.price|floatformat:0 }}<small>per year + tax</small></div>
@@ -195,8 +281,8 @@
             {% endfor %}
         </div>
 
-        <p class="text-center" style="margin-top: var(--sp-6);">
-            <a href="{% url 'membershipmonthly' %}" class="link-quiet">Prefer to pay monthly? See monthly plans &rarr;</a>
+        <p class="text-center" style="margin-top: var(--sp-6);" data-reveal>
+            <a href="{% url 'membershipmonthly' %}" class="link-arrow">Prefer to pay monthly? <span>&rarr;</span></a>
         </p>
     </div>
 </section>

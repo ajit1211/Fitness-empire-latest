@@ -6,23 +6,21 @@
 
 {% block 'main' %}
 
-<section class="section section--tight section--dark">
-    <div class="container">
-        <div class="section-head" style="margin-bottom:0;">
-            <span class="eyebrow">Nutrition Store</span>
-            {% if is_search %}
-                <h1>Results for &ldquo;{{ query }}&rdquo;</h1>
-                <p>{{ products|length }} product{{ products|length|pluralize }} matched your search.</p>
-            {% elif selected_category %}
-                <h1>{{ selected_category.categoryName }}</h1>
-                <p>{{ selected_category.categoryDescription }}</p>
-            {% else %}
-                <h1>Supplements &amp; Gear</h1>
-                <p>Tested products, honest labels and next-day dispatch from our own warehouse.</p>
-            {% endif %}
-        </div>
+<header class="page-header page-header--center">
+    <div class="page-header__inner">
+        <span class="eyebrow">Nutrition Store</span>
+        {% if is_search %}
+            <h1>Results for &ldquo;{{ query }}&rdquo;</h1>
+            <p>{{ products|length }} product{{ products|length|pluralize }} matched your search.</p>
+        {% elif selected_category %}
+            <h1>{{ selected_category.categoryName }}</h1>
+            <p>{{ selected_category.categoryDescription }}</p>
+        {% else %}
+            <h1>Supplements &amp; Gear</h1>
+            <p>Tested products, honest labels and next-day dispatch from our own warehouse.</p>
+        {% endif %}
     </div>
-</section>
+</header>
 
 <section class="section">
     <div class="container">

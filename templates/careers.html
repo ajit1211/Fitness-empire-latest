@@ -6,14 +6,19 @@
 
 {% block 'main' %}
 
-<section class="hero-banner">
-    <img src="{% static 'img/become_a.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
-    <div class="hero-banner__inner">
-        <span class="eyebrow" style="color:var(--brand);">Careers</span>
-        <h1>Build your career on the floor</h1>
-        <p>Coach real people, keep learning, and get paid properly for it.</p>
+<header class="page-header page-header--split">
+    <div class="page-header__inner">
+        <div>
+            <span class="eyebrow">Careers</span>
+            <h1>Build your career on the floor</h1>
+            <p>Coach real people, keep learning, and get paid properly for it.</p>
+        </div>
+        <div class="page-header__media">
+            <img src="{% static 'img/become_a.webp' %}" alt="Fitness Empire coaching team"
+                 width="520" height="358" fetchpriority="high">
+        </div>
     </div>
-</section>
+</header>
 
 <section class="section">
     <div class="container">
@@ -88,7 +93,7 @@
     </div>
 </section>
 
-<section class="section">
+<section class="section section--muted">
     <div class="container">
         <div class="split">
             <div>
@@ -102,7 +107,7 @@
                 <a href="{% url 'aboutus' %}" class="btn">Ask a Question</a>
             </div>
             <div class="split__media">
-                <img src="{% static 'img/trainerdorababu.webp' %}" alt="A trainer coaching a member"
+                <img src="{% static 'img/pt-hiring-1.webp' %}" alt="A trainer coaching a member"
                      loading="lazy" width="380" height="380">
             </div>
         </div>

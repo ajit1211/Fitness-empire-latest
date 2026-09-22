@@ -6,14 +6,19 @@
 
 {% block 'main' %}
 
-<section class="hero-banner">
-    <img src="{% static 'img/dietplan.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
-    <div class="hero-banner__inner">
-        <span class="eyebrow" style="color:var(--brand);">Nutrition</span>
-        <h1>Eat for the goal you actually have</h1>
-        <p>Three plans built by our dietitians. Pick the one that matches what you are training for.</p>
+<header class="page-header page-header--split">
+    <div class="page-header__inner">
+        <div>
+            <span class="eyebrow">Nutrition</span>
+            <h1>Eat for the goal you actually have</h1>
+            <p>Three plans built by our dietitians. Pick the one that matches what you are training for.</p>
+        </div>
+        <div class="page-header__media">
+            <img src="{% static 'img/dietplan.webp' %}" alt="Healthy prepared meals"
+                 width="520" height="358" fetchpriority="high">
+        </div>
     </div>
-</section>
+</header>
 
 <section class="section">
     <div class="container">
@@ -60,7 +65,7 @@
                 </ul>
             </div>
             <div class="split__media">
-                <img src="{% static 'img/nutritional_guidance.webp' %}" alt="Dietitian consultation"
+                <img src="{% static 'img/diet.webp' %}" alt="Dietitian consultation"
                      loading="lazy" width="380" height="380">
             </div>
         </div>

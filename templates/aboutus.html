@@ -6,14 +6,19 @@
 
 {% block 'main' %}
 
-<section class="hero-banner">
-    <img src="{% static 'img/banner1.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
-    <div class="hero-banner__inner">
-        <span class="eyebrow" style="color:var(--brand);">About Us</span>
-        <h1>More than a gym</h1>
-        <p>We build training spaces where beginners and competitors both feel like they belong.</p>
+<header class="page-header page-header--split">
+    <div class="page-header__inner">
+        <div>
+            <span class="eyebrow">About Us</span>
+            <h1>More than a gym</h1>
+            <p>We build training spaces where beginners and competitors both feel like they belong.</p>
+        </div>
+        <div class="page-header__media">
+            <img src="{% static 'img/banner1.webp' %}" alt="Members training together at Fitness Empire"
+                 width="520" height="358" fetchpriority="high">
+        </div>
     </div>
-</section>
+</header>
 
 <section class="section">
     <div class="container">
@@ -32,7 +37,7 @@
                 <a href="{% url 'careers' %}" class="btn btn--ghost">Work With Us</a>
             </div>
             <div class="split__media">
-                <img src="{% static 'img/heyyou.webp' %}" alt="Members training together"
+                <img src="{% static 'img/fit.webp' %}" alt="Members training together"
                      loading="lazy" width="380" height="380">
             </div>
         </div>

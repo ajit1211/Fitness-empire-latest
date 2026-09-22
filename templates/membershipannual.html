@@ -6,20 +6,18 @@
 
 {% block 'main' %}
 
-<section class="section section--dark">
-    <div class="container">
-        <div class="section-head" style="margin-bottom:0;">
-            <span class="eyebrow">Gym Memberships</span>
-            <h1>Welcome to your new playground</h1>
-            <p>
-                Whether you are new to fitness, intermediate, or already at pro level, commit to your
-                best and build momentum with a membership that works for you.
-            </p>
-        </div>
+<header class="page-header page-header--center">
+    <div class="page-header__inner">
+        <span class="eyebrow">Gym Memberships</span>
+        <h1>Welcome to your new playground</h1>
+        <p>
+            Whether you are new to fitness, intermediate, or already at pro level, commit to your
+            best and build momentum with a membership that works for you.
+        </p>
     </div>
-</section>
+</header>
 
-<section class="section section--tight section--muted">
+<section class="section section--tight">
     <div class="container text-center">
         <div class="toggle-pills">
             <a href="{% url 'membershipannual' %}" aria-current="page">Annual</a>
@@ -28,7 +26,7 @@
     </div>
 </section>
 
-<section class="section">
+<section class="section section--muted">
     <div class="container">
         {% if memberships %}
         <div class="plans">
@@ -52,7 +50,7 @@
     </div>
 </section>
 
-<section class="section section--surface">
+<section class="section">
     <div class="container">
         <div class="split">
             <div>
@@ -79,7 +77,7 @@
     </div>
 </section>
 
-<section class="section">
+<section class="section section--muted">
     <div class="container">
         <div class="split split--reverse">
             <div>
@@ -101,7 +99,7 @@
     </div>
 </section>
 
-<section class="section section--muted">
+<section class="section">
     <div class="container">
         <div class="split">
             <div>

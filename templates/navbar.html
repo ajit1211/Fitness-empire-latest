@@ -1,15 +1,24 @@
 {% load static %}
-<nav class="nav" aria-label="Main">
+<nav class="nav" data-nav aria-label="Main">
     <div class="nav__bar">
         <a href="{% url 'home' %}" class="nav__logo" aria-label="Fitness Empire home">
             <img src="{% static 'img/logo_fitness_empire-removebg-preview.webp' %}"
-                 alt="Fitness Empire" width="52" height="52">
+                 alt="" width="62" height="62">
+            <span class="nav__wordmark">
+                <b>Fitness Empire</b>
+                <span>Train Relentless</span>
+            </span>
         </a>
 
         <form method="GET" action="{% url 'searchdata' %}" class="nav__search" role="search">
             <label for="nav-search" class="visually-hidden">Search products</label>
-            <input type="search" id="nav-search" name="query" value="{{ query|default:'' }}"
-                   placeholder="Search supplements, classes, plans..." autocomplete="off">
+            <div class="nav__search-field">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.44.58.98 1.12l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a7 7 0 0 0-1.12-.98zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                </svg>
+                <input type="search" id="nav-search" name="query" value="{{ query|default:'' }}"
+                       placeholder="Search supplements, classes, plans..." autocomplete="off">
+            </div>
             <button type="submit">Search</button>
         </form>
 

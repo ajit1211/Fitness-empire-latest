@@ -1,9 +1,9 @@
 {% load static %}<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0d10">
+    <meta name="theme-color" content="#0a0c0f">
     <meta name="description" content="{% block meta_description %}Fitness Empire - gym memberships, group classes, personal training and sports nutrition, all in one place.{% endblock %}">
 
     <title>{% block page_title %}Fitness Empire{% endblock %}</title>
@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap">
+          href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
 
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     {% block extra_css %}{% endblock %}
@@ -40,6 +40,13 @@
     </main>
 
     {% include "footer.html" %}
+
+    <button type="button" class="to-top" data-to-top aria-label="Back to top">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M8 3.5a.5.5 0 0 1 .354.146l5 5a.5.5 0 0 1-.708.708L8 4.707 3.354 9.354a.5.5 0 1 1-.708-.708l5-5A.5.5 0 0 1 8 3.5"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5V12a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4"/>
+        </svg>
+    </button>
 
     <script src="{% static 'js/app.js' %}" defer></script>
     {% block extra_js %}{% endblock %}

@@ -9,7 +9,7 @@
 <section class="section">
     <div class="container">
 
-        <p class="muted" style="font-size:var(--fs-sm); margin-bottom:var(--sp-5);">
+        <p class="crumbs">
             <a href="{% url 'protien' %}" class="link-quiet">Store</a>
             <span aria-hidden="true">/</span>
             <a href="{% url 'supplementCategory' product.supplementCategory.id %}" class="link-quiet">{{ product.supplementCategory.categoryName }}</a>
@@ -69,7 +69,7 @@
 </section>
 
 {% if related %}
-<section class="section section--surface">
+<section class="section section--muted">
     <div class="container">
         <div class="section-head">
             <span class="eyebrow">You might also like</span>

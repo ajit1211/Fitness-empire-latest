@@ -6,14 +6,19 @@
 
 {% block 'main' %}
 
-<section class="hero-banner">
-    <img src="{% static 'img/pt-hiring-1.webp' %}" alt="" class="hero-banner__bg" width="1600" height="900">
-    <div class="hero-banner__inner">
-        <span class="eyebrow" style="color:var(--brand);">Personal Training</span>
-        <h1>Coaching that fits your life</h1>
-        <p>One-to-one programming, technique work and accountability from trainers who do this full time.</p>
+<header class="page-header page-header--split">
+    <div class="page-header__inner">
+        <div>
+            <span class="eyebrow">Personal Training</span>
+            <h1>Coaching that fits your life</h1>
+            <p>One-to-one programming, technique work and accountability from trainers who do this full time.</p>
+        </div>
+        <div class="page-header__media">
+            <img src="{% static 'img/pt-hiring-1.webp' %}" alt="Personal trainer coaching a member"
+                 width="520" height="358" fetchpriority="high">
+        </div>
     </div>
-</section>
+</header>
 
 <section class="section">
     <div class="container">
@@ -108,7 +113,7 @@
                 </div>
             </div>
             <div class="split__media">
-                <img src="{% static 'img/trainner.webp' %}" alt="Personal trainer coaching a lift"
+                <img src="{% static 'img/trainerdorababu.webp' %}" alt="Personal trainer coaching a lift"
                      loading="lazy" width="380" height="380">
             </div>
         </div>

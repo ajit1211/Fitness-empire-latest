@@ -2,9 +2,18 @@
 <footer class="footer">
     <div class="footer__top">
         <div class="footer__brand">
-            <img src="{% static 'img/logo_fitness_empire-removebg-preview.webp' %}"
-                 alt="Fitness Empire" width="84" height="84" loading="lazy">
-            <p>FITNESS EMPIRE</p>
+            <div class="footer__brand-lockup">
+                <img src="{% static 'img/logo_fitness_empire-removebg-preview.webp' %}"
+                     alt="" width="74" height="74" loading="lazy">
+                <span>
+                    <b>Fitness Empire</b>
+                    <span>Train Relentless</span>
+                </span>
+            </div>
+            <p>
+                Clubs built for every level, with coaching included from your first session.
+                Strength, classes, recovery and nutrition under one roof.
+            </p>
         </div>
 
         <div class="footer__cols">
@@ -38,7 +47,8 @@
         </div>
 
         <div class="footer__cta">
-            <p>Ready to start?</p>
+            <h4>Ready to start?</h4>
+            <p>Seven days free. No card, no contract.</p>
             <a href="{% url 'membershipannual' %}" class="btn btn--outline-light">Join Fitness Empire</a>
         </div>
     </div>
@@ -47,10 +57,10 @@
         <div class="footer__bottom-inner">
             <p>&copy; {% now "Y" %} Fitness Empire. All rights reserved.</p>
             <div class="footer__social">
-                <a href="#" aria-label="Facebook"><img src="{% static 'img/facebook-logo.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
-                <a href="#" aria-label="Twitter"><img src="{% static 'img/twitter-symbol.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
-                <a href="#" aria-label="LinkedIn"><img src="{% static 'img/linkedin.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
-                <a href="#" aria-label="Instagram"><img src="{% static 'img/insta_logo.webp' %}" alt="" width="30" height="30" loading="lazy"></a>
+                <a href="#" aria-label="Facebook"><img src="{% static 'img/facebook-logo.webp' %}" alt="" width="20" height="20" loading="lazy"></a>
+                <a href="#" aria-label="Twitter"><img src="{% static 'img/twitter-symbol.webp' %}" alt="" width="20" height="20" loading="lazy"></a>
+                <a href="#" aria-label="LinkedIn"><img src="{% static 'img/linkedin.webp' %}" alt="" width="20" height="20" loading="lazy"></a>
+                <a href="#" aria-label="Instagram"><img src="{% static 'img/insta_logo.webp' %}" alt="" width="20" height="20" loading="lazy"></a>
             </div>
             <p><a href="#">Privacy Policy</a> &middot; <a href="#">Terms &amp; Conditions</a></p>
         </div>
